@@ -1,0 +1,93 @@
+# ============================================================
+# Syrian VCG v3.0  —  Structs & Object-Oriented
+# Date: 2026-06-06
+# ============================================================
+
+struct Point   { x, y }
+struct Circle  { center, radius }
+struct Rectangle { x, y, w, h }
+
+func point_new(px, py)  { return { x: px, y: py } }
+func point_dist(a, b) {
+    let dx = b.x - a.x
+    let dy = b.y - a.y
+    return sqrt(dx*dx + dy*dy)
+}
+func point_str(p) {
+    return "(" + str(p.x) + ", " + str(p.y) + ")"
+}
+
+func circle_new(cx, cy, r) {
+    return { center: point_new(cx,cy), radius: r }
+}
+func circle_area(circ)      { return PI * circ.radius * circ.radius }
+func circle_perimeter(circ) { return 2.0 * PI * circ.radius }
+func circle_contains(circ, pt) {
+    return point_dist(circ.center, pt) <= circ.radius
+}
+
+func rect_new(rx, ry, rw, rh) { return { x:rx, y:ry, w:rw, h:rh } }
+func rect_area(r)              { return r.w * r.h }
+func rect_perimeter(r)         { return 2 * (r.w + r.h) }
+
+show("=== Points ===")
+let p1 = point_new(0, 0)
+let p2 = point_new(3, 4)
+let p3 = point_new(6, 8)
+show("P1 =", point_str(p1))
+show("P2 =", point_str(p2))
+show("dist(P1,P2) =", point_dist(p1, p2))
+show("dist(P1,P3) =", point_dist(p1, p3))
+
+show("---")
+show("=== Circle ===")
+let circ = circle_new(0, 0, 5)
+show("radius   =", circ.radius)
+show("area     =", circle_area(circ))
+show("perim    =", circle_perimeter(circ))
+show("P2 inside?", circle_contains(circ, p2))
+show("P3 inside?", circle_contains(circ, p3))
+
+show("---")
+show("=== Rectangle ===")
+let rect = rect_new(0, 0, 10, 5)
+show("area     =", rect_area(rect))
+show("perim    =", rect_perimeter(rect))
+
+show("---")
+show("=== Map / Dictionary ===")
+let scores = { ali: 95, ahmad: 87, samer: 92, layla: 98 }
+let names = keys(scores)
+show("students:", names)
+let total = 0
+for name in names { total += scores[name] }
+show("average:", float(total) / len(names))
+
+show("---")
+show("=== Task List ===")
+let tasks = []
+func add_task(title, done) { tasks.push({ title: title, done: done }) }
+add_task("Write compiler",    true)
+add_task("Write examples",    true)
+add_task("Write docs",        false)
+add_task("Publish on GitHub", false)
+
+for t in tasks {
+    let status = t.done ? "V" : "O"
+    show(status, t.title)
+}
+
+let done_count = 0
+for t in tasks { if t.done { done_count += 1 } }
+show("Done:", done_count, "/", len(tasks))
+
+show("---")
+show("=== Player Stats ===")
+let player = { name: "VCG Hero", hp: 100, level: 1 }
+show("Player:", player.name)
+show("HP:", player.hp)
+show("Level:", player.level)
+player.hp = player.hp - 25
+show("HP after damage:", player.hp)
+player.level = player.level + 1
+show("Level up:", player.level)
