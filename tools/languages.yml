@@ -1,0 +1,22 @@
+# ================================================================
+#  languages.yml  —  Syrian VCG Language definition
+#  (Submit to github-linguist/linguist as a pull request)
+# ================================================================
+
+VCG:
+  type: programming
+  color: "#2d5a1b"
+  extensions:
+    - ".vcg"
+  filenames: []
+  interpreters:
+    - vcgc
+  tm_scope: source.vcg
+  ace_mode: text
+  language_id: 99901
+  aliases:
+    - syrian-vcg
+    - vcglang
+
+# ── TextMate Grammar (grammars/VCG.tmLanguage) ──
+# Defines syntax highlighting for GitHub
