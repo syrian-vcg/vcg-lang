@@ -1,0 +1,155 @@
+{
+  "name": "VCG",
+  "scopeName": "source.vcg",
+  "fileTypes": ["vcg"],
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#string" },
+    { "include": "#keyword" },
+    { "include": "#constant" },
+    { "include": "#number" },
+    { "include": "#operator" },
+    { "include": "#function-call" },
+    { "include": "#identifier" }
+  ],
+  "repository": {
+    "comment": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.vcg",
+          "match": "#.*$"
+        },
+        {
+          "name": "comment.line.double-slash.vcg",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.vcg",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    },
+    "string": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.vcg",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            { "name": "constant.character.escape.vcg", "match": "\\\\." }
+          ]
+        },
+        {
+          "name": "string.quoted.single.vcg",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            { "name": "constant.character.escape.vcg", "match": "\\\\." }
+          ]
+        },
+        {
+          "name": "string.template.vcg",
+          "begin": "`",
+          "end": "`"
+        }
+      ]
+    },
+    "keyword": {
+      "patterns": [
+        {
+          "name": "keyword.control.vcg",
+          "match": "\\b(if|else|while|for|in|repeat|break|continue|return|match|when|try|catch|throw)\\b"
+        },
+        {
+          "name": "keyword.declaration.vcg",
+          "match": "\\b(let|const|func|struct|new|import|as)\\b"
+        },
+        {
+          "name": "keyword.operator.logical.vcg",
+          "match": "\\b(and|or|not)\\b"
+        },
+        {
+          "name": "support.function.builtin.vcg",
+          "match": "\\b(show|input|html|typeof|sizeof|assert)\\b"
+        },
+        {
+          "name": "variable.language.vcg",
+          "match": "\\b(self)\\b"
+        }
+      ]
+    },
+    "constant": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.vcg",
+          "match": "\\b(true|false)\\b"
+        },
+        {
+          "name": "constant.language.null.vcg",
+          "match": "\\b(nil|null)\\b"
+        },
+        {
+          "name": "constant.language.vcg",
+          "match": "\\b(PI|E|INF|NAN)\\b"
+        }
+      ]
+    },
+    "number": {
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.vcg",
+          "match": "\\b0[xX][0-9a-fA-F]+\\b"
+        },
+        {
+          "name": "constant.numeric.float.vcg",
+          "match": "\\b[0-9]+\\.[0-9]+([eE][+-]?[0-9]+)?\\b"
+        },
+        {
+          "name": "constant.numeric.integer.vcg",
+          "match": "\\b[0-9]+\\b"
+        }
+      ]
+    },
+    "operator": {
+      "patterns": [
+        {
+          "name": "keyword.operator.arithmetic.vcg",
+          "match": "(\\*\\*|\\+|-|\\*|/|%)"
+        },
+        {
+          "name": "keyword.operator.comparison.vcg",
+          "match": "(==|!=|<=|>=|<|>)"
+        },
+        {
+          "name": "keyword.operator.assignment.vcg",
+          "match": "(\\+=|-=|\\*=|/=|=)"
+        },
+        {
+          "name": "keyword.operator.range.vcg",
+          "match": "\\.\\."
+        },
+        {
+          "name": "keyword.operator.arrow.vcg",
+          "match": "->"
+        }
+      ]
+    },
+    "function-call": {
+      "patterns": [
+        {
+          "name": "entity.name.function.vcg",
+          "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()"
+        }
+      ]
+    },
+    "identifier": {
+      "patterns": [
+        {
+          "name": "variable.other.vcg",
+          "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b"
+        }
+      ]
+    }
+  }
+}
