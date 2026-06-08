@@ -1,0 +1,92 @@
+# ============================================
+# Syrian VCG — Fibonacci & Recursion
+# ============================================
+
+# نسخة تكرارية
+func fib_iter(n) {
+    if n <= 1 { return n }
+    let a = 0
+    let b = 1
+    repeat n - 1 {
+        let tmp = a + b
+        a = b
+        b = tmp
+    }
+    return b
+}
+
+# نسخة تعاودية
+func fib_rec(n) {
+    if n <= 1 { return n }
+    return fib_rec(n - 1) + fib_rec(n - 2)
+}
+
+# نسخة بالذاكرة المؤقتة (memoization)
+let memo = {}
+func fib_memo(n) {
+    if n <= 1 { return n }
+    let k = str(n)
+    if memo[k] != nil { return memo[k] }
+    let result = fib_memo(n-1) + fib_memo(n-2)
+    memo[k] = result
+    return result
+}
+
+show("=== متتالية فيبوناتشي (أول 15 رقم) ===")
+for i in range(0, 15) {
+    show("fib(", i, ") =", fib_iter(i))
+}
+
+show("---")
+show("=== مقارنة الطرق الثلاث ===")
+show("fib_iter(20) =", fib_iter(20))
+show("fib_rec(20)  =", fib_rec(20))
+show("fib_memo(30) =", fib_memo(30))
+
+show("---")
+show("=== مضروب العدد ===")
+func factorial(n) {
+    if n <= 1 { return 1 }
+    return n * factorial(n - 1)
+}
+for i in range(1, 13) {
+    show(i, "! =", factorial(i))
+}
+
+show("---")
+show("=== برج هانوي (n=3) ===")
+func hanoi(n, from, to, via) {
+    if n == 0 { return nil }
+    hanoi(n-1, from, via, to)
+    show("نقل القرص", n, "من", from, "إلى", to)
+    hanoi(n-1, via, to, from)
+}
+hanoi(3, "A", "C", "B")
+
+show("---")
+show("=== توابع عليا (Higher-order) ===")
+func apply(f, val) { return f(val) }
+func double(x)     { return x * 2 }
+func square(x)     { return x * x }
+func negate(x)     { return -x }
+
+let ops = [double, square, negate]
+let val = 5
+for op in ops {
+    show("apply(op,", val, ") =", apply(op, val))
+}
+
+show("---")
+show("=== Closures / إغلاق ===")
+func make_counter(start) {
+    let count = start
+    func next() {
+        count += 1
+        return count
+    }
+    return next
+}
+let counter = make_counter(10)
+show(counter())
+show(counter())
+show(counter())
