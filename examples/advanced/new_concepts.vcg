@@ -1,0 +1,125 @@
+# ============================================================
+# Syrian VCG v1.0  —  New Concepts Demo
+# $set, $get, public, w (write-only), x (execute), c (channel)
+# Date: 2026-06-06
+# ============================================================
+
+show("Syrian VCG v1.0 - 2026-06-06")
+show("================================")
+show("")
+
+# ── 1. $set / $get  (Reactive Store) ──────────────────────
+show("=== 1. Reactive Store ===")
+
+$set("username", "Ahmad Al-Souri")
+$set("score",    100)
+$set("level",    5)
+
+show("username:", $get("username"))
+show("score   :", $get("score"))
+show("level   :", $get("level"))
+
+let new_score = $get("score") + 50
+$set("score", new_score)
+show("score updated:", $get("score"))
+
+show("")
+
+# ── 2. public ─────────────────────────────────────────────
+show("=== 2. public - Export Symbols ===")
+
+public let APP_NAME = "VCG App"
+public let VERSION  = "1.0.0"
+
+public func greet(name) {
+    return "Hello " + name + " in " + APP_NAME
+}
+
+show(greet("Samer"))
+show("App:", APP_NAME, "Version:", VERSION)
+
+show("")
+
+# ── 3. w  — Write-Only Binding ────────────────────────────
+show("=== 3. w - Write-Only Variables ===")
+
+w log1 = "Login: 2026-06-06 10:00"
+w log2 = "Operation: update data"
+w log3 = "Result: success"
+
+show("3 events written to write-only log")
+
+show("")
+
+# ── 4. c  — Channel Variables ─────────────────────────────
+show("=== 4. c - Channel Variables ===")
+
+c tasks = "init system"
+
+send(tasks, "read config")
+send(tasks, "load data")
+send(tasks, "start service")
+send(tasks, "ready")
+
+show("Processing tasks from channel:")
+let done = false
+let count = 0
+while not done {
+    let task = recv(tasks)
+    if task == nil {
+        done = true
+    } else {
+        count += 1
+        show("  task", count, ":", task)
+    }
+}
+
+show("")
+show("=== Number channel (squares) ===")
+c squares
+let i = 1
+while i <= 6 {
+    send(squares, i * i)
+    i += 1
+}
+show("Squares in channel:")
+let val = recv(squares)
+while val != nil {
+    show(" ", val)
+    val = recv(squares)
+}
+
+show("")
+
+# ── 5. Reactive watcher ───────────────────────────────────
+show("=== 5. watch - Reactive Watchers ===")
+
+watch("hp", func(v) {
+    show("[WATCH] HP changed to:", v)
+})
+
+$set("hp", 100)
+$set("hp", 75)
+$set("hp", 50)
+
+show("Final HP:", $get("hp"))
+
+show("")
+
+# ── 6. Combined ────────────────────────────────────────────
+show("=== 6. Combined State System ===")
+
+$set("users", 0)
+watch("users", func(v) {
+    show("[EVENT] users:", v)
+})
+
+let u = 0
+while u < 4 {
+    u += 1
+    $set("users", u)
+}
+
+show("final users:", $get("users"))
+show("")
+show("=== Done - VCG v1.0  2026-06-06 ===")
