@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <!-- Dark olive green gradient background -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#1a3a0a"/>
+      <stop offset="40%"  stop-color="#2d5a1b"/>
+      <stop offset="70%"  stop-color="#243d14"/>
+      <stop offset="100%" stop-color="#1a2e08"/>
+    </linearGradient>
+    <!-- Subtle grid lines for "gradient mesh" effect -->
+    <linearGradient id="sheen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#4a8a2a" stop-opacity="0.25"/>
+      <stop offset="50%"  stop-color="#2d5a1b" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#0f1f06" stop-opacity="0.35"/>
+    </linearGradient>
+    <!-- Star glow filter -->
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <!-- Soft shadow for text -->
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Rounded square base -->
+  <rect x="0" y="0" width="128" height="128" rx="22" ry="22" fill="url(#bg)"/>
+
+  <!-- Overlay sheen -->
+  <rect x="0" y="0" width="128" height="128" rx="22" ry="22" fill="url(#sheen)"/>
+
+  <!-- Fine diagonal grid lines (subtle depth) -->
+  <g opacity="0.07" stroke="#8fdd5a" stroke-width="0.8">
+    <line x1="0"   y1="32"  x2="128" y2="32"/>
+    <line x1="0"   y1="64"  x2="128" y2="64"/>
+    <line x1="0"   y1="96"  x2="128" y2="96"/>
+    <line x1="32"  y1="0"   x2="32"  y2="128"/>
+    <line x1="64"  y1="0"   x2="64"  y2="128"/>
+    <line x1="96"  y1="0"   x2="96"  y2="128"/>
+  </g>
+
+  <!-- Border highlight -->
+  <rect x="1.5" y="1.5" width="125" height="125" rx="21" ry="21"
+        fill="none" stroke="#5a9a30" stroke-width="1.2" stroke-opacity="0.4"/>
+
+  <!-- ★ Three white stars ★ -->
+  <!-- Star 1 — top-left (small) -->
+  <g filter="url(#glow)" opacity="0.95">
+    <polygon
+      points="26,16 28.4,23.3 36,23.3 30,27.8 32.4,35.1 26,30.6 19.6,35.1 22,27.8 16,23.3 23.6,23.3"
+      fill="white"/>
+  </g>
+
+  <!-- Star 2 — top-right (medium) -->
+  <g filter="url(#glow)" opacity="0.95">
+    <polygon
+      points="96,10 99.5,21 111,21 102,27.8 105.5,38.8 96,32 86.5,38.8 90,27.8 81,21 92.5,21"
+      fill="white"/>
+  </g>
+
+  <!-- Star 3 — center-top (large) -->
+  <g filter="url(#glow)" opacity="0.98">
+    <polygon
+      points="64,6 68.9,21.5 85,21.5 72.5,30.5 77.5,46 64,37 50.5,46 55.5,30.5 43,21.5 59.1,21.5"
+      fill="white"/>
+  </g>
+
+  <!-- "VCG" text -->
+  <text
+    x="64" y="88"
+    font-family="'Segoe UI', 'Arial', sans-serif"
+    font-weight="900"
+    font-size="36"
+    letter-spacing="1"
+    text-anchor="middle"
+    fill="white"
+    filter="url(#shadow)"
+    opacity="0.97">VCG</text>
+
+  <!-- Subtitle -->
+  <text
+    x="64" y="110"
+    font-family="'Segoe UI', 'Arial', sans-serif"
+    font-weight="400"
+    font-size="11"
+    letter-spacing="2"
+    text-anchor="middle"
+    fill="#a8e080"
+    opacity="0.85">SYRIAN</text>
+</svg>
