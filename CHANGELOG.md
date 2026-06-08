@@ -1,3 +1,7 @@
+# Homy v1.0.0 - Official Release\n\nWelcome to the inaugural release of **Homy**! This version represents the baseline release of our platform, establishing a solid, production-ready foundation compiled from our core development repositories.\n\n## 🚀 Key Features & Highlights\n- **Project Bootstrap**: Successfully migrated the complete codebase to public source control from our core archive.\n- **Architecture Foundation**: Established the primary application structures, directories, and configuration baselines.\n- **Initial Integration**: Fully consolidated all core modules and utilities into a unified release candidate.\n\n## 🛠️ Installation & Setup\nTo get started with Homy v1.0.0, follow these steps:\n\n1. **Clone the repository:**\n   ```bash\n   git clone https://github.com/example/homy.git\n   cd homy\n   ```\n2. **Install dependencies:**\n   ```bash\n   npm install\n   ```\n3. **Start the application:**\n   ```bash\n   npm start\n   ```\n\n## 👥 Contributors\nWe would like to express our gratitude to the core development team who made this bootstrap release possible:\n- **homy** (Lead Architect & Core Contributor)
+
+---
+
 # Changelog — Syrian VCG Language
 
 ## [1.0.0] - 2026-06-06
