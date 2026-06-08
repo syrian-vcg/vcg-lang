@@ -1,0 +1,17 @@
+# Build outputs
+vcgc
+vcgc_dbg
+*.o
+*.a
+
+# Generated HTML
+output/*.html
+
+# Editor
+.vscode/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
