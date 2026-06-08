@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>sorting — VCG</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+:root{--bg:#0a0f1a;--panel:#111827;--border:#1e3050;--accent:#00d4ff;--green:#00ff9d;--text:#e2e8f0;--muted:#4a5568;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem 1rem}
+header{width:100%;max-width:820px;display:flex;align-items:center;gap:1rem;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
+.logo{width:48px;height:48px;background:linear-gradient(135deg,#2d5a1b,#1a3a0a);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:0 0 16px rgba(0,255,0,.2)}
+h1{font-size:1.3rem;font-weight:900;color:var(--accent)}
+#out{width:100%;max-width:820px;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:1.8rem;min-height:180px;font-family:'JetBrains Mono',monospace;font-size:.9rem;line-height:2;box-shadow:0 4px 30px rgba(0,0,0,.4)}
+.ln{display:block;padding:.1rem .4rem;border-radius:4px}
+.ln:hover{background:rgba(0,212,255,.04)}
+.err{color:#f87171}
+footer{margin-top:1.5rem;color:var(--muted);font-size:.75rem}
+footer b{color:#00d4ff}
+</style></head>
+<body>
+<header><div class="logo">✦</div><div><h1>sorting</h1><p style="font-size:.8rem;color:var(--muted)">Syrian Private Programming VCG v2.0</p></div></header>
+<div id="out"></div>
+<footer>Compiled by <b>vcgc</b> — Syrian VCG Language</footer>
+<script>
+/* ── VCG Runtime ────────────────────── */
+var _OUT=document.getElementById('out');
+function _vcg_print(arr){
+  var s=arr.map(function(v){return v===null?'nil':v===true?'true':v===false?'false':Array.isArray(v)?'['+v.map(String).join(', ')+']':typeof v==='object'&&v?JSON.stringify(v):String(v);}).join(' ');
+  var el=document.createElement('span');el.className='ln';el.textContent=s;
+  _OUT.appendChild(el);
+}
+function _vcg_html(s){_OUT.insertAdjacentHTML('beforeend',String(s));}
+function _truthy(v){return v!==null&&v!==false&&v!==0&&v!==''&&v!==undefined;}
+function _vcg_eq(a,b){if(a===b)return true;if(a===null&&b===null)return true;if(typeof a!=='object'&&typeof b!=='object')return a==b;return false;}
+function _bin(op,a,b){
+  if(op==='+'&&(typeof a==='string'||typeof b==='string'))return String(a)+String(b);
+  if(op==='+'&&Array.isArray(a)&&Array.isArray(b))return a.concat(b);
+  if(op==='..'){
+    var r=[],f=Math.floor(a),t=Math.floor(b),s=f<=t?1:-1;
+    for(var i=f;s>0?i<=t:i>=t;i+=s)r.push(i);return r;
+  }
+  switch(op){case '+':return a+b;case '-':return a-b;case '*':return a*b;
+    case '/':if(b===0)throw new Error('Division by zero');return a/b;
+    case '%':if(b===0)throw new Error('Modulo by zero');return a%b;
+    case '**':return Math.pow(a,b);
+    case '==':return _vcg_eq(a,b);case '!=':return !_vcg_eq(a,b);
+    case '<':return a<b;case '>':return a>b;case '<=':return a<=b;case '>=':return a>=b;
+    case 'and':return _truthy(a)&&_truthy(b);
+    case 'or': return _truthy(a)||_truthy(b);
+    case '|':return (a|0)|(b|0);case '&':return (a|0)&(b|0);
+    case '<<':return (a|0)<<(b|0);case '>>':return (a|0)>>(b|0);
+  }return null;
+}
+function _scope(p){return Object.create(p||null);}
+function _def(e,k,v){Object.defineProperty(e,k,{value:v,writable:true,configurable:true,enumerable:true});return v;}
+function _set(e,k,v){
+  var c=e;
+  while(c){if(Object.prototype.hasOwnProperty.call(c,k)){c[k]=v;return v;}c=Object.getPrototypeOf(c);}
+  e[k]=v;return v;
+}
+function _v(k,e){
+  var c=e;
+  while(c){if(k in c)return c[k];c=Object.getPrototypeOf(c);}
+  throw new Error('Undefined: '+k);
+}
+function _idx(o,i){if(o===null)return null;if(Array.isArray(o)){var j=i<0?o.length+i:i;return j>=0&&j<o.length?o[j]:null;}if(typeof o==='string'){var j=i<0?o.length+i:i;return j>=0&&j<o.length?o[j]:null;}if(typeof o==='object')return o[i]!==undefined?o[i]:null;return null;}
+function _setidx(o,i,v){if(Array.isArray(o)){if(i<0)i=o.length+i;o[i]=v;}else if(typeof o==='object')o[i]=v;}
+function _field(o,k){return o&&typeof o==='object'&&k in o?o[k]:null;}
+function _setfield(o,k,v){if(o&&typeof o==='object')o[k]=v;}
+function _typeof(v){if(v===null)return 'nil';if(v===true||v===false)return 'bool';if(Array.isArray(v))return 'array';if(typeof v==='object')return 'struct';return typeof v;}
+function _sizeof(v){if(Array.isArray(v))return v.length;if(typeof v==='string')return v.length;if(v&&typeof v==='object')return Object.keys(v).length;return 1;}
+function _call(f,args,e){if(typeof f==='function')return f.apply(null,args);throw new Error('Not callable');}
+function _method(obj,name,args,e){
+  if(Array.isArray(obj)){
+    if(name==='push'){obj.push.apply(obj,args);return obj.length;}
+    if(name==='pop')return obj.pop();
+    if(name==='len'||name==='length')return obj.length;
+    if(name==='join')return obj.join(args[0]!==undefined?args[0]:',');
+    if(name==='contains')return obj.indexOf(args[0])>=0;
+    if(name==='reverse'){obj.reverse();return obj;}
+    if(name==='slice')return obj.slice(args[0]||0,args[1]);
+    if(name==='sort'){obj.sort(function(a,b){return a-b;});return obj;}
+  }
+  if(typeof obj==='string'){
+    if(name==='len'||name==='length')return obj.length;
+    if(name==='upper')return obj.toUpperCase();
+    if(name==='lower')return obj.toLowerCase();
+    if(name==='trim')return obj.trim();
+    if(name==='split')return obj.split(args[0]!==undefined?args[0]:' ');
+    if(name==='contains')return obj.includes(String(args[0]));
+    if(name==='startswith')return obj.startsWith(String(args[0]));
+    if(name==='endswith')return obj.endsWith(String(args[0]));
+    if(name==='replace')return obj.replaceAll(String(args[0]),String(args[1]));
+    if(name==='tonum')return parseFloat(obj);
+    if(name==='indexof')return obj.indexOf(String(args[0]));
+  }
+  if(obj&&typeof obj==='object'&&typeof obj[name]==='function')return obj[name].apply(obj,args);
+  throw new Error('No method: '+name);
+}
+/* ── Stdlib ─────────────────────── */
+var _e=_scope(null);
+_def(_e,'abs',function(x){return Math.abs(x);});
+_def(_e,'floor',function(x){return Math.floor(x);});
+_def(_e,'ceil',function(x){return Math.ceil(x);});
+_def(_e,'round',function(x){return Math.round(x);});
+_def(_e,'sqrt',function(x){return Math.sqrt(x);});
+_def(_e,'pow',function(b,e2){return Math.pow(b,e2);});
+_def(_e,'log',function(x){return Math.log(x);});
+_def(_e,'log2',function(x){return Math.log2(x);});
+_def(_e,'log10',function(x){return Math.log10(x);});
+_def(_e,'sin',function(x){return Math.sin(x);});
+_def(_e,'cos',function(x){return Math.cos(x);});
+_def(_e,'tan',function(x){return Math.tan(x);});
+_def(_e,'min',function(){return Math.min.apply(null,arguments);});
+_def(_e,'max',function(){return Math.max.apply(null,arguments);});
+_def(_e,'clamp',function(v,lo,hi){return Math.max(lo,Math.min(hi,v));});
+_def(_e,'rand',function(a,b){if(a===undefined)return Math.random();if(b===undefined)return Math.floor(Math.random()*a);return Math.floor(Math.random()*(b-a))+a;});
+_def(_e,'range',function(a,b,s){var r=[],f=b===undefined?0:a,t=b===undefined?a:b,st=s||1;for(var i=f;i<t;i+=st)r.push(i);return r;});
+_def(_e,'len',function(x){if(Array.isArray(x))return x.length;if(typeof x==='string')return x.length;if(x&&typeof x==='object')return Object.keys(x).length;return 0;});
+_def(_e,'str',function(x){return x===null?'nil':x===true?'true':x===false?'false':Array.isArray(x)?'['+x.map(String).join(', ')+']':String(x);});
+_def(_e,'int',function(x){return parseInt(x)||0;});
+_def(_e,'float',function(x){return parseFloat(x)||0;});
+_def(_e,'bool',function(x){return _truthy(x);});
+_def(_e,'char',function(n){return String.fromCharCode(n);});
+_def(_e,'ord',function(s){return s?s.charCodeAt(0):0;});
+_def(_e,'keys',function(o){return o&&typeof o==='object'?Object.keys(o):[];});
+_def(_e,'values',function(o){return o&&typeof o==='object'?Object.values(o):[];});
+_def(_e,'join',function(a,s){return Array.isArray(a)?a.join(s||','):String(a);});
+_def(_e,'format',function(){var s=arguments[0];for(var i=1;i<arguments.length;i++)s=s.replace('%s',arguments[i]);return s;});
+_def(_e,'typeof',_typeof);
+_def(_e,'sizeof',_sizeof);
+_def(_e,'isnil',function(x){return x===null||x===undefined;});
+_def(_e,'isnum',function(x){return typeof x==='number';});
+_def(_e,'isstr',function(x){return typeof x==='string';});
+_def(_e,'isarr',function(x){return Array.isArray(x);});
+_def(_e,'PI',Math.PI);
+_def(_e,'E',Math.E);
+_def(_e,'true',true);
+_def(_e,'false',false);
+_def(_e,'nil',null);
+_def(_e,'show',function(){_vcg_print(Array.from(arguments));return null;});
+_def(_e,'print',function(){_vcg_print(Array.from(arguments));return null;});
+_def(_e,'input',function(p){return prompt(p||'input:')||'';});
+/* ── v3.0 Reactive Runtime ───────── */
+var _vcg_store={};
+var _vcg_watchers={};
+var _vcg_exports={};
+var _vcg_writeonly={};
+function _vcg_set(k,v){
+  _vcg_store[k]=v;
+  if(_vcg_watchers[k]) _vcg_watchers[k](v);
+  return v;
+}
+function _vcg_get(k){ return _vcg_store[k]!==undefined?_vcg_store[k]:null; }
+function _vcg_w(name,val,env){
+  _def(env,name,val);
+  _vcg_writeonly[name]=true;
+  _vcg_print(['[w] '+name+' ← '+String(val)]);
+  return val;
+}
+function _vcg_x(v){ return typeof v==='function'?v():v; }
+function _vcg_channel(name,init){
+  var ch={_name:name,_buf:[]};
+  if(init!==undefined) ch._buf.push(init);
+  return ch;
+}
+function _vcg_send(ch,val){
+  if(ch&&ch._buf) ch._buf.push(val);
+  return val;
+}
+function _vcg_recv(ch){
+  if(ch&&ch._buf&&ch._buf.length>0) return ch._buf.shift();
+  return null;
+}
+function _vcg_pipe(val){
+  var fns=Array.from(arguments).slice(1);
+  return fns.reduce(function(v,f){return typeof f==='function'?f(v):v;},val);
+}
+_def(_e,'watch',function(k,fn){ _vcg_watchers[k]=fn; });_def(_e,'store',function(){ return _vcg_store; });_def(_e,'exports',function(){ return _vcg_exports; });_def(_e,'send',_vcg_send);_def(_e,'recv',_vcg_recv);_def(_e,'pipe',_vcg_pipe);_def(_e,'freeze',function(v){return Object.freeze(v)||v;});_def(_e,'VCG_VERSION','3.0.0');_def(_e,'VCG_DATE','2026-06-06');/* ── User Program ────────────────── */
+try{
+  _def(_e,'array_copy',(function _f_array_copy(_p_arr){
+    var _e=_scope(_e);
+    _def(_e,'arr',_p_arr);
+    _def(_e,'result',[]);
+    var _it0=_v('arr',_e);
+    var _arr0=typeof _it0==='string'?_it0.split(''):(_it0 instanceof Array?_it0:Object.values(_it0));
+    for(var _j0=0;_j0<_arr0.length;_j0++){
+      var _e=_scope(_e);
+      _def(_e,'x',_arr0[_j0]);
+      _method(_v('result',_e),"push",[_v('x',_e)],_e);
+    }
+    return _v('result',_e);
+    return null;
+  }));
+  _def(_e,'bubble_sort',(function _f_bubble_sort(_p_arr){
+    var _e=_scope(_e);
+    _def(_e,'arr',_p_arr);
+    _def(_e,'a',_call(_v('array_copy',_e),[_v('arr',_e)],_e));
+    _def(_e,'n',_call(_v('len',_e),[_v('a',_e)],_e));
+    var _it1=_call(_v('range',_e),[_v('n',_e)],_e);
+    var _arr1=typeof _it1==='string'?_it1.split(''):(_it1 instanceof Array?_it1:Object.values(_it1));
+    for(var _j1=0;_j1<_arr1.length;_j1++){
+      var _e=_scope(_e);
+      _def(_e,'i',_arr1[_j1]);
+      var _it2=_call(_v('range',_e),[_bin("-",_bin("-",_v('n',_e),_v('i',_e)),1)],_e);
+      var _arr2=typeof _it2==='string'?_it2.split(''):(_it2 instanceof Array?_it2:Object.values(_it2));
+      for(var _j2=0;_j2<_arr2.length;_j2++){
+        var _e=_scope(_e);
+        _def(_e,'j',_arr2[_j2]);
+        if(_truthy(_bin(">",_idx(_v('a',_e),_v('j',_e)),_idx(_v('a',_e),_bin("+",_v('j',_e),1))))){
+  var _e=_scope(_e);
+          _def(_e,'tmp',_idx(_v('a',_e),_v('j',_e)));
+          var _t3=_idx(_v('a',_e),_bin("+",_v('j',_e),1));
+          _setidx(_v('a',_e),_v('j',_e),_t3);
+          var _t4=_v('tmp',_e);
+          _setidx(_v('a',_e),_bin("+",_v('j',_e),1),_t4);
+        }
+      }
+    }
+    return _v('a',_e);
+    return null;
+  }));
+  _def(_e,'selection_sort',(function _f_selection_sort(_p_arr){
+    var _e=_scope(_e);
+    _def(_e,'arr',_p_arr);
+    _def(_e,'a',_call(_v('array_copy',_e),[_v('arr',_e)],_e));
+    _def(_e,'n',_call(_v('len',_e),[_v('a',_e)],_e));
+    var _it5=_call(_v('range',_e),[_v('n',_e)],_e);
+    var _arr5=typeof _it5==='string'?_it5.split(''):(_it5 instanceof Array?_it5:Object.values(_it5));
+    for(var _j5=0;_j5<_arr5.length;_j5++){
+      var _e=_scope(_e);
+      _def(_e,'i',_arr5[_j5]);
+      _def(_e,'min_idx',_v('i',_e));
+      var _it6=_call(_v('range',_e),[_bin("+",_v('i',_e),1),_v('n',_e)],_e);
+      var _arr6=typeof _it6==='string'?_it6.split(''):(_it6 instanceof Array?_it6:Object.values(_it6));
+      for(var _j6=0;_j6<_arr6.length;_j6++){
+        var _e=_scope(_e);
+        _def(_e,'j',_arr6[_j6]);
+        if(_truthy(_bin("<",_idx(_v('a',_e),_v('j',_e)),_idx(_v('a',_e),_v('min_idx',_e))))){
+  var _e=_scope(_e);
+          var _t7=_v('j',_e);
+          _set(_e,'min_idx',_t7);
+        }
+      }
+      _def(_e,'tmp',_idx(_v('a',_e),_v('i',_e)));
+      var _t8=_idx(_v('a',_e),_v('min_idx',_e));
+      _setidx(_v('a',_e),_v('i',_e),_t8);
+      var _t9=_v('tmp',_e);
+      _setidx(_v('a',_e),_v('min_idx',_e),_t9);
+    }
+    return _v('a',_e);
+    return null;
+  }));
+  _def(_e,'insertion_sort',(function _f_insertion_sort(_p_arr){
+    var _e=_scope(_e);
+    _def(_e,'arr',_p_arr);
+    _def(_e,'a',_call(_v('array_copy',_e),[_v('arr',_e)],_e));
+    _def(_e,'n',_call(_v('len',_e),[_v('a',_e)],_e));
+    var _it10=_call(_v('range',_e),[1,_v('n',_e)],_e);
+    var _arr10=typeof _it10==='string'?_it10.split(''):(_it10 instanceof Array?_it10:Object.values(_it10));
+    for(var _j10=0;_j10<_arr10.length;_j10++){
+      var _e=_scope(_e);
+      _def(_e,'i',_arr10[_j10]);
+      _def(_e,'pivot',_idx(_v('a',_e),_v('i',_e)));
+      _def(_e,'j',_bin("-",_v('i',_e),1));
+      var _wc11=0;
+      while(_truthy(_bin("and",_bin(">=",_v('j',_e),0),_bin(">",_idx(_v('a',_e),_v('j',_e)),_v('pivot',_e))))&&_wc11++<1e7){
+        var _e=_scope(_e);
+        var _t12=_idx(_v('a',_e),_v('j',_e));
+        _setidx(_v('a',_e),_bin("+",_v('j',_e),1),_t12);
+                _set(_e,'j',_bin('-',_v('j',_e),1));
+      }
+      var _t13=_v('pivot',_e);
+      _setidx(_v('a',_e),_bin("+",_v('j',_e),1),_t13);
+    }
+    return _v('a',_e);
+    return null;
+  }));
+  _def(_e,'merge',(function _f_merge(_p_left,_p_right){
+    var _e=_scope(_e);
+    _def(_e,'left',_p_left);
+    _def(_e,'right',_p_right);
+    _def(_e,'result',[]);
+    _def(_e,'i',0);
+    _def(_e,'j',0);
+    var _wc14=0;
+    while(_truthy(_bin("and",_bin("<",_v('i',_e),_call(_v('len',_e),[_v('left',_e)],_e)),_bin("<",_v('j',_e),_call(_v('len',_e),[_v('right',_e)],_e))))&&_wc14++<1e7){
+      var _e=_scope(_e);
+      if(_truthy(_bin("<=",_idx(_v('left',_e),_v('i',_e)),_idx(_v('right',_e),_v('j',_e))))){
+  var _e=_scope(_e);
+        _method(_v('result',_e),"push",[_idx(_v('left',_e),_v('i',_e))],_e);
+                _set(_e,'i',_bin('+',_v('i',_e),1));
+      } else {
+  var _e=_scope(_e);
+        _method(_v('result',_e),"push",[_idx(_v('right',_e),_v('j',_e))],_e);
+                _set(_e,'j',_bin('+',_v('j',_e),1));
+      }
+    }
+    var _wc15=0;
+    while(_truthy(_bin("<",_v('i',_e),_call(_v('len',_e),[_v('left',_e)],_e)))&&_wc15++<1e7){
+      var _e=_scope(_e);
+      _method(_v('result',_e),"push",[_idx(_v('left',_e),_v('i',_e))],_e);
+            _set(_e,'i',_bin('+',_v('i',_e),1));
+    }
+    var _wc16=0;
+    while(_truthy(_bin("<",_v('j',_e),_call(_v('len',_e),[_v('right',_e)],_e)))&&_wc16++<1e7){
+      var _e=_scope(_e);
+      _method(_v('result',_e),"push",[_idx(_v('right',_e),_v('j',_e))],_e);
+            _set(_e,'j',_bin('+',_v('j',_e),1));
+    }
+    return _v('result',_e);
+    return null;
+  }));
+  _def(_e,'merge_sort',(function _f_merge_sort(_p_arr){
+    var _e=_scope(_e);
+    _def(_e,'arr',_p_arr);
+    _def(_e,'n',_call(_v('len',_e),[_v('arr',_e)],_e));
+    if(_truthy(_bin("<=",_v('n',_e),1))){
+  var _e=_scope(_e);
+      return _v('arr',_e);
+    }
+    _def(_e,'mid',_call(_v('int',_e),[_bin("/",_v('n',_e),2)],_e));
+    _def(_e,'left',_call(_v('merge_sort',_e),[_method(_v('arr',_e),"slice",[0,_v('mid',_e)],_e)],_e));
+    _def(_e,'right',_call(_v('merge_sort',_e),[_method(_v('arr',_e),"slice",[_v('mid',_e),_v('n',_e)],_e)],_e));
+    return _call(_v('merge',_e),[_v('left',_e),_v('right',_e)],_e);
+    return null;
+  }));
+  _def(_e,'binary_search',(function _f_binary_search(_p_arr,_p_target){
+    var _e=_scope(_e);
+    _def(_e,'arr',_p_arr);
+    _def(_e,'target',_p_target);
+    _def(_e,'lo',0);
+    _def(_e,'hi',_bin("-",_call(_v('len',_e),[_v('arr',_e)],_e),1));
+    var _wc17=0;
+    while(_truthy(_bin("<=",_v('lo',_e),_v('hi',_e)))&&_wc17++<1e7){
+      var _e=_scope(_e);
+      _def(_e,'mid',_call(_v('int',_e),[_bin("/",_bin("+",_v('lo',_e),_v('hi',_e)),2)],_e));
+      if(_truthy(_bin("==",_idx(_v('arr',_e),_v('mid',_e)),_v('target',_e)))){
+  var _e=_scope(_e);
+        return _v('mid',_e);
+      }
+      if(_truthy(_bin("<",_idx(_v('arr',_e),_v('mid',_e)),_v('target',_e)))){
+  var _e=_scope(_e);
+        var _t18=_bin("+",_v('mid',_e),1);
+        _set(_e,'lo',_t18);
+      } else {
+  var _e=_scope(_e);
+        var _t19=_bin("-",_v('mid',_e),1);
+        _set(_e,'hi',_t19);
+      }
+    }
+    return -(1);
+    return null;
+  }));
+  _def(_e,'data',[64,34,25,12,22,11,90,45,78,3,56]);
+  _vcg_print(["البيانات الأصلية:",_v('data',_e)]);
+  _vcg_print(["---"]);
+  _vcg_print(["Bubble Sort    :",_call(_v('bubble_sort',_e),[_v('data',_e)],_e)]);
+  _vcg_print(["Selection Sort :",_call(_v('selection_sort',_e),[_v('data',_e)],_e)]);
+  _vcg_print(["Insertion Sort :",_call(_v('insertion_sort',_e),[_v('data',_e)],_e)]);
+  _vcg_print(["Merge Sort     :",_call(_v('merge_sort',_e),[_v('data',_e)],_e)]);
+  _vcg_print(["---"]);
+  _vcg_print(["=== البحث الثنائي ==="]);
+  _def(_e,'sorted',_call(_v('merge_sort',_e),[_v('data',_e)],_e));
+  _vcg_print(["المصفوفة المرتبة:",_v('sorted',_e)]);
+  _vcg_print(["موقع 45:",_call(_v('binary_search',_e),[_v('sorted',_e),45],_e)]);
+  _vcg_print(["موقع 99:",_call(_v('binary_search',_e),[_v('sorted',_e),99],_e)]);
+  _vcg_print(["---"]);
+  _vcg_print(["=== إحصاءات ==="]);
+  _def(_e,'s',_call(_v('merge_sort',_e),[_v('data',_e)],_e));
+  _vcg_print(["أصغر قيمة :",_idx(_v('s',_e),0)]);
+  _vcg_print(["أكبر قيمة :",_idx(_v('s',_e),_bin("-",_call(_v('len',_e),[_v('s',_e)],_e),1))]);
+  _def(_e,'sum',0);
+  var _it20=_v('data',_e);
+  var _arr20=typeof _it20==='string'?_it20.split(''):(_it20 instanceof Array?_it20:Object.values(_it20));
+  for(var _j20=0;_j20<_arr20.length;_j20++){
+    var _e=_scope(_e);
+    _def(_e,'x',_arr20[_j20]);
+        _set(_e,'sum',_bin('+',_v('sum',_e),_v('x',_e)));
+  }
+  _vcg_print(["المجموع    :",_v('sum',_e)]);
+  _vcg_print(["المتوسط    :",_bin("/",_call(_v('float',_e),[_v('sum',_e)],_e),_call(_v('len',_e),[_v('data',_e)],_e))]);
+}catch(e){
+  var el=document.createElement('span');el.className='ln err';
+  el.textContent='Runtime Error: '+e.message;_OUT.appendChild(el);
+  console.error(e);
+}
+</script></body></html>
