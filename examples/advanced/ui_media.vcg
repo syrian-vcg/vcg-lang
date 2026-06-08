@@ -1,0 +1,113 @@
+# ============================================================
+# Syrian VCG v1.0  —  UI / Media / Web Example
+# Date: 2026-06-06
+# Features: youtube, facebook, instagram, xsocial,
+#            url, btn, key, video, img, h, l
+# ============================================================
+
+h(1, "Syrian VCG v1.0 — UI Demo")
+h(2, "Media & Social Elements")
+
+show("---")
+
+# ── Headings h(level, text) ──────────────────────────────
+h(1, "Heading Level 1")
+h(2, "Heading Level 2")
+h(3, "Heading Level 3")
+h(4, "Heading Level 4")
+
+show("---")
+
+# ── Lists l(item1, item2, ...) ───────────────────────────
+h(2, "Language Features")
+l(
+    "Full compiler written in C11",
+    "HTML + JavaScript output",
+    "Reactive store with $set / $get",
+    "Channels with send / recv",
+    "Social media integration",
+    "UI elements: btn, img, video, url"
+)
+
+show("---")
+
+# ── URLs url(href, text) ─────────────────────────────────
+h(2, "Useful Links")
+url("https://github.com/syrian-vcg/vcg-lang", "VCG on GitHub")
+url("https://syrian-vcg.github.io/vcg-lang",  "VCG Website")
+url("https://github.com/syrian-vcg/vcg-lang/releases", "Download v1.0")
+
+show("---")
+
+# ── Buttons btn(label, action) ───────────────────────────
+h(2, "Interactive Buttons")
+btn("Run Code",   "alert('VCG running!')")
+btn("Download",   "window.location='https://github.com/syrian-vcg/vcg-lang'")
+btn("Star on GitHub", "window.open('https://github.com/syrian-vcg/vcg-lang')")
+
+show("---")
+
+# ── Keyboard Shortcuts key(combo) ────────────────────────
+h(2, "Keyboard Shortcuts")
+show("Compile:")
+key("vcgc file.vcg")
+show("Run interpreter:")
+key("vcgc -r file.vcg")
+show("Show help:")
+key("vcgc --help")
+show("Shortcut combos:")
+key("Ctrl+S")
+key("Ctrl+C")
+key("Alt+F4")
+
+show("---")
+
+# ── Images img(src, alt, width) ──────────────────────────
+h(2, "Image Example")
+img(
+    "https://raw.githubusercontent.com/syrian-vcg/vcg-lang/main/assets/icon.svg",
+    "VCG Language Logo",
+    "120px"
+)
+
+show("---")
+
+# ── Social Media ─────────────────────────────────────────
+h(2, "Follow VCG on Social Media")
+
+facebook("https://facebook.com/syrianvcg",  "VCG on Facebook")
+instagram("@syrianvcg",                      "VCG on Instagram")
+xsocial("@syrianvcg",                        "VCG on X")
+
+show("---")
+
+# ── YouTube youtube(url_or_id) ───────────────────────────
+h(2, "Video Tutorial")
+youtube("dQw4w9WgXcQ")
+
+show("---")
+
+# ── Combined: App landing page ───────────────────────────
+h(1, "About Syrian VCG")
+
+l(
+    "Version: 1.0.0",
+    "Released: 2026-06-06",
+    "License: MIT",
+    "Language: C11 compiler",
+    "Output: HTML + JavaScript"
+)
+
+h(3, "Quick Start")
+key("git clone https://github.com/syrian-vcg/vcg-lang")
+key("cd vcg-lang && make")
+key("./vcgc hello.vcg")
+
+h(3, "Community")
+facebook("https://facebook.com/syrianvcg",  "Join Facebook Group")
+instagram("syrianvcg",                       "Follow on Instagram")
+xsocial("syrianvcg",                         "Follow on X")
+
+btn("Get Started", "window.location='https://syrian-vcg.github.io/vcg-lang'")
+
+show("=== VCG v1.0 | 2026-06-06 ===")
