@@ -1,0 +1,61 @@
+# ============================================
+# Syrian VCG — Variables & Types
+# ============================================
+
+# أنواع البيانات الأساسية
+let i    = 42
+let f    = 3.14
+let s    = "مرحبا"
+let b    = true
+let n    = nil
+let arr  = [1, 2, 3, 4, 5]
+let obj  = { name: "VCG", version: 2, active: true }
+
+show("=== الأنواع الأساسية ===")
+show("int   :", i,   "→", typeof(i))
+show("float :", f,   "→", typeof(f))
+show("string:", s,   "→", typeof(s))
+show("bool  :", b,   "→", typeof(b))
+show("nil   :", n,   "→", typeof(n))
+show("array :", arr, "→", typeof(arr))
+show("object:", obj, "→", typeof(obj))
+
+show("---")
+show("=== العمليات على النصوص ===")
+let greeting = "السلام عليكم"
+show("النص الأصلي  :", greeting)
+show("طول النص     :", greeting.len())
+show("كبير         :", greeting.upper())
+show("يبدأ بـ'ا'   :", greeting.startswith("ا"))
+show("يحتوي على 'عليكم':", greeting.contains("عليكم"))
+
+show("---")
+show("=== العمليات على المصفوفات ===")
+let nums = [10, 3, 7, 1, 9, 4, 6, 2, 8, 5]
+show("المصفوفة :", nums)
+show("الطول    :", len(nums))
+show("العنصر 0 :", nums[0])
+show("العنصر -1:", nums[-1])
+
+nums.push(99)
+show("بعد push(99):", nums)
+let popped = nums.pop()
+show("بعد pop()   :", nums, "← تمت إزالة:", popped)
+
+show("slice(2,5)  :", nums.slice(2, 5))
+show("join(', ')  :", nums.join(", "))
+show("contains(7) :", nums.contains(7))
+
+show("---")
+show("=== نطاق الأرقام range ===")
+let r = range(1, 6)
+show("range(1,6) =", r)
+let r2 = 1..10
+show("1..10      =", r2)
+
+show("---")
+show("=== ثوابت ===")
+const PI = 3.14159
+show("PI =", PI)
+show("sqrt(2) =", sqrt(2))
+show("sin(PI/2) =", sin(PI/2))
