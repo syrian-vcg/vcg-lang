@@ -1,0 +1,26 @@
+# ================================================================
+#  .gitattributes  —  GitHub Linguist language detection for VCG
+# ================================================================
+
+# Mark .vcg files as Syrian VCG Language
+*.vcg  linguist-language=VCG
+*.vcg  linguist-detectable=true
+*.vcg  linguist-documentation=false
+
+# Exclude examples from language stats (optional)
+# examples/**/*.vcg  linguist-documentation=true
+
+# Standard
+* text=auto
+*.c     text eol=lf
+*.h     text eol=lf
+*.vcg   text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.json  text eol=lf
+*.html  text eol=lf
+
+# Binary
+*.png   binary
+*.ico   binary
+*.svg   binary
