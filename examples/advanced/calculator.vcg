@@ -1,0 +1,104 @@
+# ============================================
+# Syrian VCG — Advanced Calculator
+# ============================================
+
+func is_prime(n) {
+    if n < 2 { return false }
+    if n == 2 { return true }
+    if n % 2 == 0 { return false }
+    let i = 3
+    while i * i <= n {
+        if n % i == 0 { return false }
+        i += 2
+    }
+    return true
+}
+
+func gcd(a, b) {
+    while b != 0 {
+        let tmp = b
+        b = a % b
+        a = tmp
+    }
+    return a
+}
+func lcm(a, b) { return (a / gcd(a,b)) * b }
+
+func sum_arr(arr) {
+    let s = 0
+    for x in arr { s += x }
+    return s
+}
+func avg_arr(arr) { return float(sum_arr(arr)) / len(arr) }
+func variance(arr) {
+    let m = avg_arr(arr)
+    let s = 0.0
+    for x in arr { s += (x - m) * (x - m) }
+    return s / len(arr)
+}
+func std_dev(arr) { return sqrt(variance(arr)) }
+
+show("=== الأعداد الأولية حتى 50 ===")
+let primes = []
+for i in range(2, 51) {
+    if is_prime(i) { primes.push(i) }
+}
+show(primes)
+show("عددها:", len(primes))
+
+show("---")
+show("=== القاسم المشترك الأكبر والمضاعف الأصغر ===")
+show("gcd(48, 18) =", gcd(48, 18))
+show("lcm(12, 8)  =", lcm(12, 8))
+show("gcd(100,75) =", gcd(100, 75))
+
+show("---")
+show("=== الإحصاء ===")
+let data = [23, 45, 12, 67, 34, 89, 56, 11, 78, 42]
+show("البيانات :", data)
+show("المجموع  :", sum_arr(data))
+show("المتوسط  :", avg_arr(data))
+show("التباين  :", variance(data))
+show("الانحراف المعياري:", std_dev(data))
+
+show("---")
+show("=== تحويل الأرقام ===")
+func to_binary(n) {
+    if n == 0 { return "0" }
+    let result = ""
+    let x = n
+    while x > 0 {
+        result = str(x % 2) + result
+        x = int(x / 2)
+    }
+    return result
+}
+func to_hex(n) {
+    let digits = "0123456789ABCDEF"
+    if n == 0 { return "0" }
+    let result = ""
+    let x = n
+    while x > 0 {
+        result = str(digits[x % 16]) + result
+        x = int(x / 16)
+    }
+    return "0x" + result
+}
+
+for n in [0, 1, 10, 42, 100, 255, 1024] {
+    show(n, "→ bin:", to_binary(n), "hex:", to_hex(n))
+}
+
+show("---")
+show("=== معادلة من الدرجة الثانية ===")
+func quadratic(a, b, c) {
+    let disc = b*b - 4*a*c
+    if disc < 0  { return "لا يوجد جذور حقيقية" }
+    if disc == 0 { return format("x = %s", str((-b) / (2*a))) }
+    let x1 = ((-b) + sqrt(disc)) / (2*a)
+    let x2 = ((-b) - sqrt(disc)) / (2*a)
+    return format("x1=%s, x2=%s", str(x1), str(x2))
+}
+show("x²-5x+6=0 :", quadratic(1, -5, 6))
+show("x²+2x+5=0 :", quadratic(1, 2, 5))
+show("x²-4=0    :", quadratic(1, 0, -4))
