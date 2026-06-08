@@ -1,0 +1,59 @@
+# ============================================
+# Syrian VCG — Loops & Control Flow
+# ============================================
+
+show("=== while ===")
+let i = 1
+while i <= 5 {
+    show("العدد:", i)
+    i += 1
+}
+
+show("---")
+show("=== repeat ===")
+repeat 4 {
+    show("تكرار!")
+}
+
+show("---")
+show("=== for in array ===")
+let fruits = ["تفاح", "موز", "برتقال", "عنب", "كرز"]
+for fruit in fruits {
+    show("الفاكهة:", fruit)
+}
+
+show("---")
+show("=== for in range ===")
+for x in range(1, 6) {
+    show(x, "² =", x * x)
+}
+
+show("---")
+show("=== for in string ===")
+let word = "VCG"
+for ch in word {
+    show("حرف:", ch)
+}
+
+show("---")
+show("=== break و continue ===")
+let n = 0
+while n < 20 {
+    n += 1
+    if n % 2 == 0 { continue }  # تخطي الزوجية
+    if n > 9 { break }           # توقف عند 9
+    show("فردي:", n)
+}
+
+show("---")
+show("=== for مع index باستخدام range ===")
+let colors = ["أحمر", "أخضر", "أزرق"]
+for idx in range(len(colors)) {
+    show(idx, ":", colors[idx])
+}
+
+show("---")
+show("=== جدول الضرب 7 ===")
+for k in 1..11 {
+    show("7 ×", k, "=", 7 * k)
+}
