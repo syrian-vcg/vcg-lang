@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>vcg-lang - لغة البرمجة الثورية لتوليد الواجهات</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            900: '#064e3b',
+                        }
+                    },
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts: Cairo -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 selection:bg-primary-500 selection:text-white">
+
+    <!-- Header / Navbar -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-900">
+        <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary-600 to-emerald-400 flex items-center justify-center shadow-lg shadow-primary-500/20">
+                    <span class="font-black text-xl text-slate-950">V</span>
+                </div>
+                <span class="text-2xl font-black tracking-wider bg-gradient-to-r from-emerald-400 to-primary-500 bg-clip-text text-transparent">vcg-lang</span>
+            </div>
+            
+            <!-- Navigation Links -->
+            <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-300">
+                <a href="#features" class="hover:text-primary-500 transition-colors">المميزات</a>
+                <a href="#demo" class="hover:text-primary-500 transition-colors">العرض الحي</a>
+                <a href="#how-it-works" class="hover:text-primary-500 transition-colors">آلية العمل</a>
+                <a href="#docs" class="hover:text-primary-500 transition-colors">التوثيق</a>
+            </nav>
+
+            <!-- Call Action / Github -->
+            <div class="flex items-center gap-4">
+                <a href="https://github.com" target="_blank" class="flex items-center gap-2 bg-slate-900 border border-slate-800 hover:border-primary-500/50 text-slate-100 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300">
+                    <i class="fab fa-github text-lg text-primary-500"></i>
+                    <span>المستودع</span>
+                </a>
+                <button onclick="toggleMobileMenu()" class="md:hidden text-slate-100 hover:text-primary-500 text-2xl">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="hidden md:hidden bg-slate-950 border-b border-slate-900 px-6 py-4 space-y-3">
+            <a href="#features" onclick="toggleMobileMenu()" class="block text-slate-300 hover:text-primary-500">المميزات</a>
+            <a href="#demo" onclick="toggleMobileMenu()" class="block text-slate-300 hover:text-primary-500">العرض الحي</a>
+            <a href="#how-it-works" onclick="toggleMobileMenu()" class="block text-slate-300 hover:text-primary-500">آلية العمل</a>
+            <a href="#docs" onclick="toggleMobileMenu()" class="block text-slate-300 hover:text-primary-500">التوثيق</a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-24 relative overflow-hidden">
+        <!-- Decorative blurred glowing circles -->
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <div class="absolute bottom-10 right-1/4 w-80 h-80 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+        <div class="container mx-auto px-4 text-center relative z-10">
+            <!-- Badges -->
+            <div class="inline-flex items-center gap-2 bg-slate-900 border border-emerald-500/30 text-emerald-400 text-xs px-4 py-1.5 rounded-full mb-8 shadow-sm">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>الإصدار التجريبي المستقر v1.0.0 متاح الآن</span>
+            </div>
+            
+            <!-- Headline -->
+            <h1 class="text-4xl md:text-6xl lg:text-7xl font-black text-white leading-tight max-w-5xl mx-auto mb-6">
+                اكتب كوداً بسيطاً، واحصل على واجهات ويب <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-primary-500 to-emerald-600">خارقة السرعة</span> باستخدام vcg-lang
+            </h1>
+
+            <!-- Subheading -->
+            <p class="text-slate-400 text-lg md:text-xl max-w-3xl mx-auto mb-10 leading-relaxed">
+                مشروع ثوري مفتوح المصدر مصمم خصيصاً لتسهيل بناء واجهات الويب التفاعلية وتوليدها بمرونة متناهية وبأقل سطر برمي ممكن.
+            </p>
+
+            <!-- CTAs -->
+            <div class="flex flex-wrap items-center justify-center gap-4">
+                <a href="#demo" class="bg-primary-600 hover:bg-primary-500 text-slate-950 font-bold px-8 py-4 rounded-xl shadow-lg shadow-primary-500/20 transform hover:-translate-y-1 transition-all duration-300 flex items-center gap-2">
+                    <span>ابدأ التجربة التفاعلية</span>
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+                <a href="#docs" class="bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 px-8 py-4 rounded-xl font-bold hover:text-white transition-all duration-300 flex items-center gap-2">
+                    <i class="fa-solid fa-book-open text-primary-500"></i>
+                    <span>اقرأ التوثيق</span>
+                </a>
+            </div>
+
+            <!-- Specs/Counters -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mt-20 border-t border-slate-900 pt-10">
+                <div class="text-center">
+                    <p class="text-3xl md:text-4xl font-extrabold text-white mb-1">10x</p>
+                    <p class="text-xs md:text-sm text-slate-400">أسرع في الإنشاء</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-3xl md:text-4xl font-extrabold text-primary-500 mb-1">&lt; 15KB</p>
+                    <p class="text-xs md:text-sm text-slate-400">حجم المكتبة المخرجة</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-3xl md:text-4xl font-extrabold text-white mb-1">100%</p>
+                    <p class="text-xs md:text-sm text-slate-400">متوافق مع محركات الويب</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-3xl md:text-4xl font-extrabold text-emerald-400 mb-1">مفتوح</p>
+                    <p class="text-xs md:text-sm text-slate-400">المصدر ومجاني بالكامل</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-24 bg-slate-900/40 border-y border-slate-900 relative">
+        <div class="container mx-auto px-4">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-3xl md:text-4xl font-black text-white mb-4">
+                    لماذا تختار <span class="text-primary-500">vcg-lang</span>؟
+                </h2>
+                <p class="text-slate-400">
+                    نحن لا نبني لغة جديدة لتعقيدك، بل نوفر طريقة أبسط للتعبير عن واجهات الويب والأدوات البرمجية المعقدة في ثوانٍ.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="bg-slate-950 p-8 rounded-2xl border border-slate-900 hover:border-primary-500/30 transition-all duration-300 hover:-translate-y-1 group">
+                    <div class="w-12 h-12 rounded-xl bg-primary-500/10 flex items-center justify-center text-primary-500 mb-6 group-hover:bg-primary-500 group-hover:text-slate-950 transition-all duration-300">
+                        <i class="fa-solid fa-bolt text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">أداء نقي وبلا قيود</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        المترجم الخاص بـ vcg-lang ينتج كود HTML/CSS نظيفاً ومتجاوباً بالكامل من غير تكرار برمي أو تعقيدات معتادة في بيئات العمل الأخرى.
+                    </p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="bg-slate-950 p-8 rounded-2xl border border-slate-900 hover:border-primary-500/30 transition-all duration-300 hover:-translate-y-1 group">
+                    <div class="w-12 h-12 rounded-xl bg-primary-500/10 flex items-center justify-center text-primary-500 mb-6 group-hover:bg-primary-500 group-hover:text-slate-950 transition-all duration-300">
+                        <i class="fa-solid fa-code text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">صياغة (Syntax) فائق البساطة</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        لقد صممنا القواعد النحوية للغة لتكون مقروءة للبشر ومفهومة للحواسيب بشكل فوري، فلا حاجة لقضاء أيام في فهم طريقة التوثيق والتعلم.
+                    </p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="bg-slate-950 p-8 rounded-2xl border border-slate-900 hover:border-primary-500/30 transition-all duration-300 hover:-translate-y-1 group">
+                    <div class="w-12 h-12 rounded-xl bg-primary-500/10 flex items-center justify-center text-primary-500 mb-6 group-hover:bg-primary-500 group-hover:text-slate-950 transition-all duration-300">
+                        <i class="fa-solid fa-mobile-screen text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">جاهزية تامة للأجهزة</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        كافة المخرجات التي تولدها vcg-lang تدعم الشاشات الذكية، الهواتف المحمولة، والشاشات العملاقة دون الحاجة لكتابة كود إضافي مخصص.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Code Interactive Playground / Demo -->
+    <section id="demo" class="py-24 relative">
+        <div class="container mx-auto px-4">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-3xl md:text-4xl font-black text-white mb-4">
+                    كيف تبدو لغة <span class="text-primary-500">vcg-lang</span>؟
+                </h2>
+                <p class="text-slate-400">
+                    شاهد المقارنة بين كود لغة vcg-lang وبين النتيجة البرمجية الصافية والجميلة الناتجة عنها.
+                </p>
+            </div>
+
+            <!-- Interactive Switcher -->
+            <div class="max-w-4xl mx-auto bg-slate-900 rounded-3xl border border-slate-800 overflow-hidden shadow-2xl">
+                <!-- Tab Buttons -->
+                <div class="flex border-b border-slate-800 bg-slate-950 p-2">
+                    <button id="btn-code" onclick="switchTab('code')" class="flex-1 py-3 px-4 text-center font-bold text-sm text-primary-500 bg-slate-900 rounded-xl transition-all duration-300 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-code"></i>
+                        <span>كود vcg-lang المصدر</span>
+                    </button>
+                    <button id="btn-preview" onclick="switchTab('preview')" class="flex-1 py-3 px-4 text-center font-bold text-sm text-slate-400 hover:text-white transition-all duration-300 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-eye"></i>
+                        <span>المخرجات الحية المتولدة</span>
+                    </button>
+                </div>
+
+                <!-- Content Areas -->
+                <div class="p-6 md:p-8 min-h-[300px]">
+                    <!-- Source Code -->
+                    <div id="tab-code" class="block">
+                        <pre class="text-left text-sm md:text-base text-emerald-400 font-mono bg-slate-950 p-6 rounded-2xl overflow-x-auto border border-slate-900 shadow-inner leading-relaxed"><code><span class="text-slate-500"># تعريف بطاقة مستخدم تفاعلية</span>
+<span class="text-pink-500">Card</span> UserProfile {
+    <span class="text-blue-400">title</span>: "أحمد المبرمج",
+    <span class="text-blue-400">role</span>: "مطور واجهات أول",
+    <span class="text-blue-400">avatar</span>: "user-img.jpg",
+    <span class="text-blue-400">theme</span>: "emerald",
+    
+    <span class="text-pink-500">Button</span>("تواصل معي") {
+        <span class="text-blue-400">action</span>: "link",
+        <span class="text-blue-400">url</span>: "mailto:ahmed@example.com"
+    }
+}</code></pre>
+                    </div>
+
+                    <!-- Visual Preview -->
+                    <div id="tab-preview" class="hidden flex items-center justify-center py-8 bg-slate-950/50 rounded-2xl border border-slate-900">
+                        <div class="w-full max-w-sm bg-slate-950 border border-slate-800 p-6 rounded-2xl text-center shadow-lg relative overflow-hidden">
+                            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 to-primary-600"></div>
+                            <div class="w-20 h-20 rounded-full bg-slate-800 mx-auto mb-4 border-2 border-primary-500 flex items-center justify-center text-4xl text-primary-500 font-black">
+                                <i class="fa-solid fa-user-astronaut"></i>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-1">أحمد المبرمج</h4>
+                            <p class="text-xs text-primary-400 font-semibold mb-4 tracking-wider">مطور واجهات أول</p>
+                            <p class="text-sm text-slate-400 mb-6">تم توليد هذه البطاقة البرمجية تلقائياً وبأقصى درجات الكفاءة باستخدام vcg-lang.</p>
+                            <a href="mailto:ahmed@example.com" class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-500 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-sm transition-colors duration-300">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span>تواصل معي</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it Works section -->
+    <section id="how-it-works" class="py-24 bg-slate-900/40 border-t border-slate-900">
+        <div class="container mx-auto px-4">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-3xl md:text-4xl font-black text-white mb-4">
+                    ثلاث خطوات بسيطة <span class="text-primary-500">للانطلاق</span>
+                </h2>
+                <p class="text-slate-400">
+                    لا حاجة للمنشآت الضخمة ولا البيئات المعقدة لتنصيب اللغة.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto relative">
+                <!-- Step 1 -->
+                <div class="text-center relative">
+                    <div class="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 text-primary-500 flex items-center justify-center text-2xl font-black mx-auto mb-6 shadow-lg">
+                        01
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">تثبيت الحزمة</h3>
+                    <p class="text-slate-400 text-sm max-w-xs mx-auto">
+                        ثبّت المترجم vcg من خلال مستودع جيت هاب بلمحة واحدة.
+                    </p>
+                </div>
+                <!-- Step 2 -->
+                <div class="text-center relative">
+                    <div class="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 text-primary-500 flex items-center justify-center text-2xl font-black mx-auto mb-6 shadow-lg">
+                        02
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">اكتب الشيفرة</h3>
+                    <p class="text-slate-400 text-sm max-w-xs mx-auto">
+                        قم بكتابة ملفات بملحق `.vcg` البسيط والواضح للمشاريع.
+                    </p>
+                </div>
+                <!-- Step 3 -->
+                <div class="text-center relative">
+                    <div class="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 text-primary-500 flex items-center justify-center text-2xl font-black mx-auto mb-6 shadow-lg">
+                        03
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">الإنتاج والتشغيل</h3>
+                    <p class="text-slate-400 text-sm max-w-xs mx-auto">
+                        شغّل أمر البناء لتحصل على كود ويب خارق الأداء فوري.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Documentation Preview / CTA -->
+    <section id="docs" class="py-24 relative overflow-hidden">
+        <div class="container mx-auto px-4 max-w-5xl">
+            <div class="bg-gradient-to-tr from-slate-900 to-slate-950 border border-slate-800 rounded-3xl p-8 md:p-16 relative overflow-hidden">
+                <!-- Background effect -->
+                <div class="absolute -right-20 -top-20 w-80 h-80 bg-primary-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+                
+                <div class="relative z-10 grid md:grid-cols-2 gap-10 items-center">
+                    <div>
+                        <span class="text-primary-500 text-sm font-bold tracking-wider uppercase mb-2 block">التوثيق الشامل</span>
+                        <h2 class="text-3xl md:text-4xl font-black text-white mb-6 leading-tight">
+                            جاهز لبدء تجربتك الأولى مع vcg-lang؟
+                        </h2>
+                        <p class="text-slate-400 text-sm md:text-base leading-relaxed mb-8">
+                            اكتشف التوثيق الشامل الذي يشرح كافة الخيارات والمكونات والسمات البرمجية لتستمتع بعملية توليد فائقة السهولة والسرعة.
+                        </p>
+                        <a href="#" class="inline-flex items-center gap-3 bg-gradient-to-r from-emerald-500 to-primary-600 hover:from-emerald-400 hover:to-primary-500 text-slate-950 font-black px-8 py-4 rounded-xl shadow-lg transition-all duration-300 hover:scale-105">
+                            <span>ابدأ قراءة التوثيق المطور</span>
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="bg-slate-950/60 p-6 rounded-2xl border border-slate-900">
+                        <div class="flex items-center justify-between mb-4 border-b border-slate-900 pb-3">
+                            <span class="text-xs text-slate-500 font-mono">الدليل السريع من الطرفية</span>
+                            <div class="flex gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-red-500/50"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/50"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-green-500/50"></span>
+                            </div>
+                        </div>
+                        <pre class="text-left text-xs md:text-sm font-mono text-slate-300 space-y-2 overflow-x-auto">
+<code><span class="text-slate-500"># قم بتثبيت الأداة عالمياً</span>
+$ npm install -g vcg-compiler
+
+<span class="text-slate-500"># أنشئ ملفك الأول</span>
+$ echo "Card MyCard { title: 'مرحباً' }" > app.vcg
+
+<span class="text-slate-500"># ابنِ المشروع الآن</span>
+$ vcg-compiler app.vcg -o index.html
+
+<span class="text-emerald-400">✓ تم التوليد بنجاح في 12 مللي ثانية!</span></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 border-t border-slate-900 py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-slate-900 pb-8 mb-8">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center text-slate-950 font-black text-sm">
+                        V
+                    </div>
+                    <span class="text-xl font-black text-white">vcg-lang</span>
+                </div>
+                <p class="text-slate-500 text-sm text-center md:text-right">
+                    مشروع ومستودع مفتوح المصدر على <a href="https://github.com" target="_blank" class="text-primary-500 hover:underline">GitHub</a> مرخص تحت رخصة MIT.
+                </p>
+            </div>
+            
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-600">
+                <p>&copy; 2024 vcg-lang. جميع الحقوق محفوظة لرواد ومطوري المشروع.</p>
+                <div class="flex gap-6">
+                    <a href="#" class="hover:text-primary-500 transition-colors">سياسة الخصوصية</a>
+                    <a href="#" class="hover:text-primary-500 transition-colors">شروط الاستخدام</a>
+                    <a href="#" class="hover:text-primary-500 transition-colors">تواصل معنا</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Simple Page Javascript Interactivity -->
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        function switchTab(tab) {
+            const btnCode = document.getElementById('btn-code');
+            const btnPreview = document.getElementById('btn-preview');
+            const tabCode = document.getElementById('tab-code');
+            const tabPreview = document.getElementById('tab-preview');
+
+            if (tab === 'code') {
+                // Activate Code tab
+                btnCode.classList.add('text-primary-500', 'bg-slate-900');
+                btnCode.classList.remove('text-slate-400', 'hover:text-white');
+                
+                btnPreview.classList.add('text-slate-400', 'hover:text-white');
+                btnPreview.classList.remove('text-primary-500', 'bg-slate-900');
+
+                tabCode.classList.remove('hidden');
+                tabCode.classList.add('block');
+                tabPreview.classList.add('hidden');
+                tabPreview.classList.remove('block');
+            } else {
+                // Activate Preview tab
+                btnPreview.classList.add('text-primary-500', 'bg-slate-900');
+                btnPreview.classList.remove('text-slate-400', 'hover:text-white');
+                
+                btnCode.classList.add('text-slate-400', 'hover:text-white');
+                btnCode.classList.remove('text-primary-500', 'bg-slate-900');
+
+                tabPreview.classList.remove('hidden');
+                tabPreview.classList.add('block');
+                tabCode.classList.add('hidden');
+                tabCode.classList.remove('block');
+            }
+        }
+    </script>
+</body>
+</html>
