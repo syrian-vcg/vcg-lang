@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:gravity="center"
+    android:background="@color/bg_dark" android:padding="40dp">
+
+    <ImageView android:id="@+id/splash_logo"
+        android:layout_width="120dp" android:layout_height="120dp"
+        android:src="@drawable/ic_vcg_logo"
+        android:layout_marginBottom="24dp"/>
+
+    <TextView android:id="@+id/splash_title"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="Syrian VCG Editor"
+        android:textSize="26sp" android:textStyle="bold"
+        android:textColor="@color/accent_green"
+        android:fontFamily="sans-serif-medium"/>
+
+    <TextView android:id="@+id/splash_subtitle"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="محرر لغة VCG البرمجية السورية"
+        android:textSize="14sp" android:textColor="@color/text_muted"
+        android:layout_marginTop="8dp"/>
+
+    <TextView android:id="@+id/splash_version"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="v1.0.0 · 2026-06-06"
+        android:textSize="12sp" android:textColor="@color/text_muted"
+        android:fontFamily="monospace"
+        android:layout_marginTop="4dp"/>
+</LinearLayout>
