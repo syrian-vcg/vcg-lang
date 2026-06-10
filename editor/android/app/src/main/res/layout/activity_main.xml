@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="@color/bg_dark">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
+        <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
+            android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
+            android:background="@color/surface_dark"
+            app:title="VCG Editor" app:titleTextColor="@color/accent_green"/>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <TextView android:id="@+id/empty_view"
+            android:layout_width="match_parent" android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center" android:visibility="gone"
+            android:text="لا يوجد ملفات\nاضغط + لإنشاء ملف جديد"
+            android:textColor="@color/text_muted" android:textSize="16sp"
+            android:textAlignment="center"/>
+
+        <androidx.recyclerview.widget.RecyclerView android:id="@+id/recycler_files"
+            android:layout_width="match_parent" android:layout_height="0dp"
+            android:layout_weight="1"
+            android:padding="8dp"
+            android:clipToPadding="false"/>
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_new"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:contentDescription="New File"
+        android:src="@android:drawable/ic_input_add"
+        app:backgroundTint="@color/olive_green"/>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
