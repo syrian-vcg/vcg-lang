@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="128" android:viewportHeight="128">
+
+    <!-- Background: dark olive green -->
+    <path android:fillColor="#1a3a0a"
+        android:pathData="M22,0 L106,0 Q128,0 128,22 L128,106 Q128,128 106,128 L22,128 Q0,128 0,106 L0,22 Q0,0 22,0 Z"/>
+
+    <!-- Gradient overlay -->
+    <path android:fillColor="#2d5a1b" android:fillAlpha="0.5"
+        android:pathData="M0,0 L128,0 L0,128 Z"/>
+
+    <!-- Star 1 - top left small -->
+    <path android:fillColor="#FFFFFF" android:fillAlpha="0.95"
+        android:pathData="M26,16 L28.4,23.3 L36,23.3 L30,27.8 L32.4,35.1 L26,30.6 L19.6,35.1 L22,27.8 L16,23.3 L23.6,23.3 Z"/>
+
+    <!-- Star 2 - top right medium -->
+    <path android:fillColor="#FFFFFF" android:fillAlpha="0.95"
+        android:pathData="M96,10 L99.5,21 L111,21 L102,27.8 L105.5,38.8 L96,32 L86.5,38.8 L90,27.8 L81,21 L92.5,21 Z"/>
+
+    <!-- Star 3 - center large -->
+    <path android:fillColor="#FFFFFF" android:fillAlpha="0.98"
+        android:pathData="M64,6 L68.9,21.5 L85,21.5 L72.5,30.5 L77.5,46 L64,37 L50.5,46 L55.5,30.5 L43,21.5 L59.1,21.5 Z"/>
+
+    <!-- VCG text - V -->
+    <path android:fillColor="#FFFFFF" android:fillAlpha="0.97"
+        android:pathData="M28,58 L36,80 L44,58 L50,58 L38,88 L34,88 L22,58 Z"/>
+
+    <!-- VCG text - C -->
+    <path android:fillColor="#FFFFFF" android:fillAlpha="0.97"
+        android:pathData="M74,64 Q66,58 58,64 Q52,70 52,73 Q52,76 58,82 Q66,88 74,82 L78,86 Q68,94 56,86 Q46,78 46,73 Q46,68 56,60 Q68,52 78,60 Z"/>
+
+    <!-- VCG text - G -->
+    <path android:fillColor="#FFFFFF" android:fillAlpha="0.97"
+        android:pathData="M106,64 Q98,58 90,64 Q84,70 84,73 Q84,76 90,82 Q98,88 106,82 L106,76 L96,76 L96,70 L112,70 L112,86 Q102,94 88,86 Q78,78 78,73 Q78,68 88,60 Q102,52 112,64 Z"/>
+</vector>
