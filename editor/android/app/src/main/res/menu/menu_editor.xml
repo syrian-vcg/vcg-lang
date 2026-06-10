@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/action_save"
+        android:title="حفظ"
+        android:icon="@android:drawable/ic_menu_save"
+        app:showAsAction="ifRoom|withText"/>
+    <item android:id="@+id/action_run"
+        android:title="تشغيل"
+        android:icon="@android:drawable/ic_media_play"
+        app:showAsAction="ifRoom|withText"/>
+    <item android:id="@+id/action_undo"
+        android:title="تراجع"
+        app:showAsAction="never"/>
+    <item android:id="@+id/action_share"
+        android:title="مشاركة"
+        app:showAsAction="never"/>
+</menu>
