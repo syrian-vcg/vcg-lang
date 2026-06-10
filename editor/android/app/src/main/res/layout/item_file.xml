@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:layout_margin="4dp"
+    app:cardBackgroundColor="@color/surface_dark"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical"
+        android:padding="12dp">
+
+        <!-- VCG icon -->
+        <TextView android:layout_width="40dp" android:layout_height="40dp"
+            android:text="V" android:textSize="18sp" android:textStyle="bold"
+            android:textColor="@color/bg_dark" android:gravity="center"
+            android:background="@drawable/bg_file_icon"/>
+
+        <!-- File info -->
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="vertical"
+            android:paddingStart="12dp">
+            <TextView android:id="@+id/file_name"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/text_primary" android:textSize="15sp"
+                android:textStyle="bold" android:fontFamily="monospace"/>
+            <TextView android:id="@+id/file_preview"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/text_muted" android:textSize="12sp"
+                android:maxLines="1" android:ellipsize="end"
+                android:paddingTop="2dp"/>
+            <TextView android:id="@+id/file_meta"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/accent_green" android:textSize="11sp"
+                android:fontFamily="monospace"/>
+        </LinearLayout>
+
+        <!-- Delete button -->
+        <ImageButton android:id="@+id/btn_delete"
+            android:layout_width="36dp" android:layout_height="36dp"
+            android:src="@android:drawable/ic_menu_delete"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:tint="@color/text_muted"
+            android:contentDescription="Delete"/>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
