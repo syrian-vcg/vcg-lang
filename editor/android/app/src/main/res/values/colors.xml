@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- VCG Dark Olive Theme -->
+    <color name="bg_dark">#060C0E</color>
+    <color name="surface_dark">#0F1E10</color>
+    <color name="code_bg">#081208</color>
+    <color name="border_color">#1A3A1A</color>
+    <color name="olive_green">#2D5A1B</color>
+    <color name="accent_green">#4DC95A</color>
+    <color name="accent_light">#A8E080</color>
+    <color name="gold">#F5C842</color>
+    <color name="text_primary">#E8F5E0</color>
+    <color name="text_muted">#4A6A4A</color>
+    <color name="error_red">#F87171</color>
+    <!-- Status/Nav bar -->
+    <color name="status_bar">#060C0E</color>
+</resources>
