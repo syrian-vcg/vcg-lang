@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VCG Editor</string>
+    <string name="app_name_full">Syrian VCG Editor</string>
+    <string name="version">1.0.0</string>
+    <string name="new_file">ملف جديد</string>
+    <string name="save">حفظ</string>
+    <string name="run">تشغيل</string>
+    <string name="settings">الإعدادات</string>
+    <string name="about">حول التطبيق</string>
+    <string name="delete">حذف</string>
+    <string name="cancel">إلغاء</string>
+    <string name="share">مشاركة</string>
+    <string name="undo">تراجع</string>
+    <string name="empty_files">لا يوجد ملفات\nاضغط + لإنشاء ملف جديد</string>
+</resources>
