@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Syrian Private Programming VCG v1.0 — لغة برمجة سورية حقيقية">
+<meta property="og:title" content="Syrian VCG Language v1.0">
+<meta property="og:image" content="assets/icon_256.png">
+<title>Syrian Private Programming VCG v1.0</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+:root{--bg:#060c0e;--surf:#0d1a0f;--panel:#0f1e10;--border:#1a3a1a;--border2:#2d5a1b;--accent:#4dc95a;--accent2:#a8e080;--gold:#f5c842;--text:#e8f5e0;--muted:#4a6a4a;--code:#081208;--olive:#2d5a1b;--olive-dk:#1a3a0a}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;overflow-x:hidden}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* HERO */
+.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem 2rem;text-align:center;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 70% at 50% -5%,rgba(45,90,27,.4) 0%,transparent 70%),radial-gradient(ellipse 40% 40% at 85% 70%,rgba(77,201,90,.07) 0%,transparent 60%);pointer-events:none}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(45,90,27,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(45,90,27,.05) 1px,transparent 1px);background-size:48px 48px;pointer-events:none}
+.hero-particles{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.particle{position:absolute;border-radius:50%;animation:floatp linear infinite}
+@keyframes floatp{0%{transform:translateY(100vh);opacity:0}10%{opacity:.6}90%{opacity:.2}100%{transform:translateY(-30px);opacity:0}}
+.logo-ring{width:110px;height:110px;background:linear-gradient(135deg,var(--olive-dk),var(--olive));border-radius:24px;display:flex;align-items:center;justify-content:center;margin:0 auto 2rem;box-shadow:0 0 60px rgba(77,201,90,.35),0 0 100px rgba(45,90,27,.2);position:relative;z-index:1}
+.logo-ring svg{width:70px;height:70px}
+.badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(45,90,27,.2);border:1px solid rgba(77,201,90,.25);border-radius:100px;padding:.35rem 1.2rem;font-size:.8rem;color:var(--accent2);margin-bottom:1.5rem;position:relative;z-index:1}
+.badge::before{content:'★';color:var(--gold)}
+h1.hero-title{font-size:clamp(2.8rem,7vw,5.5rem);font-weight:900;line-height:1.05;background:linear-gradient(135deg,var(--text) 20%,var(--accent) 60%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:1rem;position:relative;z-index:1}
+.hero-version{display:inline-block;background:var(--olive);color:white;font-family:'JetBrains Mono',monospace;font-size:.88rem;padding:.3rem .9rem;border-radius:6px;margin-bottom:1.5rem;position:relative;z-index:1}
+.hero-sub{font-size:1.1rem;color:var(--muted);max-width:600px;margin:0 auto 2.5rem;line-height:1.9;position:relative;z-index:1}
+.hero-btns{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:center;position:relative;z-index:1}
+.btn{padding:.7rem 1.8rem;border-radius:10px;font-family:'Cairo',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;border:none;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,var(--olive),#4a9020);color:white;box-shadow:0 4px 20px rgba(45,90,27,.4)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(77,201,90,.4)}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-dark{background:#111;color:white;border:1px solid #333}
+.btn-dark:hover{background:#222}
+
+/* STATS */
+.stats-bar{display:flex;justify-content:center;gap:2.5rem;flex-wrap:wrap;padding:2.5rem;border-top:1px solid var(--border);border-bottom:1px solid var(--border);max-width:1000px;margin:0 auto}
+.stat{text-align:center}.stat-val{font-size:2rem;font-weight:900;color:var(--accent)}.stat-lbl{font-size:.78rem;color:var(--muted);margin-top:.2rem}
+
+/* LAYOUT */
+.container{max-width:1100px;margin:0 auto;padding:0 2rem}
+section{padding:5rem 0}
+.sec-title{font-size:1.9rem;font-weight:900;margin-bottom:.5rem}.sec-title span{color:var(--accent)}
+.sec-sub{color:var(--muted);margin-bottom:2.5rem;font-size:1.05rem}
+.divider{width:60px;height:4px;background:linear-gradient(90deg,var(--olive),var(--accent));border-radius:2px;margin:.8rem 0 2rem}
+
+/* KEYWORDS GRID */
+.kw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem}
+.kw-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.4rem;transition:all .2s}
+.kw-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.kw-icon{font-size:1.6rem;margin-bottom:.6rem}
+.kw-tag{font-family:'JetBrains Mono',monospace;font-size:.88rem;color:#ff9040;font-weight:700;margin-bottom:.3rem}
+.kw-desc{font-size:.84rem;color:var(--muted);line-height:1.6}
+.kw-ex{font-family:'JetBrains Mono',monospace;font-size:.74rem;color:#4dc95a;margin-top:.4rem;opacity:.8}
+.kw-badge{display:inline-block;font-size:.65rem;padding:.1rem .4rem;border-radius:4px;font-weight:700;margin-top:.3rem}
+.new-badge{background:rgba(245,200,66,.15);color:var(--gold);border:1px solid rgba(245,200,66,.3)}
+.ui-badge{background:rgba(77,201,90,.1);color:var(--accent);border:1px solid rgba(77,201,90,.2)}
+.social-badge{background:rgba(24,119,242,.15);color:#60a5fa;border:1px solid rgba(24,119,242,.3)}
+
+/* IDE */
+.ide{background:var(--surf);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.ide-header{display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.3);padding:.6rem 1rem;border-bottom:1px solid var(--border)}
+.ide-dots{display:flex;gap:.4rem}.ide-dot{width:12px;height:12px;border-radius:50%}
+.ide-dot:nth-child(1){background:#ff5f57}.ide-dot:nth-child(2){background:#febc2e}.ide-dot:nth-child(3){background:#28c840}
+.ide-filename{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--muted)}
+.ide-tabs{display:flex;background:var(--panel);border-bottom:1px solid var(--border);gap:.2rem;padding:.4rem .4rem 0;overflow-x:auto}
+.tab{padding:.35rem .9rem;border-radius:8px 8px 0 0;font-size:.78rem;cursor:pointer;color:var(--muted);font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .15s}
+.tab.active{background:var(--code);color:var(--text)}.tab:hover:not(.active){color:var(--accent)}
+.ide-body{display:grid;grid-template-columns:1fr 1fr;min-height:420px}
+@media(max-width:720px){.ide-body{grid-template-columns:1fr}}
+.code-pane{background:var(--code);border-left:1px solid var(--border);padding:1.2rem}
+.out-pane{background:var(--surf);padding:1.2rem;overflow-y:auto;max-height:420px}
+.pane-lbl{font-size:.7rem;color:var(--muted);margin-bottom:.7rem;text-transform:uppercase;letter-spacing:.1em;display:flex;align-items:center;gap:.4rem}
+.pane-lbl::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.code-area{background:transparent;border:none;outline:none;width:100%;resize:none;height:330px;font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.85;color:var(--text);caret-color:var(--accent)}
+.run-btn{width:100%;margin-top:.8rem;padding:.65rem;background:linear-gradient(135deg,var(--olive),#4a9020);color:white;font-weight:900;font-size:.95rem;font-family:'Cairo',sans-serif;border:none;border-radius:8px;cursor:pointer;transition:all .2s}
+.run-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(77,201,90,.3)}
+#output{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:2;color:var(--accent2);min-height:160px}
+.out-line{display:block;padding:.1rem .3rem;border-radius:4px}.out-line:hover{background:rgba(77,201,90,.04)}
+.out-err{color:#f87171}.out-html-wrap{margin:.4rem 0}
+
+/* SOCIAL DEMOS */
+.social-row{display:flex;flex-wrap:wrap;gap:.8rem;margin:1rem 0}
+.vcg-social{display:inline-flex;align-items:center;gap:.5rem;padding:.5rem 1.2rem;border-radius:8px;text-decoration:none;font-weight:700;font-size:.9rem;transition:all .2s;color:white}
+.vcg-social:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.4)}
+.vcg-fb{background:#1877f2}.vcg-ig{background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)}.vcg-x{background:#000;border:1px solid #333}
+.vcg-btn-d{background:linear-gradient(135deg,var(--olive),#4a9020);color:white;border:none;padding:.6rem 1.5rem;border-radius:8px;font-weight:700;cursor:pointer;margin:.25rem;font-family:'Cairo',sans-serif;transition:all .2s}
+.vcg-btn-d:hover{transform:translateY(-2px)}
+.vcg-key-d{background:#1a3a0a;color:#a8e080;border:1px solid #2d5a1b;border-radius:5px;padding:.2rem .6rem;font-family:monospace;font-size:.85rem;box-shadow:0 2px 0 #0a1a05;display:inline-block;margin:.2rem}
+.vcg-list-d{list-style:none;padding:.5rem 0}.vcg-list-d li{padding:.25rem .5rem;border-right:3px solid #2d5a1b;margin:.15rem 0;color:#e8f5e0}
+
+/* INSTALL */
+.install-box{background:var(--code);border:1px solid var(--border);border-radius:12px;padding:1.5rem;font-family:'JetBrains Mono',monospace;font-size:.85rem;line-height:2.2}
+.prompt{color:var(--olive)}.cmd{color:var(--text)}.cmt{color:var(--muted)}
+
+/* FOOTER */
+footer{text-align:center;padding:3rem 2rem;border-top:1px solid var(--border);color:var(--muted);font-size:.85rem}
+footer strong{color:var(--accent)}
+</style>
+</head>
+<body>
+
+<div class="hero-particles" id="particles"></div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div><div class="hero-grid"></div>
+  <div class="logo-ring">
+    <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#1a3a0a"/>
+          <stop offset="100%" stop-color="#2d5a1b"/>
+        </linearGradient>
+        <filter id="glow"><feGaussianBlur stdDeviation="2.5" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/></filter>
+      </defs>
+      <rect x="0" y="0" width="128" height="128" rx="22" fill="url(#bg)"/>
+      <g filter="url(#glow)" opacity=".95">
+        <polygon points="26,16 28.4,23.3 36,23.3 30,27.8 32.4,35.1 26,30.6 19.6,35.1 22,27.8 16,23.3 23.6,23.3" fill="white"/>
+        <polygon points="96,10 99.5,21 111,21 102,27.8 105.5,38.8 96,32 86.5,38.8 90,27.8 81,21 92.5,21" fill="white"/>
+        <polygon points="64,6 68.9,21.5 85,21.5 72.5,30.5 77.5,46 64,37 50.5,46 55.5,30.5 43,21.5 59.1,21.5" fill="white"/>
+      </g>
+      <text x="64" y="88" font-family="'Segoe UI',Arial,sans-serif" font-weight="900" font-size="34" letter-spacing="1" text-anchor="middle" fill="white" opacity=".97">VCG</text>
+      <text x="64" y="110" font-family="'Segoe UI',Arial,sans-serif" font-size="10" letter-spacing="2" text-anchor="middle" fill="#a8e080" opacity=".85">SYRIAN</text>
+    </svg>
+  </div>
+  <div class="badge">Syrian Private Programming Language</div>
+  <div class="hero-version">v1.0.0 — 2026-06-06</div>
+  <h1 class="hero-title">لغة VCG البرمجية<br>السورية</h1>
+  <p class="hero-sub">لغة برمجة حقيقية مفتوحة المصدر. مترجم C11 كامل، مخرج HTML+JS، عناصر UI مدمجة، وسائل تواصل اجتماعي، فيديو، صور، وأكثر.</p>
+  <div class="hero-btns">
+    <a href="#demo"    class="btn btn-primary">▶ جرّب الآن</a>
+    <a href="https://github.com/syrian-vcg/vcg-lang" target="_blank" class="btn btn-dark">⭐ GitHub</a>
+    <a href="#install" class="btn btn-ghost">⬇ تثبيت</a>
+    <a href="#keywords" class="btn btn-ghost">📖 الكلمات</a>
+  </div>
+</section>
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-val">38+</div><div class="stat-lbl">كلمة محجوزة</div></div>
+  <div class="stat"><div class="stat-val">11</div><div class="stat-lbl">كلمة UI جديدة</div></div>
+  <div class="stat"><div class="stat-val">C11</div><div class="stat-lbl">لغة المترجم</div></div>
+  <div class="stat"><div class="stat-val">HTML</div><div class="stat-lbl">ملف الإخراج</div></div>
+  <div class="stat"><div class="stat-val">50+</div><div class="stat-lbl">دالة مدمجة</div></div>
+  <div class="stat"><div class="stat-val">MIT</div><div class="stat-lbl">الرخصة</div></div>
+</div>
+
+<!-- KEYWORDS -->
+<section id="keywords">
+<div class="container">
+  <h2 class="sec-title">كلمات <span>v1.0</span> الجديدة</h2>
+  <div class="divider"></div>
+  <p class="sec-sub">11 كلمة UI + وسائل تواصل اجتماعي مدمجة مباشرة في اللغة</p>
+  <div class="kw-grid">
+    <div class="kw-card"><div class="kw-icon">▶</div><div class="kw-tag">youtube(url)</div><div class="kw-desc">تضمين فيديو يوتيوب كامل بـ iframe متجاوب</div><div class="kw-ex">youtube("dQw4w9WgXcQ")</div><span class="kw-badge ui-badge">Media</span></div>
+    <div class="kw-card"><div class="kw-icon">👍</div><div class="kw-tag">facebook(url, text)</div><div class="kw-desc">زر/رابط فيسبوك بشعار المنصة وتصميمها</div><div class="kw-ex">facebook("https://fb.com/p","تابعنا")</div><span class="kw-badge social-badge">Social</span></div>
+    <div class="kw-card"><div class="kw-icon">📸</div><div class="kw-tag">instagram(handle, text)</div><div class="kw-desc">رابط انستغرام بتدرج ألوان المنصة</div><div class="kw-ex">instagram("@mypage","Follow")</div><span class="kw-badge social-badge">Social</span></div>
+    <div class="kw-card"><div class="kw-icon">𝕏</div><div class="kw-tag">xsocial(handle, text)</div><div class="kw-desc">رابط X/تويتر بشعار المنصة الأسود</div><div class="kw-ex">xsocial("@handle","Follow X")</div><span class="kw-badge social-badge">Social</span></div>
+    <div class="kw-card"><div class="kw-icon">🔗</div><div class="kw-tag">url(href, text)</div><div class="kw-desc">رابط HTML منسق بلون VCG الأخضر</div><div class="kw-ex">url("https://github.com","GitHub")</div><span class="kw-badge ui-badge">UI</span></div>
+    <div class="kw-card"><div class="kw-icon">🔘</div><div class="kw-tag">btn(label, action)</div><div class="kw-desc">زر تفاعلي بـ onclick وتصميم أخضر زيتوني</div><div class="kw-ex">btn("احجز","alert('Done!')")</div><span class="kw-badge ui-badge">UI</span></div>
+    <div class="kw-card"><div class="kw-icon">⌨</div><div class="kw-tag">key(combo)</div><div class="kw-desc">عرض مفتاح/أمر بتنسيق keyboard badge</div><div class="kw-ex">key("Ctrl+S") key("vcgc -r")</div><span class="kw-badge ui-badge">UI</span></div>
+    <div class="kw-card"><div class="kw-icon">🎬</div><div class="kw-tag">video(src, w, h)</div><div class="kw-desc">مشغّل HTML5 فيديو متجاوب مع controls</div><div class="kw-ex">video("demo.mp4","100%")</div><span class="kw-badge ui-badge">Media</span></div>
+    <div class="kw-card"><div class="kw-icon">🖼</div><div class="kw-tag">img(src, alt, width)</div><div class="kw-desc">صورة مع alt text وتحميل كسول</div><div class="kw-ex">img("logo.png","Logo","120px")</div><span class="kw-badge ui-badge">Media</span></div>
+    <div class="kw-card"><div class="kw-icon">📰</div><div class="kw-tag">h(level, text)</div><div class="kw-desc">عنوان HTML من h1 إلى h6 بتصميم VCG</div><div class="kw-ex">h(1,"العنوان") h(2,"فرعي")</div><span class="kw-badge ui-badge">Layout</span></div>
+    <div class="kw-card"><div class="kw-icon">📋</div><div class="kw-tag">l(item1, item2, ...)</div><div class="kw-desc">قائمة منسقة بـ bullet VCG</div><div class="kw-ex">l("بند 1","بند 2","بند 3")</div><span class="kw-badge ui-badge">Layout</span></div>
+    <div class="kw-card"><div class="kw-icon">⚡</div><div class="kw-tag">$set / $get</div><div class="kw-desc">متجر تفاعلي مع watchers تلقائيين</div><div class="kw-ex">$set("k",v) $get("k")</div><span class="kw-badge new-badge">Reactive</span></div>
+    <div class="kw-card"><div class="kw-icon">📢</div><div class="kw-tag">public</div><div class="kw-desc">تصدير رموز للـ __exports__ namespace</div><div class="kw-ex">public let VERSION = "1.0"</div><span class="kw-badge new-badge">Module</span></div>
+    <div class="kw-card"><div class="kw-icon">📝</div><div class="kw-tag">w name = val</div><div class="kw-desc">متغير write-only مع سجل تدقيق تلقائي</div><div class="kw-ex">w log = "Event: login"</div><span class="kw-badge new-badge">Write-Only</span></div>
+    <div class="kw-card"><div class="kw-icon">📡</div><div class="kw-tag">c name</div><div class="kw-desc">قناة تواصل async مع send/recv</div><div class="kw-ex">c tasks → send(tasks,"job")</div><span class="kw-badge new-badge">Channel</span></div>
+  </div>
+</div>
+</section>
+
+<!-- UI DEMOS -->
+<section style="background:rgba(13,26,15,.6)">
+<div class="container">
+  <h2 class="sec-title">عناصر <span>UI</span> حية</h2>
+  <div class="divider"></div>
+  <p class="sec-sub">كل هذه العناصر تُنتج HTML+CSS حقيقي من كود VCG بسطر واحد</p>
+
+  <h3 style="color:var(--accent2);margin-bottom:1rem">▸ Social Media</h3>
+  <div class="social-row">
+    <a href="https://facebook.com" target="_blank" class="vcg-social vcg-fb">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      Facebook
+    </a>
+    <a href="https://instagram.com" target="_blank" class="vcg-social vcg-ig">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      Instagram
+    </a>
+    <a href="https://x.com" target="_blank" class="vcg-social vcg-x">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      X (Twitter)
+    </a>
+  </div>
+
+  <h3 style="color:var(--accent2);margin:2rem 0 1rem">▸ Buttons</h3>
+  <div>
+    <button class="vcg-btn-d" onclick="alert('مرحباً من VCG v1.0!')">تشغيل VCG</button>
+    <button class="vcg-btn-d" onclick="document.getElementById('demo').scrollIntoView()">جرّب الآن</button>
+    <button class="vcg-btn-d" onclick="window.open('https://github.com/syrian-vcg/vcg-lang')">GitHub ⭐</button>
+  </div>
+
+  <h3 style="color:var(--accent2);margin:2rem 0 1rem">▸ Keyboard Keys</h3>
+  <div style="line-height:2.8">
+    <kbd class="vcg-key-d">vcgc file.vcg</kbd>
+    <kbd class="vcg-key-d">vcgc -r file.vcg</kbd>
+    <kbd class="vcg-key-d">vcgc --version</kbd>
+    <kbd class="vcg-key-d">Ctrl+S</kbd>
+    <kbd class="vcg-key-d">Alt+F4</kbd>
+  </div>
+
+  <h3 style="color:var(--accent2);margin:2rem 0 1rem">▸ Headings h(1..6, text)</h3>
+  <div style="padding:1.5rem;background:var(--panel);border-radius:12px;border:1px solid var(--border)">
+    <div style="color:#a8e080;font-weight:900;font-size:2rem;border-bottom:2px solid #1e4020;padding-bottom:.2rem;margin-bottom:.4rem">h(1, "Main Title")</div>
+    <div style="color:#a8e080;font-weight:900;font-size:1.6rem;border-bottom:2px solid #1e4020;padding-bottom:.2rem;margin-bottom:.4rem">h(2, "Section Title")</div>
+    <div style="color:#a8e080;font-weight:900;font-size:1.3rem;border-bottom:2px solid #1e4020;padding-bottom:.2rem">h(3, "Sub Title")</div>
+  </div>
+
+  <h3 style="color:var(--accent2);margin:2rem 0 1rem">▸ Lists l(items...)</h3>
+  <ul class="vcg-list-d" style="background:var(--panel);border-radius:12px;padding:1.2rem;border:1px solid var(--border)">
+    <li>مترجم C11 حقيقي بدون مكتبات خارجية</li>
+    <li>دعم وسائل التواصل الاجتماعي مدمج</li>
+    <li>تضمين يوتيوب وفيديو HTML5</li>
+    <li>صور بتحميل كسول lazy loading</li>
+    <li>أزرار تفاعلية ومفاتيح keyboard</li>
+    <li>عناوين h1-h6 بتصميم VCG</li>
+  </ul>
+
+  <h3 style="color:var(--accent2);margin:2rem 0 1rem">▸ YouTube Embed</h3>
+  <div style="max-width:640px">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.5)">
+      <iframe style="position:absolute;top:0;left:0;width:100%;height:100%"
+        src="https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0"
+        frameborder="0" allowfullscreen loading="lazy"></iframe>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- LIVE DEMO -->
+<section id="demo">
+<div class="container">
+  <h2 class="sec-title">محاكي <span>VCG</span> التفاعلي</h2>
+  <div class="divider"></div>
+  <p class="sec-sub">اكتب كودك VCG واضغط تشغيل — مباشرة في المتصفح</p>
+
+  <div class="ide">
+    <div class="ide-header">
+      <div class="ide-dots"><div class="ide-dot"></div><div class="ide-dot"></div><div class="ide-dot"></div></div>
+      <div class="ide-filename" id="cur-file">hello.vcg</div>
+      <div style="font-size:.72rem;color:var(--muted)">VCG v1.0.0</div>
+    </div>
+    <div class="ide-tabs">
+      <div class="tab active"  onclick="loadDemo(0,'hello.vcg')">hello.vcg</div>
+      <div class="tab"         onclick="loadDemo(1,'ui.vcg')">ui.vcg</div>
+      <div class="tab"         onclick="loadDemo(2,'social.vcg')">social.vcg</div>
+      <div class="tab"         onclick="loadDemo(3,'reactive.vcg')">reactive.vcg</div>
+      <div class="tab"         onclick="loadDemo(4,'fibonacci.vcg')">fibonacci.vcg</div>
+    </div>
+    <div class="ide-body">
+      <div class="code-pane">
+        <div class="pane-lbl">كود VCG</div>
+        <textarea class="code-area" id="editor" spellcheck="false"></textarea>
+        <button class="run-btn" onclick="runVCG()">▶ تشغيل</button>
+      </div>
+      <div class="out-pane">
+        <div class="pane-lbl">المخرجات</div>
+        <div id="output"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- INSTALL -->
+<section id="install" style="background:rgba(13,26,15,.6)">
+<div class="container">
+  <h2 class="sec-title">تثبيت <span>VCG v1.0</span></h2>
+  <div class="divider"></div>
+  <div class="install-box">
+    <div><span class="prompt">$ </span><span class="cmd">git clone https://github.com/syrian-vcg/vcg-lang.git</span></div>
+    <div><span class="prompt">$ </span><span class="cmd">cd vcg-lang && make</span></div>
+    <div><span class="prompt">$ </span><span class="cmd">./vcgc --version</span> <span class="cmt"># vcgc 1.0.0</span></div>
+    <div style="margin-top:.5rem"><span class="prompt">$ </span><span class="cmd">./vcgc hello.vcg</span> <span class="cmt"># ينتج hello.html</span></div>
+    <div><span class="prompt">$ </span><span class="cmd">./vcgc -r hello.vcg</span> <span class="cmt"># تشغيل مباشر</span></div>
+    <div><span class="prompt">$ </span><span class="cmd">./vcgc -o out.html hello.vcg</span> <span class="cmt"># اسم مخصص</span></div>
+    <div><span class="prompt">$ </span><span class="cmd">./vcgc --tokens hello.vcg</span> <span class="cmt"># dump tokens</span></div>
+    <div><span class="prompt">$ </span><span class="cmd">./vcgc --ast hello.vcg</span> <span class="cmt"># dump AST</span></div>
+  </div>
+  <div style="margin-top:1.5rem;display:flex;gap:1rem;flex-wrap:wrap">
+    <a href="https://github.com/syrian-vcg/vcg-lang" target="_blank" class="btn btn-primary">⬇ GitHub</a>
+    <a href="https://github.com/syrian-vcg/vcg-lang/releases/tag/v1.0.0" target="_blank" class="btn btn-ghost">📦 v1.0.0</a>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div style="margin-bottom:1rem">
+    <svg viewBox="0 0 128 128" width="48" height="48" style="border-radius:10px">
+      <rect width="128" height="128" rx="20" fill="#1a3a0a"/>
+      <polygon points="64,6 68.9,21.5 85,21.5 72.5,30.5 77.5,46 64,37 50.5,46 55.5,30.5 43,21.5 59.1,21.5" fill="white" opacity=".9"/>
+      <text x="64" y="88" font-family="Arial" font-weight="900" font-size="28" text-anchor="middle" fill="white">VCG</text>
+    </svg>
+  </div>
+  <strong>Syrian Private Programming VCG v1.0.0</strong><br>
+  <span>إصدار: 2026-06-06 · مرخص MIT · مبني بـ C11</span><br>
+  <span style="margin-top:.4rem;display:block">© 2026 Syrian VCG Project</span>
+  <div style="margin-top:1rem;display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap">
+    <a href="https://github.com/syrian-vcg/vcg-lang" target="_blank" class="vcg-social vcg-x" style="font-size:.8rem;padding:.3rem .9rem">GitHub</a>
+    <a href="https://facebook.com/syrianvcg" target="_blank" class="vcg-social vcg-fb" style="font-size:.8rem;padding:.3rem .9rem">Facebook</a>
+    <a href="https://instagram.com/syrianvcg" target="_blank" class="vcg-social vcg-ig" style="font-size:.8rem;padding:.3rem .9rem">Instagram</a>
+    <a href="https://x.com/syrianvcg" target="_blank" class="vcg-social vcg-x" style="font-size:.8rem;padding:.3rem .9rem">X</a>
+  </div>
+</footer>
+
+<script>
+/* particles */
+(function(){var pc=document.getElementById('particles');for(var i=0;i<18;i++){var p=document.createElement('div');p.className='particle';var sz=Math.random()*5+3,dur=Math.random()*12+8,delay=Math.random()*10,left=Math.random()*100,col=Math.random()>.5?'rgba(77,201,90,':'rgba(168,224,128,';p.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+left+'%;background:'+col+(Math.random()*.4+.1)+');animation-duration:'+dur+'s;animation-delay:'+delay+'s';pc.appendChild(p);}})();
+
+/* ── VCG v1.0 Browser Interpreter ── */
+const DEMOS=[
+`# Hello World — VCG v1.0
+let name = "سوريا"
+show("مرحباً يا", name)
+show("الإصدار:", VCG_VERSION)
+show("التاريخ:", VCG_DATE)
+show("---")
+show("2 ** 10 =", 2**10)
+show("sqrt(144) =", sqrt(144))
+show("PI =", PI)
+show("sin(PI/2) =", sin(PI/2))`,
+
+`# UI Demo — h, l, btn, key, url
+h(1, "Syrian VCG v1.0")
+h(2, "مميزات اللغة الجديدة")
+
+l(
+  "مترجم C11 حقيقي",
+  "مخرج HTML + JavaScript",
+  "عناصر UI مدمجة في اللغة",
+  "وسائل تواصل اجتماعي",
+  "يوتيوب، فيديو، صور"
+)
+
+h(3, "روابط مفيدة")
+url("https://github.com/syrian-vcg/vcg-lang", "VCG على GitHub")
+url("https://syrian-vcg.github.io", "الموقع الرسمي")
+
+h(3, "أوامر سريعة")
+key("vcgc file.vcg")
+key("vcgc -r file.vcg")
+key("vcgc --version")
+key("make")
+
+btn("احصل على VCG", "window.open('https://github.com/syrian-vcg/vcg-lang')")
+btn("Star ⭐", "alert('شكراً!')")`,
+
+`# Social Media
+h(1, "تابعنا")
+h(2, "Facebook")
+facebook("https://facebook.com/syrianvcg", "VCG على فيسبوك")
+
+h(2, "Instagram")
+instagram("syrianvcg", "VCG على انستغرام")
+
+h(2, "X (Twitter)")
+xsocial("syrianvcg", "VCG على X")
+
+h(2, "روابط")
+url("https://github.com/syrian-vcg/vcg-lang", "GitHub Repository")
+
+h(2, "يوتيوب")
+youtube("dQw4w9WgXcQ")`,
+
+`# Reactive — $set, $get, watch, c
+show("=== المتجر التفاعلي ===")
+watch("hp", func(v) {
+  show("[HP]", v)
+})
+$set("player", "VCG Hero")
+$set("hp", 100)
+$set("hp", $get("hp") - 40)
+$set("hp", $get("hp") - 20)
+show("HP النهائي:", $get("hp"))
+
+show("---")
+show("=== القنوات ===")
+c inbox
+send(inbox, "رسالة 1")
+send(inbox, "رسالة 2")
+send(inbox, "رسالة 3")
+let msg = recv(inbox)
+while msg != nil {
+  show(">>", msg)
+  msg = recv(inbox)
+}
+
+show("---")
+show("=== write-only ===")
+w log1 = "تسجيل دخول 10:00"
+w log2 = "عملية: تحديث"
+show("تم كتابة 2 سجلات")`,
+
+`# Fibonacci + حلقات
+func fib(n) {
+  if n <= 1 { return n }
+  return fib(n-1) + fib(n-2)
+}
+
+h(2, "متتالية فيبوناتشي")
+for i in 0..13 {
+  show("fib(", i, ") =", fib(i))
+}
+
+show("---")
+h(2, "مضروبات")
+func fact(n) {
+  if n <= 1 { return 1 }
+  return n * fact(n-1)
+}
+for n in 1..11 {
+  show(n, "! =", fact(n))
+}`
+];
+
+function loadDemo(i,fname){
+  document.getElementById('editor').value=DEMOS[i];
+  document.getElementById('cur-file').textContent=fname;
+  document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('active',i===j));
+  document.getElementById('output').innerHTML='';
+}
+loadDemo(0,'hello.vcg');
+
+/* Tokenizer */
+const KW=['let','const','func','return','if','else','while','for','in','repeat',
+ 'break','continue','show','input','and','or','not','html','true','false','nil','null',
+ 'import','as','struct','new','self','typeof','sizeof','assert','try','catch','throw',
+ 'match','when','public','w','x','c','youtube','facebook','instagram','xsocial',
+ 'url','btn','key','video','img','h','l'];
+
+function tokenize(src){
+  const toks=[];let i=0,ln=1;
+  const adv=()=>{let c=src[i++];if(c==='\n')ln++;return c;};
+  while(i<src.length){
+    let c=src[i];
+    if(c==='\n'){toks.push({t:'NL',v:'\n',ln});adv();continue;}
+    if(c===' '||c==='\t'||c==='\r'){i++;continue;}
+    if(c==='#'||c==='/'&&src[i+1]==='/'){while(i<src.length&&src[i]!=='\n')i++;continue;}
+    if(c==='/'&&src[i+1]==='*'){i+=2;while(i<src.length&&!(src[i]==='*'&&src[i+1]==='/'))i++;i+=2;continue;}
+    if(c==='$'){i++;let s='';while(i<src.length&&/[a-zA-Z]/.test(src[i]))s+=src[i++];toks.push({t:['set','get','x'].includes(s)?'KW':'OP',v:'$'+s,ln});continue;}
+    if(c==='"'||c==="'"){let q=adv(),s='';while(i<src.length&&src[i]!==q){if(src[i]==='\\'){adv();let e=adv();s+=e==='\n'?'\n':e==='\t'?'\t':e;}else s+=adv();}adv();toks.push({t:'STR',v:s,ln});continue;}
+    if(c==='`'){adv();let s='';while(i<src.length&&src[i]!=='`')s+=adv();adv();toks.push({t:'STR',v:s,ln});continue;}
+    if(/\d/.test(c)){let s='';while(i<src.length&&(/\d/.test(src[i])||src[i]==='.'))s+=adv();if(/[eE]/.test(src[i])){s+=adv();if(/[+-]/.test(src[i]))s+=adv();while(/\d/.test(src[i]))s+=adv();}toks.push({t:'NUM',v:parseFloat(s),ln});continue;}
+    if(/[a-zA-Z_\u0600-\u06FF]/.test(c)){let s='';while(i<src.length&&/[a-zA-Z0-9_\u0600-\u06FF]/.test(src[i]))s+=adv();toks.push({t:KW.includes(s)?'KW':'ID',v:s,ln});continue;}
+    const two=src.slice(i,i+2);
+    if(['==','!=','<=','>=','+=','-=','*=','/=','++','--','**','->','..','<-'].includes(two)){toks.push({t:'OP',v:two,ln});i+=2;continue;}
+    toks.push({t:'OP',v:adv(),ln});
+  }
+  toks.push({t:'EOF',v:'',ln});return toks;
+}
+
+/* Runtime */
+class VCG{
+  constructor(toks){this.toks=toks.filter(t=>t.t!=='NL');this.pos=0;this.env=Object.create(null);this._store={};this._watchers={};this.out=[];this._ret=undefined;this._hasRet=false;this._brk=false;this._cnt=false;this._stdlib();}
+  cur(){return this.toks[this.pos];}
+  eat(v){let t=this.cur();if(v&&t.v!==v)throw new Error(`Expected '${v}' got '${t.v}' line ${t.ln}`);this.pos++;return t;}
+  eatIf(v){if(this.cur().v===v){this.eat();return true;}return false;}
+
+  _vcg_str(x){return x===null?'nil':x===true?'true':x===false?'false':Array.isArray(x)?'['+x.map(v=>this._vcg_str(v)).join(', ')+']':x&&typeof x==='object'&&'_buf' in x?'<channel>':typeof x==='object'?'{...}':String(x);}
+
+  _stdlib(){
+    const e=this.env,m=Math,self=this;
+    ['abs','floor','ceil','round','sqrt','sin','cos','tan','log','log2','log10'].forEach(f=>e[f]=(...a)=>m[f](...a));
+    e.pow=(b,x)=>m.pow(b,x);e.min=(...a)=>m.min(...a);e.max=(...a)=>m.max(...a);
+    e.clamp=(v,lo,hi)=>m.max(lo,m.min(hi,v));
+    e.rand=(a,b)=>a===undefined?m.random():b===undefined?m.floor(m.random()*a):m.floor(m.random()*(b-a))+a;
+    e.range=(a,b,s=1)=>{let r=[],f=b===undefined?0:a,t=b===undefined?a:b;for(let i=f;s>0?i<t:i>t;i+=s)r.push(i);return r;};
+    e.len=(x)=>Array.isArray(x)?x.length:typeof x==='string'?x.length:x&&typeof x==='object'?Object.keys(x).length:0;
+    e.str=(x)=>self._vcg_str(x);e.int=(x)=>parseInt(x)||0;e.float=(x)=>parseFloat(x)||0;e.bool=(x)=>!!x;
+    e.char=(n)=>String.fromCharCode(n);e.ord=(s)=>s?s.charCodeAt(0):0;
+    e.keys=(o)=>o&&typeof o==='object'?Object.keys(o):[];e.values=(o)=>o&&typeof o==='object'?Object.values(o):[];
+    e.join=(a,s=',')=>Array.isArray(a)?a.join(s):String(a);
+    e.format=(f,...a)=>{let i=0;return String(f).replace(/%s/g,()=>a[i++]);};
+    e.typeof=(x)=>x===null?'nil':typeof x==='boolean'?'bool':Array.isArray(x)?'array':x&&typeof x==='object'&&'_buf' in x?'channel':typeof x==='object'?'struct':typeof x;
+    e.sizeof=(x)=>Array.isArray(x)?x.length:typeof x==='string'?x.length:0;
+    e.isnil=(x)=>x===null||x===undefined;e.isnum=(x)=>typeof x==='number';e.isstr=(x)=>typeof x==='string';e.isarr=(x)=>Array.isArray(x);
+    e.defined=(x)=>x!==null&&x!==undefined;e.freeze=(v)=>v;
+    e.input=(p)=>window.prompt(p||':')||'';
+    e.send=(ch,v)=>{if(ch&&ch._buf)ch._buf.push(v);return v;};
+    e.recv=(ch)=>{if(ch&&ch._buf&&ch._buf.length>0)return ch._buf.shift();return null;};
+    e.watch=(k,fn)=>{self._watchers[k]=fn;};
+    e.pipe=(val,...fns)=>fns.reduce((v,f)=>typeof f==='function'?f(v):v,val);
+    e.show=(...a)=>{self.out.push({t:'txt',v:a.map(v=>self._vcg_str(v)).join(' ')});return null;};
+    e.print=e.show;
+    e.VCG_VERSION='1.0.0';e.VCG_DATE='2026-06-06';
+    e.PI=m.PI;e.E=m.E;e.INF=Infinity;e.true=true;e.false=false;e.nil=null;
+    /* UI keywords */
+    e.youtube=(id)=>{let vid=String(id);let m2=vid.match(/v=([^&]+)/)||vid.match(/youtu\.be\/([^?]+)/);if(m2)vid=m2[1];self.out.push({t:'html',v:`<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;margin:.8rem 0;box-shadow:0 8px 32px rgba(0,0,0,.5)"><iframe style="position:absolute;top:0;left:0;width:100%;height:100%" src="https://www.youtube.com/embed/${vid}?rel=0" frameborder="0" allowfullscreen loading="lazy"></iframe></div>`});return null;};
+    e.facebook=(url,txt)=>{self.out.push({t:'html',v:`<a href="${url}" target="_blank" style="display:inline-flex;align-items:center;gap:.5rem;background:#1877f2;color:white;padding:.5rem 1.2rem;border-radius:8px;text-decoration:none;font-weight:700;margin:.25rem;transition:all .2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'"><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>${txt||'Facebook'}</a>`});return null;};
+    e.instagram=(handle,txt)=>{let href=String(handle).startsWith('http')?handle:'https://instagram.com/'+(handle.startsWith('@')?handle.slice(1):handle);self.out.push({t:'html',v:`<a href="${href}" target="_blank" style="display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:white;padding:.5rem 1.2rem;border-radius:8px;text-decoration:none;font-weight:700;margin:.25rem;transition:all .2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'"><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>${txt||handle}</a>`});return null;};
+    e.xsocial=(handle,txt)=>{let href=String(handle).startsWith('http')?handle:'https://x.com/'+(handle.startsWith('@')?handle.slice(1):handle);self.out.push({t:'html',v:`<a href="${href}" target="_blank" style="display:inline-flex;align-items:center;gap:.5rem;background:#000;color:white;border:1px solid #333;padding:.5rem 1.2rem;border-radius:8px;text-decoration:none;font-weight:700;margin:.25rem;transition:all .2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'"><svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>${txt||handle}</a>`});return null;};
+    e.url=(href,txt,target)=>{self.out.push({t:'html',v:`<a href="${href}" target="${target||'_blank'}" style="color:#4dc95a;text-decoration:underline;font-weight:600;display:inline-block;margin:.2rem;transition:opacity .2s" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">${txt||href}</a>`});return null;};
+    e.btn=(lbl,act)=>{self.out.push({t:'html',v:`<button onclick="${act||''}" style="background:linear-gradient(135deg,#2d5a1b,#4a9020);color:white;border:none;padding:.6rem 1.5rem;border-radius:8px;font-weight:700;cursor:pointer;margin:.25rem;font-family:Cairo,sans-serif;font-size:.9rem;transition:all .2s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(77,201,90,.3)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">${lbl}</button>`});return null;};
+    e.key=(k)=>{self.out.push({t:'html',v:`<kbd style="background:#1a3a0a;color:#a8e080;border:1px solid #2d5a1b;border-radius:5px;padding:.2rem .6rem;font-family:monospace;font-size:.85rem;box-shadow:0 2px 0 #0a1a05;display:inline-block;margin:.2rem">${k}</kbd>`});return null;};
+    e.video=(src,w,h3)=>{self.out.push({t:'html',v:`<video controls style="width:${w||'100%'};height:${h3||'auto'};border-radius:10px;max-width:100%;margin:.5rem 0"><source src="${src}"></video>`});return null;};
+    e.img=(src,alt,ww)=>{self.out.push({t:'html',v:`<img src="${src}" alt="${alt||''}" style="width:${ww||'auto'};border-radius:8px;max-width:100%;margin:.5rem 0;display:block" loading="lazy">`});return null;};
+    e.h=(lv,txt)=>{const lvl=Math.min(6,Math.max(1,lv|0));const sz=['2.2rem','1.8rem','1.5rem','1.25rem','1.1rem','1rem'][lvl-1];self.out.push({t:'html',v:`<h${lvl} style="color:#a8e080;font-family:Cairo,sans-serif;font-weight:900;font-size:${sz};margin:.8rem 0 .4rem;border-bottom:2px solid #1e4020;padding-bottom:.3rem">${txt}</h${lvl}>`});return null;};
+    e.l=(...items)=>{const li=items.map(it=>`<li style="padding:.3rem .5rem;border-right:3px solid #2d5a1b;margin:.2rem 0;color:#e8f5e0">&#9658; ${it}</li>`).join('');self.out.push({t:'html',v:`<ul style="list-style:none;padding:.5rem 0;margin:.5rem 0">${li}</ul>`});return null;};
+  }
+
+  _scope(p){return Object.create(p||null);}
+  _get(e,k){let c=e;while(c){if(Object.prototype.hasOwnProperty.call(c,k))return c[k];c=Object.getPrototypeOf(c);}throw new Error('Undefined: '+k);}
+  _set(e,k,v){let c=e;while(c){if(Object.prototype.hasOwnProperty.call(c,k)){c[k]=v;return v;}c=Object.getPrototypeOf(c);}e[k]=v;return v;}
+  _def(e,k,v){Object.defineProperty(e,k,{value:v,writable:true,configurable:true,enumerable:true});return v;}
+  _tryGet(e,k){try{return this._get(e,k);}catch{return null;}}
+
+  parseExpr(e,minp=0){
+    let left=this.parsePrimary(e);
+    const prec={'||':1,'or':1,'&&':2,'and':2,'==':3,'!=':3,'<':4,'>':4,'<=':4,'>=':4,'+':5,'-':5,'*':6,'/':6,'%':6,'**':7,'..':8};
+    while(true){const op=this.cur().v;const p=prec[op]||0;if(p<=minp)break;this.eat();left=this._bin(op,left,this.parseExpr(e,op==='**'?p-1:p));}
+    if(this.cur().v==='?'){this.eat();const th=this.parseExpr(e);this.eat(':');return left?th:this.parseExpr(e);}
+    return left;
+  }
+  _bin(op,a,b){
+    if(op==='+'&&(typeof a==='string'||typeof b==='string'))return String(a===null?'nil':a)+String(b===null?'nil':b);
+    if(op==='+'&&Array.isArray(a)&&Array.isArray(b))return a.concat(b);
+    if(op==='..')return this.env.range(a,b+1);
+    switch(op){case '+':return a+b;case '-':return a-b;case '*':return a*b;case '/':if(!b)throw new Error('Division by zero');return a/b;case '%':return a%b;case '**':return Math.pow(a,b);case '==':return a==b;case '!=':return a!=b;case '<':return a<b;case '>':return a>b;case '<=':return a<=b;case '>=':return a>=b;case 'and':return !!a&&!!b;case 'or':return !!a||!!b;case '|':return(a|0)|(b|0);case '&':return(a|0)&(b|0);}return null;
+  }
+  parsePrimary(e){
+    const t=this.cur();
+    if(t.t==='NUM'){this.eat();return t.v;}
+    if(t.t==='STR'){this.eat();return t.v;}
+    if(t.v==='true'){this.eat();return true;}if(t.v==='false'){this.eat();return false;}
+    if(t.v==='nil'||t.v==='null'){this.eat();return null;}
+    if(t.v==='not'||t.v==='!'){this.eat();return !this.parsePrimary(e);}
+    if(t.v==='-'){this.eat();return -this.parsePrimary(e);}
+    if(t.v==='('){this.eat();const v=this.parseExpr(e);this.eat(')');return v;}
+    if(t.v==='['){this.eat();const a=[];while(this.cur().v!==']'&&this.cur().t!=='EOF'){a.push(this.parseExpr(e));this.eatIf(',');}this.eat(']');return a;}
+    if(t.v==='{'){this.eat();const o=Object.create(null);while(this.cur().v!=='}'&&this.cur().t!=='EOF'){const k=this.eat().v;this.eat(':');o[k]=this.parseExpr(e);this.eatIf(',');}this.eat('}');return o;}
+    if(t.v==='$set'){this.eat();this.eat('(');const k=this.parseExpr(e);this.eat(',');const v=this.parseExpr(e);this.eat(')');this._store[k]=v;if(this._watchers[k])this._watchers[k](v);return v;}
+    if(t.v==='$get'){this.eat();this.eat('(');const k=this.parseExpr(e);this.eat(')');return this._store[k]!==undefined?this._store[k]:null;}
+    if(t.v==='$x'){this.eat();const v=this.parseExpr(e);return typeof v==='function'?v():v;}
+    if(t.v==='typeof'){this.eat();this.eat('(');const v=this.parseExpr(e);this.eat(')');return this.env.typeof(v);}
+    if(t.v==='sizeof'){this.eat();this.eat('(');const v=this.parseExpr(e);this.eat(')');return this.env.sizeof(v);}
+    if(t.v==='input'){this.eat();let p='';if(this.cur().v==='('){this.eat();if(this.cur().v!==')')p=String(this.parseExpr(e));this.eat(')');}return window.prompt(p)||'';}
+    if(t.t==='ID'||t.t==='KW'){
+      const nm=t.v;this.eat();
+      if(['x','c','w','h','l'].includes(nm)){const nx=this.cur().v;if(['*','/','+','-','%','**','==','!=','<','>','<=','>=',')',')',']',',',':','and','or','..'].includes(nx)){let v=null;try{v=this._get(e,nm);}catch{}return this._postfix(e,v,nm);}}
+      let val=null;try{val=this._get(e,nm);}catch{}
+      return this._postfix(e,val,nm);
+    }
+    this.eat();return null;
+  }
+  _postfix(e,val,nm){
+    while(true){
+      if(this.cur().v==='('){this.eat();const args=[];while(this.cur().v!==')'&&this.cur().t!=='EOF'){args.push(this.parseExpr(e));this.eatIf(',');}this.eat(')');if(typeof val==='function')val=val(...args);else throw new Error(`Not callable: ${nm}`);}
+      else if(this.cur().v==='['){this.eat();const idx=this.parseExpr(e);this.eat(']');val=Array.isArray(val)?(idx<0?val[val.length+idx]:val[idx]):val&&typeof val==='object'?val[idx]:null;}
+      else if(this.cur().v==='.'){this.eat();const f=this.eat().v;if(this.cur().v==='('){this.eat();const args=[];while(this.cur().v!==')'&&this.cur().t!=='EOF'){args.push(this.parseExpr(e));this.eatIf(',');}this.eat(')');val=this._method(val,f,args);}else val=val&&typeof val==='object'?val[f]:null;}
+      else break;
+    }
+    return val;
+  }
+  _method(obj,name,args){
+    if(Array.isArray(obj)){if(name==='push'){obj.push(...args);return obj.length;}if(name==='pop')return obj.pop();if(name==='len'||name==='length')return obj.length;if(name==='join')return obj.join(args[0]||',');if(name==='contains')return obj.includes(args[0]);if(name==='reverse'){obj.reverse();return obj;}if(name==='slice')return obj.slice(args[0]||0,args[1]);if(name==='sort'){obj.sort((a,b)=>a-b);return obj;}}
+    if(typeof obj==='string'){if(name==='len'||name==='length')return obj.length;if(name==='upper')return obj.toUpperCase();if(name==='lower')return obj.toLowerCase();if(name==='trim')return obj.trim();if(name==='split')return obj.split(args[0]!==undefined?args[0]:' ');if(name==='contains')return obj.includes(String(args[0]));if(name==='startswith')return obj.startsWith(String(args[0]));if(name==='endswith')return obj.endsWith(String(args[0]));if(name==='replace')return obj.replaceAll(String(args[0]),String(args[1]));if(name==='tonum')return parseFloat(obj);}
+    if(obj&&typeof obj==='object'&&typeof obj[name]==='function')return obj[name](...args);
+    return null;
+  }
+  parseBlock(e){this.eat('{');while(this.cur().v!=='}'&&this.cur().t!=='EOF'){this.parseStmt(e);if(this._hasRet||this._brk||this._cnt)break;}this.eat('}');}
+  _skipBlock(){this.eat('{');let d=1;while(d>0&&this.cur().t!=='EOF'){if(this.cur().v==='{')d++;else if(this.cur().v==='}')d--;if(d>0)this.eat();else break;}this.eat('}');}
+  _skipStmt(){const t=this.cur();if(t.v==='if'){this.eat();this.parseExpr(this.env);this._skipBlock();if(this.cur().v==='else'){this.eat();if(this.cur().v==='if')this._skipStmt();else this._skipBlock();}}else{while(this.cur().t!=='NL'&&this.cur().v!=='}'&&this.cur().t!=='EOF')this.eat();}}
+  parseStmt(e){
+    const t=this.cur();
+    const UI=['youtube','facebook','instagram','xsocial','url','btn','key','video','img','h','l'];
+    if(UI.includes(t.v)){const nm=t.v;this.eat();if(this.cur().v==='('){this.eat();const args=[];while(this.cur().v!==')'&&this.cur().t!=='EOF'){args.push(this.parseExpr(e));this.eatIf(',');}this.eat(')');if(typeof this.env[nm]==='function')this.env[nm](...args);}return;}
+    if(t.v==='$set'){this.eat();this.eat('(');const k=this.parseExpr(e);this.eat(',');const v=this.parseExpr(e);this.eat(')');this._store[k]=v;if(this._watchers[k])this._watchers[k](v);return;}
+    if(t.v==='$get'){this.eat();this.eat('(');this.parseExpr(e);this.eat(')');return;}
+    if(t.v==='public'){this.eat();this.parseStmt(e);return;}
+    if(t.v==='w'){this.eat();const nm=this.eat().v;if(this.cur().v==='='){this.eat();const v=this.parseExpr(e);this._def(e,nm,v);this.out.push({t:'txt',v:'[w] '+nm+' \u2190 '+this._vcg_str(v)});}return;}
+    if(t.v==='c'){this.eat();if(this.cur().t==='ID'){const nm=this.eat().v;let init=null;if(this.cur().v==='='){this.eat();init=this.parseExpr(e);}const ch={_buf:[],_name:nm};if(init!==null)ch._buf.push(init);this._def(e,nm,ch);}return;}
+    if(t.v==='let'||t.v==='const'){this.eat();const nm=this.eat().v;if(this.cur().v==='='){this.eat();this._def(e,nm,this.parseExpr(e));}else this._def(e,nm,null);return;}
+    if(t.v==='func'){this.eat();const nm=this.eat().v;this.eat('(');const params=[];while(this.cur().v!==')'&&this.cur().t!=='EOF'){params.push(this.eat().v);this.eatIf(',');}this.eat(')');const bp=this.pos;this._skipBlock();const be=this.pos;const self=this,cl=e;this._def(e,nm,function(...args){const fe=self._scope(cl);params.forEach((p,i)=>self._def(fe,p,i<args.length?args[i]:null));const sp=self.pos;self.pos=bp;self.parseBlock(fe);self.pos=sp;const r=self._ret;self._ret=undefined;self._hasRet=false;return r!==undefined?r:null;});return;}
+    if(t.v==='if'){this.eat();const cond=this.parseExpr(e);const bp=this.pos;this._skipBlock();const be=this.pos;if(cond){this.pos=bp;this.parseBlock(this._scope(e));this.pos=be;}else this.pos=be;if(this.cur().v==='else'){this.eat();if(this.cur().v==='if'){if(cond)this._skipStmt();else this.parseStmt(this._scope(e));}else{if(cond)this._skipBlock();else this.parseBlock(this._scope(e));}}return;}
+    if(t.v==='while'){this.eat();const cp=this.pos;while(true){this.pos=cp;const cond=this.parseExpr(e);if(!cond){this._skipBlock();break;}this.parseBlock(this._scope(e));if(this._brk){this._brk=false;break;}if(this._cnt)this._cnt=false;if(this._hasRet)break;}return;}
+    if(t.v==='repeat'){this.eat();const cnt=Math.floor(this.parseExpr(e));const bp=this.pos;this._skipBlock();const be=this.pos;for(let i=0;i<cnt&&!this._hasRet;i++){this.pos=bp;this.parseBlock(this._scope(e));if(this._brk){this._brk=false;break;}if(this._cnt)this._cnt=false;}this.pos=be;return;}
+    if(t.v==='for'){this.eat();const nm=this.eat().v;this.eat('in');const iter=this.parseExpr(e);const bp=this.pos;this._skipBlock();const be=this.pos;const arr=Array.isArray(iter)?iter:typeof iter==='string'?iter.split(''):iter&&typeof iter==='object'&&iter._buf?iter._buf:iter&&typeof iter==='object'?Object.values(iter):[];for(const item of arr){if(this._hasRet)break;this.pos=bp;const le=this._scope(e);this._def(le,nm,item);this.parseBlock(le);if(this._brk){this._brk=false;break;}if(this._cnt)this._cnt=false;}this.pos=be;return;}
+    if(t.v==='return'){this.eat();this._ret=(this.cur().v!=='}'&&this.cur().t!=='EOF')?this.parseExpr(e):null;this._hasRet=true;return;}
+    if(t.v==='break'){this.eat();this._brk=true;return;}
+    if(t.v==='continue'){this.eat();this._cnt=true;return;}
+    if(t.v==='show'||t.v==='print'){this.eat();this.eat('(');const parts=[];while(this.cur().v!==')'&&this.cur().t!=='EOF'){parts.push(this.parseExpr(e));this.eatIf(',');}this.eat(')');this.out.push({t:'txt',v:parts.map(v=>this._vcg_str(v)).join(' ')});return;}
+    if(t.v==='html'){this.eat();const v=this.parseExpr(e);this.out.push({t:'html',v:String(v)});return;}
+    if(t.v==='watch'){this.eat();this.eat('(');const k=this.parseExpr(e);this.eat(',');const fn=this.parseExpr(e);this.eat(')');this._watchers[k]=fn;return;}
+    if(t.v==='assert'){this.eat();this.eat('(');const c=this.parseExpr(e);let msg='Assertion failed';if(this.cur().v===','){this.eat();msg=String(this.parseExpr(e));}this.eat(')');if(!c)throw new Error(msg);return;}
+    if(t.v==='throw'){this.eat();const v=this.parseExpr(e);throw new Error(String(v));}
+    if(t.v==='try'){this.eat();const bp=this.pos;this._skipBlock();const be=this.pos;this.eat('catch');let nm2=null;if(this.cur().t==='ID')nm2=this.eat().v;const cp=this.pos;this._skipBlock();const ce=this.pos;let err=null;try{this.pos=bp;this.parseBlock(this._scope(e));}catch(ex){err=ex;}if(err){this.pos=cp;const cv=this._scope(e);if(nm2)this._def(cv,nm2,err.message);this.parseBlock(cv);}this.pos=ce;return;}
+    if(t.v==='match'){this.eat();const val=this.parseExpr(e);this.eat('{');while(this.cur().v==='when'&&!this._hasRet){this.eat();const arm=this.parseExpr(e);if(this.cur().v==='->'||this.cur().v===':')this.eat();if(val==arm)this.parseStmt(e);else this._skipStmt();}this.eat('}');return;}
+    if(t.v==='struct'){this.eat();const nm=this.eat().v;this.eat('{');const fields=[];while(this.cur().v!=='}'&&this.cur().t!=='EOF'){fields.push(this.eat().v);this.eatIf(',');}this.eat('}');const proto=Object.create(null);proto.__type__=nm;fields.forEach(f=>proto[f]=null);this._def(e,nm,proto);return;}
+    const expr=this.parseExpr(e);
+    const op=this.cur().v;
+    if(['=','+=','-=','*=','/='].includes(op)){this.eat();const rhs=this.parseExpr(e);if(t.t==='ID'||t.t==='KW'){const nm=t.v;const cur=this._tryGet(e,nm);const nv=op==='='?rhs:op==='+='?cur+rhs:op==='-='?cur-rhs:op==='*='?cur*rhs:cur/rhs;this._set(e,nm,nv);}}
+  }
+  run(){while(this.cur().t!=='EOF'&&!this._hasRet){this.parseStmt(this.env);}}
+}
+
+function runVCG(){
+  const src=document.getElementById('editor').value;
+  const outDiv=document.getElementById('output');
+  outDiv.innerHTML='';
+  try{
+    const rt=new VCG(tokenize(src));
+    rt.run();
+    if(rt.out.length===0){outDiv.innerHTML='<span class="out-line" style="color:var(--muted);font-style:italic">لا يوجد مخرجات</span>';return;}
+    for(const item of rt.out){
+      if(item.t==='html'){const wrap=document.createElement('div');wrap.className='out-html-wrap';wrap.innerHTML=item.v;outDiv.appendChild(wrap);}
+      else{const el=document.createElement('span');el.className='out-line';el.textContent=item.v;outDiv.appendChild(el);}
+    }
+  }catch(ex){const el=document.createElement('span');el.className='out-line out-err';el.textContent='خطأ: '+ex.message;outDiv.appendChild(el);}
+}
+</script>
+</body>
+</html>
