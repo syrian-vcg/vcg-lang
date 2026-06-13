@@ -42,7 +42,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('editor/android/**/*.gradle*', 'editor/android/**/gradle-wrapper.properties') }}
           restore-keys: ${{ runner.os }}-gradle-
 
       # ── 6. Build Debug APK ───────────────────────────────
@@ -55,34 +55,46 @@ jobs:
         working-directory: editor/android
         run: ./gradlew assembleRelease --no-daemon --stacktrace
 
-      # ── 8. Rename APKs ───────────────────────────────────
+      # ── 8. Check APK output ──────────────────────────────
+      - name: Verify APK outputs
+        run: |
+          if [ ! -d "editor/android/app/build/outputs/apk" ]; then
+            echo "❌ Error: APK output directory not found"
+            exit 1
+          fi
+          find editor/android/app/build/outputs/apk -name "*.apk" -type f
+
+      # ── 9. Rename APKs ───────────────────────────────────
       - name: Rename APK files
         run: |
           mkdir -p apk-output
-          find editor/android/app/build/outputs/apk -name "*.apk" | while read f; do
+          find editor/android/app/build/outputs/apk -name "*.apk" -type f | while read f; do
             fname=$(basename "$f")
             cp "$f" "apk-output/vcg-editor-${fname}"
-            echo "Copied: $fname"
+            echo "✓ Copied: $fname"
           done
-          ls -la apk-output/
+          echo "---"
+          ls -lh apk-output/ || echo "No APKs found!"
 
-      # ── 9. Upload Debug APK artifact ─────────────────────
+      # ── 10. Upload Debug APK artifact ────────────────────
       - name: Upload Debug APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: vcg-editor-debug-apk
           path: apk-output/vcg-editor-*debug*.apk
           retention-days: 30
 
-      # ── 10. Upload Release APK artifact ──────────────────
+      # ── 11. Upload Release APK artifact ──────────────────
       - name: Upload Release APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: vcg-editor-release-apk
           path: apk-output/vcg-editor-*release*.apk
           retention-days: 30
 
-      # ── 11. Upload to GitHub Release ─────────────────────
+      # ── 12. Upload to GitHub Release ─────────────────────
       - name: Upload APK to Release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
@@ -117,7 +129,7 @@ jobs:
               -storepass "${{ secrets.KEYSTORE_PASS }}" \
               -keypass "${{ secrets.KEY_PASS }}" \
               "$apk" "${{ secrets.KEY_ALIAS }}"
-            echo "Signed: $apk"
+            echo "✓ Signed: $apk"
           done
 
       - name: Upload Signed APK
