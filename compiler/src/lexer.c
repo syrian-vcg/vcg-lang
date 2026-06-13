@@ -5,7 +5,7 @@
 #include "../include/vcg.h"
 
 /* ================================================================
-   VCG Lexer  —  full tokeniser  (v1.0, 2026-06-06)
+   VCG Lexer  —  full tokeniser  (v2.0, 2026-06-06)
    ================================================================ */
 
 static const struct { const char *word; TokenType tok; } KEYWORDS[] = {
@@ -30,6 +30,39 @@ static const struct { const char *word; TokenType tok; } KEYWORDS[] = {
     {"key",       TK_KEY},      {"video",     TK_VIDEO},
     {"img",       TK_IMG},      {"h",         TK_H},
     {"l",         TK_L},
+    /* ── v2.0 keywords ── */
+    /* Modules */
+    {"module",    TK_MODULE},   {"export",    TK_EXPORT},
+    {"from",      TK_FROM},
+    /* OOP */
+    {"class",     TK_CLASS},    {"extends",   TK_EXTENDS},
+    {"implements",TK_IMPLEMENTS},{"interface", TK_INTERFACE},
+    {"super",     TK_SUPER},    {"this",      TK_THIS},
+    /* Async */
+    {"async",     TK_ASYNC},    {"await",     TK_AWAIT},
+    {"promise",   TK_PROMISE},  {"defer",     TK_DEFER},
+    /* Types */
+    {"type",      TK_TYPE},     {"enum",      TK_ENUM},
+    {"union",     TK_UNION},    {"generic",   TK_GENERIC},
+    /* File I/O */
+    {"file",      TK_FILE},     {"read",      TK_READ},
+    {"write",     TK_WRITE},    {"append",    TK_APPEND},
+    /* Network */
+    {"http",      TK_HTTP},     {"request",   TK_REQUEST},
+    {"response",  TK_RESPONSE}, {"socket",    TK_SOCKET},
+    /* Memory */
+    {"ref",       TK_REF},      {"ptr",       TK_PTR},
+    {"alloc",     TK_ALLOC},    {"free",      TK_FREE},
+    /* Safety */
+    {"safe",      TK_SAFE},     {"unsafe",    TK_UNSAFE},
+    {"guard",     TK_GUARD},
+    /* Functional: map/filter/reduce/find are plain builtins (not keywords) */
+    /* Testing/Docs */
+    {"doc",       TK_DOC},      {"test",      TK_TEST},
+    {"expect",    TK_EXPECT_KW},{"mock",      TK_MOCK},
+    /* Context/Pipeline */
+    {"with",      TK_WITH},     {"case",      TK_CASE},
+    {"pipeline",  TK_PIPELINE},
     {NULL, TK_EOF}
 };
 
@@ -182,6 +215,10 @@ Token lex_next(Lexer *l) {
     OP2('+','+',TK_INC)  OP2('-','-',TK_DEC)
     OP2('*','*',TK_POWER)
     OP2('-','>',TK_ARROW)
+    /* |> pipeline */
+    if(c=='|'&&n=='>'){adv(l);Token t2=mktok(l,TK_PIPELINE,"|>",0);t2.line=ln;return t2;}
+    /* \ lambda arrow  \x -> */
+    if(c=='\\'){Token t2=mktok(l,TK_LAMBDA_KW,"\\",0);t2.line=ln;return t2;}
     OP2('<','<',TK_LSHIFT) OP2('>','>',TK_RSHIFT)
     OP2('<','-',TK_C)
     OP2('.','.',TK_DOTDOT)
