@@ -363,6 +363,155 @@ static void gen_stmt(CodeGen *g, Node *n){
         g->indent++; gen_block(g,n); g->indent--;
         g_indent(g); fprintf(g->out,"}\n"); break;
 
+    /* ── v2.0 node handlers ── */
+    case ND_NEW:
+        fprintf(g->out,"%s(",n->name);
+        for(int i=0;i<n->nchildren;i++){ if(i)fprintf(g->out,","); gen_expr(g,n->children[i]); }
+        fprintf(g->out,")"); break;
+
+    case ND_MODULE:
+        g_indent(g); fprintf(g->out,"(function(){\n");
+        g->indent++;
+        g_indent(g); fprintf(g->out,"var _e=_scope(_e);\n");
+        if(n->body) gen_block(g,n->body);
+        g_indent(g); fprintf(g->out,"_def(_e,'%s',_e);\n",n->name);
+        g->indent--;
+        g_indent(g); fprintf(g->out,"}).call({});\n");
+        break;
+
+    case ND_EXPORT:
+        if(n->right) gen_stmt(g,n->right);
+        break;
+
+    case ND_FROM_IMPORT:
+        for(int i=0;i<n->nchildren;i++){
+            if(!n->children[i]->name) continue;
+            g_indent(g); fprintf(g->out,"_def(_e,'%s',(_v('%s',_e)||{})['%s']);\n",
+                n->children[i]->name, n->str, n->children[i]->name);
+        }
+        break;
+
+    case ND_CLASS: {
+        int t2=g_tmp(g);
+        g_indent(g); fprintf(g->out,"_def(_e,'%s',(function(_B%d){\n",n->name,t2);
+        g->indent++;
+        if(n->str) { g_indent(g); fprintf(g->out,"var _p=Object.create(_B%d&&_B%d.prototype?_B%d.prototype:{});\n",t2,t2,t2); }
+        else        { g_line(g,"var _p={};\n"); }
+        g_indent(g); fprintf(g->out,"var _e=_p;\n");
+        if(n->body) gen_block(g,n->body);
+        g_indent(g); fprintf(g->out,"function %s(){",n->name);
+        fprintf(g->out,"var _s=Object.create(_p);_s.__class__='%s';",n->name);
+        fprintf(g->out,"if(typeof _p.init==='function')_p.init.apply(_s,arguments);return _s;}");
+        fprintf(g->out,"\n");
+        g_indent(g); fprintf(g->out,"%s.prototype=_p;\n",n->name);
+        g_indent(g); fprintf(g->out,"return %s;\n",n->name);
+        g->indent--;
+        g_indent(g); fprintf(g->out,"})(");
+        if(n->str) fprintf(g->out,"_v('%s',_e)",n->str); else fprintf(g->out,"null");
+        fprintf(g->out,"));\n");
+        break;
+    }
+
+    case ND_INTERFACE_DECL:
+        g_indent(g); fprintf(g->out,"_def(_e,'%s',{__interface__:'%s'});\n",n->name,n->name);
+        break;
+
+    case ND_ASYNC_FUNC:
+        if(n->name){
+            g_indent(g); fprintf(g->out,"_def(_e,'%s',async function %s(",n->name,n->name);
+            for(int i=0;i<n->nparams;i++){ if(i)fprintf(g->out,","); fprintf(g->out,"%s",n->params[i]); }
+            fprintf(g->out,"){\n");
+            g->indent++;
+            g_indent(g); fprintf(g->out,"var _e=_scope(_e);\n");
+            for(int i=0;i<n->nparams;i++){ g_indent(g); fprintf(g->out,"_def(_e,'%s',%s);\n",n->params[i],n->params[i]); }
+            if(n->body) gen_block(g,n->body);
+            g_line(g,"return null;\n");
+            g->indent--;
+            g_indent(g); fprintf(g->out,"});\n");
+        }
+        break;
+
+    case ND_DEFER:
+        g_indent(g); fprintf(g->out,"setTimeout(function(){");
+        if(n->right) gen_stmt(g,n->right);
+        fprintf(g->out,"},0);\n");
+        break;
+
+    case ND_TYPE_ALIAS:
+        g_indent(g); fprintf(g->out,"_def(_e,'%s',",n->name); gen_expr(g,n->right); fprintf(g->out,");\n"); break;
+
+    case ND_ENUM_DECL:
+        g_indent(g); fprintf(g->out,"_def(_e,'%s',Object.freeze({",n->name);
+        for(int i=0;i<n->nfields;i++){ if(i)fprintf(g->out,","); fprintf(g->out,"'%s':%d",n->fields[i],i); }
+        fprintf(g->out,"}));\n"); break;
+
+    case ND_UNION_DECL:
+        g_indent(g); fprintf(g->out,"_def(_e,'%s',{__union__:'%s'});\n",n->name,n->name); break;
+
+    case ND_SAFE_BLOCK:
+        g_indent(g); fprintf(g->out,"try{\n");
+        g->indent++;
+        if(n->body) gen_block(g,n->body);
+        g->indent--;
+        g_indent(g); fprintf(g->out,"}catch(_se){_vcg_print(['[safe] '+_se.message]);}\n"); break;
+
+    case ND_UNSAFE_BLOCK:
+        if(n->body) gen_block(g,n->body); break;
+
+    case ND_GUARD:
+        g_indent(g); fprintf(g->out,"if(!_truthy("); gen_expr(g,n->cond); fprintf(g->out,")){\n");
+        g->indent++;
+        if(n->alt) gen_block(g,n->alt);
+        g->indent--;
+        g_indent(g); fprintf(g->out,"}\n"); break;
+
+    case ND_DOC:
+        g_indent(g); fprintf(g->out,"/* "); if(n->str)fputs(n->str,g->out); fprintf(g->out," */\n"); break;
+
+    case ND_TEST_BLOCK: {
+        int t2=g_tmp(g);
+        g_indent(g); fprintf(g->out,"(function _t%d(){\n",t2);
+        g->indent++;
+        g_indent(g); fprintf(g->out,"try{\n");
+        g->indent++;
+        g_indent(g); fprintf(g->out,"var _e=_scope(_e);\n");
+        if(n->body) gen_block(g,n->body);
+        g->indent--;
+        g_indent(g); fprintf(g->out,"}catch(_te){_vcg_print(['[FAIL] ");
+        if(n->str) fputs(n->str,g->out);
+        fprintf(g->out,": '+_te.message]);return;}\n");
+        g_indent(g); fprintf(g->out,"_vcg_print(['[PASS] ");
+        if(n->str) fputs(n->str,g->out);
+        fprintf(g->out,"']);\n");
+        g->indent--;
+        g_indent(g); fprintf(g->out,"})();\n");
+        break;
+    }
+
+    case ND_MOCK: {
+        int t2=g_tmp(g);
+        g_indent(g); fprintf(g->out,"var _m%d={calls:0,fn:(",t2);
+        if(n->right) gen_expr(g,n->right); else fprintf(g->out,"null");
+        fprintf(g->out,"),call:function(){this.calls++;return this.fn&&this.fn.apply(null,arguments);}};\n");
+        break;
+    }
+
+    case ND_WITH_BLOCK:
+        g_indent(g); fprintf(g->out,"(function(){\n");
+        g->indent++;
+        g_indent(g); fprintf(g->out,"var _e=_scope(_e); var _w="); gen_expr(g,n->init); fprintf(g->out,";\n");
+        if(n->name){ g_indent(g); fprintf(g->out,"_def(_e,'%s',_w);\n",n->name); }
+        if(n->body) gen_block(g,n->body);
+        g_indent(g); fprintf(g->out,"if(_w&&typeof _w.close==='function')_w.close();\n");
+        g->indent--;
+        g_indent(g); fprintf(g->out,"})();\n"); break;
+
+    case ND_ALLOC:
+        g_indent(g); fprintf(g->out,"new Array("); gen_expr(g,n->right); fprintf(g->out,").fill(0);\n"); break;
+
+    case ND_FREE:
+        g_indent(g); gen_expr(g,n->right); fprintf(g->out,"=null;\n"); break;
+
     default: {
         /* expression statement */
         gen_expr(g,n); fprintf(g->out,";\n"); break;
