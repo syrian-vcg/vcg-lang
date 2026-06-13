@@ -138,7 +138,7 @@ static Node *parse_primary(Parser *p) {
         n->params=NULL; n->nparams=0;
         while(!check(p,TK_RPAREN)&&!check(p,TK_EOF)){
             Token pm=cur(p);
-            if(pm.type==TK_IDENT||pm.type==TK_X||pm.type==TK_W||pm.type==TK_C){advance(p);}
+            if(pm.type!=TK_RPAREN&&pm.type!=TK_EOF&&pm.type!=TK_COMMA){advance(p);}
             else pm=expect(p,TK_IDENT,"param");
             n->params = realloc(n->params,(n->nparams+1)*sizeof(char*));
             n->params[n->nparams++] = strdup(pm.sval);
@@ -227,7 +227,7 @@ static Node *parse_primary(Parser *p) {
             expect(p,TK_LPAREN,"(");
             while(!check(p,TK_RPAREN)&&!check(p,TK_EOF)){
                 Token pm=cur(p);
-                if(pm.type==TK_IDENT||pm.type==TK_X||pm.type==TK_W||pm.type==TK_C){advance(p);}
+                if(pm.type!=TK_RPAREN&&pm.type!=TK_EOF&&pm.type!=TK_COMMA){advance(p);}
                 else pm=expect(p,TK_IDENT,"param");
                 lam->params=realloc(lam->params,(lam->nparams+1)*sizeof(char*));
                 lam->params[lam->nparams++]=strdup(pm.sval);
@@ -275,6 +275,26 @@ static Node *parse_primary(Parser *p) {
     case TK_IDENT: {
         advance(p);
         n = nd_new(ND_IDENT, t.line); n->name = strdup(t.sval);
+        return n;
+    }
+    /* ── Contextual fallback: keywords usable as identifiers/calls
+           in expression position ── */
+    case TK_REPEAT: case TK_URL: case TK_BTN: case TK_KEY:
+    case TK_IMG: case TK_VIDEO: case TK_H: case TK_L:
+    case TK_YOUTUBE: case TK_FACEBOOK: case TK_INSTAGRAM: case TK_XSOCIAL:
+    case TK_WITH: case TK_CASE: case TK_FILE: case TK_READ:
+    case TK_WRITE: case TK_APPEND: case TK_HTTP: case TK_REQUEST:
+    case TK_RESPONSE: case TK_SOCKET: case TK_PTR: case TK_GENERIC:
+    case TK_FROM: case TK_AS:
+    case TK_MODULE: case TK_EXPORT: case TK_TYPE: case TK_ENUM:
+    case TK_UNION: case TK_INTERFACE: case TK_IMPLEMENTS: case TK_EXTENDS:
+    case TK_SUPER: case TK_THIS: case TK_ASYNC: case TK_AWAIT:
+    case TK_PROMISE: case TK_DEFER: case TK_SAFE: case TK_UNSAFE:
+    case TK_GUARD: case TK_DOC: case TK_TEST: case TK_EXPECT_KW:
+    case TK_MOCK: case TK_REF: case TK_ALLOC: case TK_FREE: {
+        advance(p);
+        n = nd_new(ND_IDENT, t.line);
+        n->name = strdup(t.sval);
         return n;
     }
     default:
@@ -350,7 +370,8 @@ static Node *parse_postfix(Parser *p) {
 /* ── Binary operator precedence ── */
 typedef struct { TokenType tok; int prec; const char *op; int right_assoc; } OpInfo;
 static const OpInfo OPS[] = {
-    {TK_OR,     1, "or",  0}, {TK_AND,    2, "and", 0},
+    {TK_OR,     1, "or",  0},
+    {TK_PIPELINE,1, "|>",  0}, {TK_AND,    2, "and", 0},
     {TK_PIPE,   3, "|",   0}, {TK_AMP,    5, "&",   0},
     {TK_EQ,     6, "==",  0}, {TK_NEQ,    6, "!=",  0},
     {TK_LT,     7, "<",   0}, {TK_GT,     7, ">",   0},
@@ -360,6 +381,7 @@ static const OpInfo OPS[] = {
     {TK_PLUS,   9, "+",   0}, {TK_MINUS,  9, "-",   0},
     {TK_STAR,  10, "*",   0}, {TK_SLASH, 10, "/",   0},
     {TK_PERCENT,10,"%",   0}, {TK_POWER, 11, "**",  1},
+    {TK_PIPELINE, 0, "|>",  0},
     {TK_EOF,    0, NULL,  0}
 };
 
@@ -454,7 +476,7 @@ static Node *parse_stmt(Parser *p) {
             if(check(p,TK_DOTDOT)){advance(p);n->variadic=1;}
             /* allow contextual keywords as param names */
             Token pm=cur(p);
-            if(pm.type==TK_IDENT||pm.type==TK_X||pm.type==TK_W||pm.type==TK_C){advance(p);}
+            if(pm.type!=TK_RPAREN&&pm.type!=TK_EOF&&pm.type!=TK_COMMA){advance(p);}
             else pm=expect(p,TK_IDENT,"param");
             n->params=realloc(n->params,(n->nparams+1)*sizeof(char*));
             n->params[n->nparams++]=strdup(pm.sval);
@@ -744,6 +766,226 @@ static Node *parse_stmt(Parser *p) {
         expect(p,TK_RPAREN,")"); return n;
     }
 
+    /* ═══════════════════════════════════════════════════════
+       v2.0  NEW CONCEPTS — all tables
+       ═══════════════════════════════════════════════════════ */
+
+    /* module Name { stmts } */
+    case TK_MODULE: {
+        advance(p); n=nd_new(ND_MODULE,t.line);
+        Token nm=expect(p,TK_IDENT,"module name");
+        n->name=strdup(nm.sval);
+        n->body=parse_block(p); return n;
+    }
+
+    /* export let/func/class ... */
+    case TK_EXPORT: {
+        advance(p); n=nd_new(ND_EXPORT,t.line);
+        n->right=parse_stmt(p); return n;
+    }
+
+    /* from module import name [, name] */
+    case TK_FROM: {
+        advance(p); n=nd_new(ND_FROM_IMPORT,t.line);
+        Token mod=cur(p); advance(p);
+        n->str=strdup(mod.sval);
+        expect(p,TK_IMPORT,"import");
+        n->children=NULL; n->nchildren=0;
+        while(check(p,TK_IDENT)){
+            Node *id=nd_new(ND_IDENT,cur(p).line);
+            id->name=strdup(cur(p).sval); advance(p);
+            nd_add_child(n,id);
+            if(check(p,TK_COMMA)) advance(p); else break;
+        }
+        return n;
+    }
+
+    /* class Name [extends Base] [implements I1, I2] { methods } */
+    case TK_CLASS: {
+        advance(p); n=nd_new(ND_CLASS,t.line);
+        Token nm=expect(p,TK_IDENT,"class name");
+        n->name=strdup(nm.sval);
+        /* extends */
+        if(check(p,TK_EXTENDS)){
+            advance(p);
+            Token base=expect(p,TK_IDENT,"base class");
+            n->str=strdup(base.sval);
+        }
+        /* implements */
+        if(check(p,TK_IMPLEMENTS)){
+            advance(p);
+            while(check(p,TK_IDENT)){
+                Node *id=nd_new(ND_IDENT,cur(p).line);
+                id->name=strdup(cur(p).sval); advance(p);
+                nd_add_child(n,id);
+                if(check(p,TK_COMMA)) advance(p); else break;
+            }
+        }
+        n->body=parse_block(p); return n;
+    }
+
+    /* interface Name { signatures } */
+    case TK_INTERFACE: {
+        advance(p); n=nd_new(ND_INTERFACE_DECL,t.line);
+        Token nm=expect(p,TK_IDENT,"interface name");
+        n->name=strdup(nm.sval);
+        n->body=parse_block(p); return n;
+    }
+
+    /* async func name() { } */
+    case TK_ASYNC: {
+        advance(p); n=nd_new(ND_ASYNC_FUNC,t.line);
+        /* expect func keyword after async */
+        if(check(p,TK_FUNC)){
+            advance(p);
+            Token nm=cur(p);
+            if(nm.type==TK_IDENT||nm.type==TK_X||nm.type==TK_W||nm.type==TK_C) advance(p);
+            else nm=expect(p,TK_IDENT,"func name");
+            n->name=strdup(nm.sval);
+            expect(p,TK_LPAREN,"(");
+            n->params=NULL; n->nparams=0;
+            while(!check(p,TK_RPAREN)&&!check(p,TK_EOF)){
+                Token pm=cur(p); advance(p);
+                n->params=realloc(n->params,(n->nparams+1)*sizeof(char*));
+                n->params[n->nparams++]=strdup(pm.sval);
+                if(check(p,TK_COMMA)) advance(p);
+            }
+            expect(p,TK_RPAREN,")");
+            n->body=parse_block(p);
+        } else {
+            n->right=parse_stmt(p);
+        }
+        return n;
+    }
+
+    /* promise { resolve(val) } */
+    case TK_PROMISE: {
+        advance(p); n=nd_new(ND_PROMISE,t.line);
+        n->body=parse_block(p); return n;
+    }
+
+    /* defer stmt */
+    case TK_DEFER: {
+        advance(p); n=nd_new(ND_DEFER,t.line);
+        n->right=parse_stmt(p); return n;
+    }
+
+    /* type Name = type_expr */
+    case TK_TYPE: {
+        advance(p); n=nd_new(ND_TYPE_ALIAS,t.line);
+        Token nm=expect(p,TK_IDENT,"type name");
+        n->name=strdup(nm.sval);
+        expect(p,TK_ASSIGN,"=");
+        n->right=parse_expr(p); return n;
+    }
+
+    /* enum Color { Red, Green, Blue } */
+    case TK_ENUM: {
+        advance(p); n=nd_new(ND_ENUM_DECL,t.line);
+        Token nm=expect(p,TK_IDENT,"enum name");
+        n->name=strdup(nm.sval);
+        expect(p,TK_LBRACE,"{"); skip_nl(p);
+        n->fields=NULL; n->nfields=0;
+        while(!check(p,TK_RBRACE)&&!check(p,TK_EOF)){
+            Token fld=cur(p); advance(p);
+            n->fields=realloc(n->fields,(n->nfields+1)*sizeof(char*));
+            n->fields[n->nfields++]=strdup(fld.sval);
+            skip_nl(p); if(check(p,TK_COMMA)){advance(p);skip_nl(p);}
+        }
+        expect(p,TK_RBRACE,"}"); return n;
+    }
+
+    /* union Name = Type1 | Type2 */
+    case TK_UNION: {
+        advance(p); n=nd_new(ND_UNION_DECL,t.line);
+        Token nm=expect(p,TK_IDENT,"union name");
+        n->name=strdup(nm.sval);
+        if(check(p,TK_ASSIGN)){
+            advance(p);
+            n->children=NULL; n->nchildren=0;
+            while(!check(p,TK_NEWLINE)&&!check(p,TK_SEMICOLON)&&!check(p,TK_EOF)){
+                nd_add_child(n,parse_expr(p));
+                if(check(p,TK_PIPE)) advance(p); else break;
+            }
+        }
+        return n;
+    }
+
+    /* safe { } */
+    case TK_SAFE: {
+        advance(p); n=nd_new(ND_SAFE_BLOCK,t.line);
+        n->body=parse_block(p); return n;
+    }
+
+    /* unsafe { } */
+    case TK_UNSAFE: {
+        advance(p); n=nd_new(ND_UNSAFE_BLOCK,t.line);
+        n->body=parse_block(p); return n;
+    }
+
+    /* guard cond else { } */
+    case TK_GUARD: {
+        advance(p); n=nd_new(ND_GUARD,t.line);
+        n->cond=parse_expr(p);
+        if(check(p,TK_ELSE)){
+            advance(p); n->alt=parse_block(p);
+        }
+        return n;
+    }
+
+    /* doc "description" */
+    case TK_DOC: {
+        advance(p); n=nd_new(ND_DOC,t.line);
+        n->str=strdup(cur(p).sval); advance(p); return n;
+    }
+
+    /* test "name" { } */
+    case TK_TEST: {
+        advance(p); n=nd_new(ND_TEST_BLOCK,t.line);
+        if(cur(p).type==TK_STRING){n->str=strdup(cur(p).sval);advance(p);}
+        else{n->str=strdup("test");}
+        n->body=parse_block(p); return n;
+    }
+
+    /* mock(target) */
+    case TK_MOCK: {
+        advance(p); n=nd_new(ND_MOCK,t.line);
+        if(check(p,TK_LPAREN)){
+            advance(p);
+            n->right=parse_expr(p);
+            expect(p,TK_RPAREN,")");
+        }
+        return n;
+    }
+
+    /* with file.open("x") as f { } */
+    case TK_WITH: {
+        advance(p); n=nd_new(ND_WITH_BLOCK,t.line);
+        n->init=parse_expr(p);
+        if(check(p,TK_AS)){
+            advance(p);
+            Token alias=expect(p,TK_IDENT,"alias");
+            n->name=strdup(alias.sval);
+        }
+        n->body=parse_block(p); return n;
+    }
+
+    /* alloc(size) — as statement */
+    case TK_ALLOC: {
+        advance(p); n=nd_new(ND_ALLOC,t.line);
+        expect(p,TK_LPAREN,"(");
+        n->right=parse_expr(p);
+        expect(p,TK_RPAREN,")"); return n;
+    }
+
+    /* free(ptr) — as statement */
+    case TK_FREE: {
+        advance(p); n=nd_new(ND_FREE,t.line);
+        expect(p,TK_LPAREN,"(");
+        n->right=parse_expr(p);
+        expect(p,TK_RPAREN,")"); return n;
+    }
+
     /* import "module" [as alias] */
     case TK_IMPORT: {
         advance(p); n=nd_new(ND_IMPORT,t.line);
@@ -806,7 +1048,9 @@ static Node *parse_stmt(Parser *p) {
             lam->params=NULL; lam->nparams=0;
             expect(p,TK_LPAREN,"(");
             while(!check(p,TK_RPAREN)&&!check(p,TK_EOF)){
-                Token pm=expect(p,TK_IDENT,"param");
+                Token pm=cur(p);
+                if(pm.type!=TK_RPAREN&&pm.type!=TK_EOF&&pm.type!=TK_COMMA) advance(p);
+                else pm=expect(p,TK_IDENT,"param");
                 lam->params=realloc(lam->params,(lam->nparams+1)*sizeof(char*));
                 lam->params[lam->nparams++]=strdup(pm.sval);
                 if(check(p,TK_COMMA)) advance(p);
