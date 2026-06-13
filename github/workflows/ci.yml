@@ -97,13 +97,8 @@ jobs:
   release:
     name: Create Release
     runs-on: ubuntu-latest
-    release:
-  name: Create Release
-  runs-on: ubuntu-latest
-  if: github.event_name == 'release'
-  permissions:
-    contents: write
-  steps:
+    if: github.event_name == 'release'
+    steps:
       - uses: actions/checkout@v4
       - name: Build
         run: |
