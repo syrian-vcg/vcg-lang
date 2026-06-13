@@ -5,7 +5,7 @@
 #include "../include/vcg.h"
 
 /* ================================================================
-   vcgc  —  Syrian VCG Language Compiler  v1.0
+   vcgc  —  Syrian VCG Language Compiler  v2.0
    Release Date: 2026-06-06
    New in v3.0: $set, $get, public, w, x, c (channels), pipe, watch
    Usage:
