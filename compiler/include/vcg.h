@@ -2,7 +2,7 @@
 #define VCG_H
 
 /* ================================================================
-   Syrian Private Programming VCG  —  v1.0
+   Syrian Private Programming VCG  —  v2.0
    Main header: types, tokens, AST, runtime
    Date: 2026-06-06  (Syrian VCG Language Project)
    ================================================================ */
@@ -18,8 +18,9 @@
 #define VCG_VERSION_MAJOR 1
 #define VCG_VERSION_MINOR 0
 #define VCG_VERSION_PATCH 0
-#define VCG_VERSION_STR   "1.0.0"
+#define VCG_VERSION_STR   "2.0.0"
 #define VCG_RELEASE_DATE  "2026-06-06"
+#define VCG_EDITION       "Full Edition"
 #define VCG_COPYRIGHT     "Syrian VCG Project 2026"
 
 /* ── Limits ── */
@@ -89,6 +90,42 @@ typedef enum {
     TK_IMG,        /* img      — image element       */
     TK_H,          /* h        — heading (h1-h6)     */
     TK_L,          /* l        — list item           */
+    /* ── Modules (table-1) ── */
+    TK_MODULE, TK_EXPORT, TK_FROM,
+
+    /* ── OOP (table-2) ── */
+    TK_CLASS, TK_EXTENDS, TK_IMPLEMENTS, TK_INTERFACE, TK_SUPER, TK_THIS,
+
+    /* ── Async (table-3) ── */
+    TK_ASYNC, TK_AWAIT, TK_PROMISE, TK_DEFER,
+
+    /* ── Types (table-4) ── */
+    TK_TYPE, TK_ENUM, TK_UNION, TK_GENERIC,
+
+    /* ── File I/O (table-5) ── */
+    TK_FILE, TK_READ, TK_WRITE, TK_APPEND,
+
+    /* ── Network (table-6) ── */
+    TK_HTTP, TK_REQUEST, TK_RESPONSE, TK_SOCKET,
+
+    /* ── Memory (table-7) ── */
+    TK_REF, TK_PTR, TK_ALLOC, TK_FREE,
+
+    /* ── Safety (table-8) ── */
+    TK_SAFE, TK_UNSAFE, TK_GUARD,
+
+    /* ── Functional (table-9) ── */
+    TK_MAP_KW, TK_FILTER_KW, TK_REDUCE_KW, TK_FIND_KW,
+
+    /* ── Testing/Docs (table-10) ── */
+    TK_DOC, TK_TEST, TK_EXPECT_KW, TK_MOCK,
+
+    /* ── Key/Get/Set (table-11) ── */
+    TK_GETKEY, TK_SETKEY,
+
+    /* ── Context/Pipeline (table-12) ── */
+    TK_WITH, TK_CASE, TK_PIPELINE, TK_LAMBDA_KW,
+
     TK_NEWLINE, TK_EOF, TK_ERROR
 } TokenType;
 
@@ -146,6 +183,31 @@ typedef enum {
     ND_C,          /* c name          */
     ND_CHANNEL_SEND,  /* name <- expr */
     ND_CHANNEL_RECV,  /* <-name       */
+
+    /* ── v2.0 NEW NODES ── */
+    /* Modules */
+    ND_MODULE, ND_EXPORT, ND_FROM_IMPORT,
+    /* OOP */
+    ND_CLASS, ND_EXTENDS_DECL, ND_INTERFACE_DECL,
+    ND_METHOD, ND_SUPER_CALL, ND_THIS,
+    /* Async */
+    ND_ASYNC_FUNC, ND_AWAIT_EXPR, ND_PROMISE, ND_DEFER,
+    /* Types */
+    ND_TYPE_ALIAS, ND_ENUM_DECL, ND_UNION_DECL,
+    /* File I/O */
+    ND_FILE_OP,
+    /* Network */
+    ND_HTTP_OP,
+    /* Memory */
+    ND_REF, ND_PTR, ND_ALLOC, ND_FREE,
+    /* Safety */
+    ND_SAFE_BLOCK, ND_UNSAFE_BLOCK, ND_GUARD,
+    /* Functional */
+    ND_MAP_CALL, ND_FILTER_CALL, ND_REDUCE_CALL, ND_FIND_CALL,
+    /* Testing */
+    ND_DOC, ND_TEST_BLOCK, ND_EXPECT_CALL, ND_MOCK,
+    /* Context/Pipeline */
+    ND_WITH_BLOCK, ND_PIPELINE_EXPR, ND_LAMBDA_ARROW,
 
     /* ── v1.0 UI/Media nodes ── */
     ND_YOUTUBE,    ND_FACEBOOK,   ND_INSTAGRAM,
@@ -354,6 +416,8 @@ typedef struct {
 
 void   interp_init(Interpreter *I);
 VCGVal interp_run(Interpreter *I, Node *program, FILE *html_out);
+/* exported for stdlib higher-order functions (map/filter/reduce/find) */
+VCGVal vcg_call_value(VCGVal fn, VCGVal *args, int nargs);
 void   interp_free(Interpreter *I);
 
 /* ================================================================
