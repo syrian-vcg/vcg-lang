@@ -6,7 +6,7 @@
 #include "../include/vcg.h"
 
 /* ================================================================
-   VCG Interpreter  —  tree-walking evaluator  (v1.0, 2026-06-06)
+   VCG Interpreter  —  tree-walking evaluator  (v2.0, 2026-06-06)
    ================================================================ */
 
 static VCGVal eval(Interpreter *I, Node *n, VCGEnv *env);
@@ -96,12 +96,13 @@ static VCGVal eval_binop(Interpreter *I, Node *n, VCGEnv *env) {
 }
 
 /* ── call function ── */
-static VCGVal call_func(Interpreter *I, VCGVal fn_val, VCGVal *args, int nargs, int line) {
+static VCGVal call_func_self(Interpreter *I, VCGVal fn_val, VCGVal *self, VCGVal *args, int nargs, int line) {
     if(fn_val.type==VT_BUILTIN) return fn_val.builtin(args, nargs, line);
     if(fn_val.type!=VT_FUNC){ ERR(I,line,"Not callable"); }
     VCGFunc *fn = fn_val.fn;
     if(++I->call_depth > VCG_MAX_CALL_DEPTH){ ERR(I,line,"Stack overflow"); }
     VCGEnv *fenv = env_new(fn->closure ? fn->closure : I->globals);
+    if(self) env_set(fenv,"self",*self,0);
     for(int i=0;i<fn->nparams;i++){
         if(fn->variadic && i==fn->nparams-1){
             VCGVal rest=vcg_arr_new();
@@ -122,6 +123,10 @@ static VCGVal call_func(Interpreter *I, VCGVal fn_val, VCGVal *args, int nargs, 
     if(I->signal==SIG_RETURN){ ret=I->signal_val; I->signal=SIG_NONE; I->signal_val=VCG_NIL; }
     env_free(fenv);
     return ret;
+}
+
+static VCGVal call_func(Interpreter *I, VCGVal fn_val, VCGVal *args, int nargs, int line) {
+    return call_func_self(I, fn_val, NULL, args, nargs, line);
 }
 
 /* ── main eval ── */
@@ -432,20 +437,31 @@ static VCGVal eval(Interpreter *I, Node *n, VCGEnv *env) {
     }
 
     case ND_NEW: {
-        VCGVal tmpl_v; VCGVal *tp=env_get(env,n->name);
+        VCGVal *tp=env_get(env,n->name);
         VCGVal obj=vcg_struct_new(n->name);
         if(tp&&tp->type==VT_STRUCT){
-            /* copy default fields */
+            /* copy default fields/methods */
             for(int i=0;i<tp->obj->len;i++)
                 struct_set(obj.obj,tp->obj->keys[i],tp->obj->vals[i]);
         }
-        /* set fields by position */
-        VCGVal *base=tp&&tp->type==VT_STRUCT?tp:NULL;
-        for(int i=0;i<n->nchildren;i++){
-            VCGVal v=eval(I,n->children[i],env); if(I->signal) return VCG_NIL;
-            if(base&&i<base->obj->len) struct_set(obj.obj,base->obj->keys[i],v);
+        /* evaluate constructor arguments */
+        VCGVal args[VCG_MAX_PARAMS]; int nargs=0;
+        for(int i=0;i<n->nchildren && nargs<VCG_MAX_PARAMS;i++){
+            args[nargs]=eval(I,n->children[i],env); if(I->signal) return VCG_NIL;
+            nargs++;
         }
-        (void)tmpl_v;
+        /* class-style: call init(self, ...args) if present */
+        VCGVal *initm = struct_get(obj.obj,"init");
+        if(initm && initm->type==VT_FUNC){
+            call_func_self(I,*initm,&obj,args,nargs,n->line);
+            if(I->signal==SIG_RETURN){I->signal=SIG_NONE;I->signal_val=VCG_NIL;}
+            return obj;
+        }
+        /* struct-style: set fields by position (struct Point{x,y} + new Point(1,2)) */
+        VCGVal *base=tp&&tp->type==VT_STRUCT?tp:NULL;
+        for(int i=0;i<nargs;i++){
+            if(base&&i<base->obj->len) struct_set(obj.obj,base->obj->keys[i],args[i]);
+        }
         return obj;
     }
 
@@ -585,10 +601,7 @@ static VCGVal eval(Interpreter *I, Node *n, VCGEnv *env) {
         if(obj.type==VT_STRUCT){
             VCGVal *method=struct_get(obj.obj,m);
             if(method&&method->type==VT_FUNC){
-                VCGVal all_args[VCG_MAX_PARAMS+1];
-                all_args[0]=obj;
-                for(int i=0;i<nargs;i++) all_args[i+1]=args[i];
-                return call_func(I,*method,all_args,nargs+1,n->line);
+                return call_func_self(I,*method,&obj,args,nargs,n->line);
             }
         }
         ERR(I,n->line,"No method '%s'", m);
@@ -922,7 +935,330 @@ static VCGVal eval(Interpreter *I, Node *n, VCGEnv *env) {
         printf("</ul>\n"); return VCG_NIL;
     }
 
-        case ND_IMPORT: return VCG_NIL; /* handled at top level */
+        /* ═══════════════════════════════════════════════════════
+       v2.0 NEW CONCEPTS
+       ═══════════════════════════════════════════════════════ */
+
+    /* module Name { stmts } — creates a namespace object */
+    case ND_MODULE: {
+        VCGVal mod=vcg_struct_new(n->name);
+        VCGEnv *menv=env_new(env);
+        if(n->body){
+            for(int _i=0;_i<n->body->nchildren&&!I->signal;_i++)
+                eval(I,n->body->children[_i],menv);
+        }
+        /* copy all defined names into mod struct */
+        for(int i=0;i<menv->len;i++)
+            struct_set(mod.obj,menv->bindings[i].name,menv->bindings[i].val);
+        env_set(env,n->name,mod,0);
+        env_free(menv); return mod;
+    }
+
+    /* export decl — execute inner decl + register in __exports__ */
+    case ND_EXPORT: {
+        if(n->right) eval(I,n->right,env);
+        if(!I->signal && n->right && n->right->name){
+            VCGVal *exports=env_get(I->globals,"__exports__");
+            if(exports&&exports->type==VT_STRUCT){
+                VCGVal *v=env_get(env,n->right->name);
+                if(v) struct_set(exports->obj,n->right->name,*v);
+            }
+        }
+        return VCG_NIL;
+    }
+
+    /* from module import name */
+    case ND_FROM_IMPORT: {
+        VCGVal *mod=env_get(env,n->str);
+        if(mod&&mod->type==VT_STRUCT){
+            for(int i=0;i<n->nchildren;i++){
+                if(n->children[i]->name){
+                    VCGVal *v=struct_get(mod->obj,n->children[i]->name);
+                    if(v) env_set(env,n->children[i]->name,*v,0);
+                }
+            }
+        }
+        return VCG_NIL;
+    }
+
+    /* class Name [extends Base] { methods } */
+    case ND_CLASS: {
+        VCGVal cls=vcg_struct_new(n->name);
+        struct_set(cls.obj,"__class__",vcg_str(n->name));
+        /* inheritance: copy base class methods */
+        if(n->str){
+            VCGVal *base=env_get(env,n->str);
+            if(base&&base->type==VT_STRUCT)
+                for(int i=0;i<base->obj->len;i++)
+                    struct_set(cls.obj,base->obj->keys[i],base->obj->vals[i]);
+        }
+        /* evaluate body directly (bypass ND_BLOCK's own scope) to define methods */
+        VCGEnv *cenv=env_new(env);
+        if(n->body){
+            for(int _i=0;_i<n->body->nchildren&&!I->signal;_i++)
+                eval(I,n->body->children[_i],cenv);
+        }
+        for(int i=0;i<cenv->len;i++)
+            struct_set(cls.obj,cenv->bindings[i].name,cenv->bindings[i].val);
+        env_free(cenv);
+        env_set(env,n->name,cls,0);
+        return cls;
+    }
+
+    /* interface Name { } — define interface prototype */
+    case ND_INTERFACE_DECL: {
+        VCGVal iface=vcg_struct_new(n->name);
+        struct_set(iface.obj,"__interface__",vcg_str(n->name));
+        env_set(env,n->name,iface,0);
+        return iface;
+    }
+
+    /* async func — in interpreter just defines as regular func (async is semantic) */
+    case ND_ASYNC_FUNC: {
+        VCGVal fv; fv.type=VT_FUNC;
+        fv.fn=calloc(1,sizeof(VCGFunc));
+        fv.fn->body=n->body;
+        fv.fn->params=n->params; fv.fn->nparams=n->nparams;
+        fv.fn->variadic=n->variadic;
+        {
+            VCGEnv *snap=env_new(I->globals);
+            for(VCGEnv *cur=env;cur&&cur!=I->globals;cur=cur->parent)
+                for(int _i=0;_i<cur->len;_i++)
+                    env_set(snap,cur->bindings[_i].name,cur->bindings[_i].val,0);
+            snap->refs=2; fv.fn->closure=snap;
+        }
+        fv.fn->name=n->name?n->name:"<async>";
+        if(n->name) env_set(env,n->name,fv,0);
+        return fv;
+    }
+
+    /* await expr — in interpreter: just evaluate the expr (sync simulation) */
+    case ND_AWAIT_EXPR: {
+        return eval(I,n->right,env);
+    }
+
+    /* promise { } — execute body, wrap result */
+    case ND_PROMISE: {
+        eval(I,n->body,env);
+        if(I->signal==SIG_RETURN){
+            VCGVal ret=I->signal_val;
+            I->signal=SIG_NONE; I->signal_val=VCG_NIL;
+            VCGVal p=vcg_struct_new("Promise");
+            struct_set(p.obj,"value",ret);
+            struct_set(p.obj,"resolved",VCG_TRUE);
+            return p;
+        }
+        VCGVal p=vcg_struct_new("Promise");
+        struct_set(p.obj,"resolved",VCG_TRUE);
+        return p;
+    }
+
+    /* defer stmt — register for execution at scope end (simplified: execute now) */
+    case ND_DEFER: {
+        /* Simplified: just evaluate — real defer needs scope tracking */
+        if(n->right) eval(I,n->right,env);
+        return VCG_NIL;
+    }
+
+    /* type Name = expr */
+    case ND_TYPE_ALIAS: {
+        VCGVal v=eval(I,n->right,env); if(I->signal) return VCG_NIL;
+        env_set(env,n->name,v,1); return VCG_NIL;
+    }
+
+    /* enum Color { Red, Green, Blue } */
+    case ND_ENUM_DECL: {
+        VCGVal en=vcg_struct_new(n->name);
+        for(int i=0;i<n->nfields;i++)
+            struct_set(en.obj,n->fields[i],VCG_INT(i));
+        env_set(env,n->name,en,0);
+        return en;
+    }
+
+    /* union Name = T1 | T2 */
+    case ND_UNION_DECL: {
+        VCGVal un=vcg_struct_new(n->name);
+        struct_set(un.obj,"__union__",vcg_str(n->name));
+        env_set(env,n->name,un,0);
+        return un;
+    }
+
+    /* safe { } — execute block, catch panics */
+    case ND_SAFE_BLOCK: {
+        eval(I,n->body,env);
+        if(I->signal==SIG_THROW){ I->signal=SIG_NONE; I->signal_val=VCG_NIL; }
+        return VCG_NIL;
+    }
+
+    /* unsafe { } — execute normally */
+    case ND_UNSAFE_BLOCK: {
+        eval(I,n->body,env);
+        return VCG_NIL;
+    }
+
+    /* guard cond else { } */
+    case ND_GUARD: {
+        VCGVal c=eval(I,n->cond,env); if(I->signal) return VCG_NIL;
+        if(!vcg_truthy(c)){
+            if(n->alt) eval(I,n->alt,env);
+        }
+        return VCG_NIL;
+    }
+
+    /* doc "description" - print as comment */
+    case ND_DOC: {
+        if(n->str){ fputs("/** ",stdout); fputs(n->str,stdout); fputs(" */\n",stdout); }
+        return VCG_NIL;
+    }
+
+    /* test "name" { } */
+    case ND_TEST_BLOCK: {
+        fputs("[TEST] ",stdout);fputs(n->str?n->str:"unnamed",stdout);fputs("\n",stdout);
+        eval(I,n->body,env);
+        if(I->signal==SIG_THROW){
+            fputs("[FAIL] ",stdout);fputs(n->str?n->str:"",stdout);fputs(": ",stdout);fputs(I->error_msg,stdout);fputs("\n",stdout);
+            I->signal=SIG_NONE;
+        } else {
+            fputs("[PASS] ",stdout);fputs(n->str?n->str:"unnamed",stdout);fputs("\n",stdout);
+        }
+        return VCG_NIL;
+    }
+
+    /* expect(val).toBe(expected) — simplified */
+    case ND_EXPECT_CALL: {
+        VCGVal v=eval(I,n->left,env); if(I->signal) return VCG_NIL;
+        /* Return a struct with assertion methods */
+        VCGVal ex=vcg_struct_new("Expectation");
+        struct_set(ex.obj,"__val__",v);
+        return ex;
+    }
+
+    /* mock(target) */
+    case ND_MOCK: {
+        if(n->right){
+            VCGVal t2=eval(I,n->right,env);
+            /* Create a mock wrapper */
+            VCGVal mock=vcg_struct_new("Mock");
+            struct_set(mock.obj,"__original__",t2);
+            struct_set(mock.obj,"called",VCG_INT(0));
+            return mock;
+        }
+        return VCG_NIL;
+    }
+
+    /* with expr as name { } */
+    case ND_WITH_BLOCK: {
+        VCGVal res=eval(I,n->init,env); if(I->signal) return VCG_NIL;
+        VCGEnv *wenv=env_new(env);
+        if(n->name) env_set(wenv,n->name,res,0);
+        eval(I,n->body,wenv);
+        env_free(wenv);
+        return VCG_NIL;
+    }
+
+    /* alloc(n) */
+    case ND_ALLOC: {
+        VCGVal sz=eval(I,n->right,env); if(I->signal) return VCG_NIL;
+        /* Simulate: create array of size n */
+        int size=(int)(sz.type==VT_INT?sz.ival:(int)sz.fval);
+        VCGVal arr=vcg_arr_new();
+        for(int i=0;i<size&&i<VCG_MAX_ARRAY;i++){
+            arr_push(arr.arr,VCG_INT(0));
+        }
+        return arr;
+    }
+
+    /* free(ptr) */
+    case ND_FREE: {
+        eval(I,n->right,env); /* evaluate to consume; actual free not needed in GC'd interp */
+        return VCG_NIL;
+    }
+
+    /* ref expr */
+    case ND_REF: {
+        VCGVal v=eval(I,n->right,env); if(I->signal) return VCG_NIL;
+        VCGVal ref=vcg_struct_new("Ref");
+        struct_set(ref.obj,"value",v);
+        return ref;
+    }
+
+    /* map(fn, arr) */
+    case ND_MAP_CALL: {
+        VCGVal fn=eval(I,n->left,env);  if(I->signal) return VCG_NIL;
+        VCGVal arr=eval(I,n->right,env); if(I->signal) return VCG_NIL;
+        if(arr.type!=VT_ARRAY) return vcg_arr_new();
+        VCGVal res=vcg_arr_new();
+        for(int i=0;i<arr.arr->len&&!I->signal;i++){
+            VCGVal mapped=call_func(I,fn,&arr.arr->items[i],1,n->line);
+            if(!I->signal) arr_push(res.arr,mapped);
+        }
+        if(I->signal==SIG_RETURN){I->signal=SIG_NONE;I->signal_val=VCG_NIL;}
+        return res;
+    }
+
+    /* filter(pred, arr) */
+    case ND_FILTER_CALL: {
+        VCGVal pred=eval(I,n->left,env);  if(I->signal) return VCG_NIL;
+        VCGVal arr=eval(I,n->right,env);  if(I->signal) return VCG_NIL;
+        if(arr.type!=VT_ARRAY) return vcg_arr_new();
+        VCGVal res=vcg_arr_new();
+        for(int i=0;i<arr.arr->len&&!I->signal;i++){
+            VCGVal ok=call_func(I,pred,&arr.arr->items[i],1,n->line);
+            if(!I->signal&&vcg_truthy(ok)) arr_push(res.arr,arr.arr->items[i]);
+            if(I->signal==SIG_RETURN){I->signal=SIG_NONE;I->signal_val=VCG_NIL;}
+        }
+        return res;
+    }
+
+    /* reduce(fn, init, arr) */
+    case ND_REDUCE_CALL: {
+        VCGVal fn=eval(I,n->left,env);  if(I->signal) return VCG_NIL;
+        VCGVal init=eval(I,n->right,env); if(I->signal) return VCG_NIL;
+        VCGVal arr=eval(I,n->children[0],env); if(I->signal) return VCG_NIL;
+        if(arr.type!=VT_ARRAY) return init;
+        VCGVal acc=init;
+        for(int i=0;i<arr.arr->len&&!I->signal;i++){
+            VCGVal args[2]={acc,arr.arr->items[i]};
+            acc=call_func(I,fn,args,2,n->line);
+            if(I->signal==SIG_RETURN){acc=I->signal_val;I->signal=SIG_NONE;I->signal_val=VCG_NIL;}
+        }
+        return acc;
+    }
+
+    /* find(pred, arr) */
+    case ND_FIND_CALL: {
+        VCGVal pred=eval(I,n->left,env);  if(I->signal) return VCG_NIL;
+        VCGVal arr=eval(I,n->right,env);  if(I->signal) return VCG_NIL;
+        if(arr.type!=VT_ARRAY) return VCG_NIL;
+        for(int i=0;i<arr.arr->len&&!I->signal;i++){
+            VCGVal ok=call_func(I,pred,&arr.arr->items[i],1,n->line);
+            if(!I->signal&&vcg_truthy(ok)) return arr.arr->items[i];
+            if(I->signal==SIG_RETURN){I->signal=SIG_NONE;I->signal_val=VCG_NIL;}
+        }
+        return VCG_NIL;
+    }
+
+    /* pipeline |> — handled as binop in codegen, interpreter uses _bin */
+
+    /* lambda arrow \ x -> expr */
+    case ND_LAMBDA_ARROW: {
+        VCGVal fv; fv.type=VT_FUNC;
+        fv.fn=calloc(1,sizeof(VCGFunc));
+        fv.fn->body=n->body;
+        fv.fn->params=n->params; fv.fn->nparams=n->nparams;
+        fv.fn->variadic=0;
+        {
+            VCGEnv *snap=env_new(I->globals);
+            for(VCGEnv *cur=env;cur&&cur!=I->globals;cur=cur->parent)
+                for(int _i=0;_i<cur->len;_i++)
+                    env_set(snap,cur->bindings[_i].name,cur->bindings[_i].val,0);
+            snap->refs=2; fv.fn->closure=snap;
+        }
+        fv.fn->name="<lambda>";
+        return fv;
+    }
+
+    case ND_IMPORT: return VCG_NIL; /* handled at top level */
 
     default: return VCG_NIL;
     }
@@ -945,8 +1281,16 @@ void interp_init(Interpreter *I) {
     (void)watch_fn;
 }
 
+Interpreter *g_vcg_interp = NULL;
+
+VCGVal vcg_call_value(VCGVal fn, VCGVal *args, int nargs) {
+    if(!g_vcg_interp) return VCG_NIL;
+    return call_func(g_vcg_interp, fn, args, nargs, 0);
+}
+
 VCGVal interp_run(Interpreter *I, Node *program, FILE *html_out) {
     I->html_out = html_out;
+    g_vcg_interp = I;
     return eval(I, program, I->globals);
 }
 
