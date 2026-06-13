@@ -15,29 +15,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ── 1. Checkout ──────────────────────────────────────
       - name: Checkout repository
-        uses: actions/checkout@v4.2.0  # ✅ تحديث محدد
+        uses: actions/checkout@v4
 
-      # ── 2. Java 17 ───────────────────────────────────────
       - name: Set up JDK 17
-        uses: actions/setup-java@v4.5.0  # ✅ تحديث محدد
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: gradle
 
-      # ── 3. Android SDK ───────────────────────────────────
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3.2.1  # ✅ تحديث محدد
+        uses: android-actions/setup-android@v3
 
-      # ── 4. Gradle permissions ────────────────────────────
       - name: Make gradlew executable
         run: chmod +x editor/android/gradlew
 
-      # ── 5. Cache Gradle ──────────────────────────────────
       - name: Cache Gradle packages
-        uses: actions/cache@v4.2.0  # ✅ تحديث محدد
+        uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
@@ -45,68 +40,57 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('editor/android/**/*.gradle*', 'editor/android/**/gradle-wrapper.properties') }}
           restore-keys: ${{ runner.os }}-gradle-
 
-      # ── 6. Build Debug APK ───────────────────────────────
       - name: Build Debug APK
         working-directory: editor/android
-        run: ./gradlew assembleDebug --no-daemon --stacktrace -Dorg.gradle.jvmargs="-Xmx4096m"
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
 
-      # ── 7. Build Release APK (unsigned) ──────────────────
       - name: Build Release APK
         working-directory: editor/android
-        run: ./gradlew assembleRelease --no-daemon --stacktrace -Dorg.gradle.jvmargs="-Xmx4096m"
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
 
-      # ── 8. Check APK output ──────────────────────────────
       - name: Verify APK outputs
         run: |
           if [ ! -d "editor/android/app/build/outputs/apk" ]; then
-            echo "❌ Error: APK output directory not found"
+            echo "❌ APK output directory not found!"
             exit 1
           fi
-          echo "✓ APK directory found:"
+          echo "✓ APK files found:"
           find editor/android/app/build/outputs/apk -name "*.apk" -type f -exec ls -lh {} \;
 
-      # ── 9. Rename APKs ───────────────────────────────────
-      - name: Rename APK files
+      - name: Prepare APK files
         run: |
           mkdir -p apk-output
-          count=0
           find editor/android/app/build/outputs/apk -name "*.apk" -type f | while read f; do
             fname=$(basename "$f")
             cp "$f" "apk-output/vcg-editor-${fname}"
             echo "✓ Copied: $fname"
-            ((count++))
           done
-          echo "---"
           ls -lh apk-output/
 
-      # ── 10. Upload Debug APK artifact ────────────────────
       - name: Upload Debug APK
         if: always()
-        uses: actions/upload-artifact@v4.5.0  # ✅ تحديث محدد
+        uses: actions/upload-artifact@v4
         with:
           name: vcg-editor-debug-apk
           path: apk-output/vcg-editor-*debug*.apk
           retention-days: 30
 
-      # ── 11. Upload Release APK artifact ──────────────────
       - name: Upload Release APK
         if: always()
-        uses: actions/upload-artifact@v4.5.0  # ✅ تحديث محدد
+        uses: actions/upload-artifact@v4
         with:
           name: vcg-editor-release-apk
           path: apk-output/vcg-editor-*release*.apk
           retention-days: 30
 
-      # ── 12. Upload to GitHub Release ─────────────────────
-      - name: Upload APK to Release
+      - name: Upload to Release
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2.0.9  # ✅ تحديث محدد
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             apk-output/vcg-editor-*debug*.apk
             apk-output/vcg-editor-*release*.apk
 
-  # ── Sign APK (optional, needs keystore secret) ───────────
   sign-apk:
     name: Sign Release APK
     runs-on: ubuntu-latest
@@ -115,7 +99,7 @@ jobs:
 
     steps:
       - name: Download Release APK
-        uses: actions/download-artifact@v4.5.0  # ✅ تحديث محدد
+        uses: actions/download-artifact@v4
         with:
           name: vcg-editor-release-apk
           path: apk-to-sign/
@@ -124,7 +108,7 @@ jobs:
         if: ${{ secrets.KEYSTORE_BASE64 != '' }}
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > vcg-release.keystore
-          find apk-to-sign -name "*.apk" -type f | while read apk; do
+          find apk-to-sign -name "*.apk" | while read apk; do
             jarsigner -verbose \
               -sigalg SHA256withRSA \
               -digestalg SHA-256 \
@@ -137,7 +121,7 @@ jobs:
 
       - name: Upload Signed APK
         if: ${{ secrets.KEYSTORE_BASE64 != '' }}
-        uses: actions/upload-artifact@v4.5.0  # ✅ تحديث محدد
+        uses: actions/upload-artifact@v4
         with:
           name: vcg-editor-signed-apk
           path: apk-to-sign/*.apk
