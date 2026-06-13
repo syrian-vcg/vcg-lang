@@ -1,0 +1,282 @@
+# ============================================================
+# Syrian VCG v2.0  —  All New Concepts Demo
+# Date: 2026-06-06
+# ============================================================
+
+show("Syrian VCG v2.0 - Full Edition")
+show("================================")
+show("")
+
+# ── 1. class & extends ──────────────────────────────────────
+show("=== 1. Class & OOP ===")
+
+class Animal {
+    func init(name, sound) {
+        self.name = name
+        self.sound = sound
+    }
+    func speak() {
+        return self.name + " says: " + self.sound
+    }
+}
+
+class Dog {
+    func init(name) {
+        self.name = name
+        self.sound = "Woof"
+    }
+    func speak() {
+        return self.name + " barks: " + self.sound
+    }
+    func fetch(item) {
+        return self.name + " fetches the " + item
+    }
+}
+
+let dog = new Dog("Rex")
+show(dog.speak())
+show(dog.fetch("ball"))
+
+show("")
+
+# ── 2. enum ──────────────────────────────────────────────────
+show("=== 2. Enum ===")
+
+enum Color { Red, Green, Blue, Yellow }
+enum Direction { North, South, East, West }
+enum Status { Pending, Active, Done, Failed }
+
+show("Color.Red    =", Color.Red)
+show("Color.Green  =", Color.Green)
+show("Color.Blue   =", Color.Blue)
+show("Direction.North =", Direction.North)
+show("Status.Done =", Status.Done)
+
+show("")
+
+# ── 3. type alias ────────────────────────────────────────────
+show("=== 3. Type Aliases ===")
+
+type Point2D = { x: 0, y: 0 }
+type Callback = func() {}
+type NumberList = []
+
+show("Point2D:", typeof(Point2D))
+show("NumberList:", typeof(NumberList))
+
+show("")
+
+# ── 4. module ────────────────────────────────────────────────
+show("=== 4. Modules ===")
+
+module Math2 {
+    func square(x)  { return x * x }
+    func cube(x)    { return x * x * x }
+    func abs2(x)    { return x < 0 ? -x : x }
+    let PI2 = 3.14159
+}
+
+show("Math2.square(5) =", Math2.square)
+show("Math2.PI2       =", Math2.PI2)
+
+module StringUtils {
+    func capitalize(s) {
+        if len(s) == 0 { return s }
+        return s.upper()
+    }
+    func words(s) {
+        return s.split(" ")
+    }
+    func word_count(s) {
+        return len(s.split(" "))
+    }
+}
+
+show("StringUtils.capitalize =", StringUtils.capitalize)
+show("")
+
+# ── 5. map, filter, reduce, find ─────────────────────────────
+show("=== 5. Functional: map, filter, reduce, find ===")
+
+let nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+func double(x)     { return x * 2 }
+func is_even(x)    { return x % 2 == 0 }
+func add_pair(a,b) { return a + b }
+func gt_5(x)       { return x > 5 }
+
+let doubled  = map(double, nums)
+let evens    = filter(is_even, nums)
+let total    = reduce(add_pair, 0, nums)
+let first_gt = find(gt_5, nums)
+
+show("nums     :", nums)
+show("doubled  :", doubled)
+show("evens    :", evens)
+show("sum      :", total)
+show("first>5  :", first_gt)
+
+show("")
+
+# ── 6. Array helpers ─────────────────────────────────────────
+show("=== 6. Array Helpers ===")
+
+let data = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3]
+show("data    :", data)
+show("unique  :", unique(data))
+show("sum     :", sum(data))
+show("avg     :", avg(data))
+show("first   :", first(data))
+show("last    :", last(data))
+
+let nested = [[1,2],[3,4],[5,6]]
+show("flat    :", flat(nested))
+
+let pairs = zip([1,2,3], ["a","b","c"])
+show("zip     :", pairs)
+
+let chunks = chunk([1,2,3,4,5,6], 2)
+show("chunk(2):", chunks)
+
+show("")
+
+# ── 7. safe / unsafe / guard ─────────────────────────────────
+show("=== 7. Safety ===")
+
+safe {
+    let x = 10
+    if x == 0 { throw "division by zero" }
+    show("safe block result:", x * 2)
+}
+
+safe {
+    throw "intentional error in safe block"
+    show("this should not print")
+}
+show("continued after safe block with error")
+
+let value = 42
+guard value > 0 else {
+    show("guard failed!")
+}
+show("guard passed for value:", value)
+
+show("")
+
+# ── 8. test & expect ─────────────────────────────────────────
+show("=== 8. Testing ===")
+
+func add(a, b) { return a + b }
+func multiply(a, b) { return a * b }
+
+test "addition works" {
+    assert_eq(add(2, 3), 5)
+    assert_eq(add(0, 0), 0)
+    assert_eq(add(-1, 1), 0)
+}
+
+test "multiplication works" {
+    assert_eq(multiply(3, 4), 12)
+    assert_eq(multiply(0, 99), 0)
+    assert_true(multiply(2, 2) == 4)
+}
+
+test "string operations" {
+    assert_eq(len("hello"), 5)
+    assert_true(includes("hello world", "world"))
+    assert_false(includes("hello", "xyz"))
+}
+
+show("")
+
+# ── 9. with block ────────────────────────────────────────────
+show("=== 9. With Block ===")
+
+let config = { host: "localhost", port: 8080, debug: true }
+
+with config as cfg {
+    show("Host:", cfg.host)
+    show("Port:", cfg.port)
+    show("Debug:", cfg.debug)
+}
+
+show("")
+
+# ── 10. String helpers ───────────────────────────────────────
+show("=== 10. String Helpers ===")
+
+let s = "Hello VCG"
+show("original :", s)
+show("includes :", includes(s, "VCG"))
+show("indexof  :", indexof(s, "VCG"))
+show("count    :", count("banana", "a"))
+show("pad_start:", pad_start("42", 6, "0"))
+show("pad_end  :", pad_end("VCG", 8, "-"))
+show("repeat   :", repeat("ab", 4))
+
+show("")
+
+# ── 11. Object helpers ───────────────────────────────────────
+show("=== 11. Object Helpers ===")
+
+let a_obj = { x: 1, y: 2 }
+let b_obj = { z: 3, w: 4 }
+let merged = merge(a_obj, b_obj)
+show("merged  :", merged)
+show("has(x)  :", has(merged, "x"))
+show("has(q)  :", has(merged, "q"))
+show("entries :", entries(a_obj))
+
+show("")
+
+# ── 12. Math helpers ─────────────────────────────────────────
+show("=== 12. Math & Utilities ===")
+
+show("gcd(48,18)    =", gcd(48, 18))
+show("lcm(12,8)     =", lcm(12, 8))
+show("fib(10)       =", fib(10))
+show("factorial(7)  =", factorial(7))
+show("is_prime(17)  =", is_prime(17))
+show("is_prime(18)  =", is_prime(18))
+show("TAU           =", TAU)
+show("PHI (golden)  =", PHI)
+show("uuid()        =", uuid())
+show("hash('VCG')   =", hash("VCG"))
+
+show("")
+
+# ── 13. JSON ─────────────────────────────────────────────────
+show("=== 13. JSON ===")
+
+let obj2 = { name: "VCG", version: "2.0", active: true }
+let json_str = JSON_stringify(42)
+show("JSON_stringify(42)     =", json_str)
+show("JSON_parse('true')     =", JSON_parse("true"))
+show("JSON_parse('123.5')    =", JSON_parse("123.5"))
+show("JSON_parse('\"hello\"') =", JSON_parse('"hello"'))
+
+show("")
+
+# ── 14. Async (simulated) ────────────────────────────────────
+show("=== 14. Async / Await (simulated) ===")
+
+async func fetch_data(url) {
+    show("[async] fetching:", url)
+    return "data from " + url
+}
+
+let result = fetch_data("https://api.example.com/data")
+show("result:", result)
+
+show("")
+
+# ── 15. defer ────────────────────────────────────────────────
+show("=== 15. Defer ===")
+
+show("before defer")
+defer show("deferred execution!")
+show("after defer")
+
+show("")
+show("=== VCG v2.0 Full Edition - Done! ===")
+show("All", 15, "concepts demonstrated successfully")
