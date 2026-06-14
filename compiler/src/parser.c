@@ -16,7 +16,7 @@ static Node *parse_expr_prec(Parser *p, int minp);
 
 /* ── Helpers ── */
 static Token cur(Parser *p)        { return p->cur; }
-static Token peek(Parser *p)       { return p->ahead; }
+__attribute__((unused)) static Token peek(Parser *p) { return p->ahead; }
 
 static void advance(Parser *p) {
     p->cur = p->ahead;
@@ -38,7 +38,7 @@ static Token expect(Parser *p, TokenType t, const char *what) {
 }
 
 static int check(Parser *p, TokenType t) { return p->cur.type == t; }
-static int match(Parser *p, TokenType t) {
+__attribute__((unused)) static int match(Parser *p, TokenType t) {
     if (p->cur.type == t) { advance(p); return 1; }
     return 0;
 }
@@ -381,7 +381,6 @@ static const OpInfo OPS[] = {
     {TK_PLUS,   9, "+",   0}, {TK_MINUS,  9, "-",   0},
     {TK_STAR,  10, "*",   0}, {TK_SLASH, 10, "/",   0},
     {TK_PERCENT,10,"%",   0}, {TK_POWER, 11, "**",  1},
-    {TK_PIPELINE, 0, "|>",  0},
     {TK_EOF,    0, NULL,  0}
 };
 
@@ -453,7 +452,7 @@ static Node *parse_stmt(Parser *p) {
         else nm=expect(p,TK_IDENT,"variable name");
         n->name = strdup(nm.sval);
         /* optional type annotation */
-        if(check(p,TK_COLON)){ advance(p); advance(p); /* skip type for now */ }
+        if(check(p,TK_COLON)){ advance(p); /* skip : */ if(!check(p,TK_ASSIGN)&&!check(p,TK_EOF)) advance(p); /* skip type ident */ }
         if(check(p,TK_ASSIGN)){
             advance(p); n->right = parse_expr(p);
         }
