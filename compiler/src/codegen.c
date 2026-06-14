@@ -456,7 +456,8 @@ static void gen_stmt(CodeGen *g, Node *n){
         g_indent(g); fprintf(g->out,"}catch(_se){_vcg_print(['[safe] '+_se.message]);}\n"); break;
 
     case ND_UNSAFE_BLOCK:
-        if(n->body) gen_block(g,n->body); break;
+        if(n->body) gen_block(g,n->body);
+        break;
 
     case ND_GUARD:
         g_indent(g); fprintf(g->out,"if(!_truthy("); gen_expr(g,n->cond); fprintf(g->out,")){\n");
