@@ -236,10 +236,12 @@ BUILTIN(pipe_fn) {
     if(!n) return VCG_NIL;
     VCGVal v = a[0];
     for(int i=1;i<n;i++){
-        if(a[i].type==VT_BUILTIN)      v=a[i].builtin(&v,1,0);
-        else if(a[i].type==VT_FUNC){
-            /* call manually: we cannot call call_func here without Interpreter*
-               so we just return current value - full support in codegen */
+        if(a[i].type==VT_BUILTIN){
+            v=a[i].builtin(&v,1,0);
+        } else if(a[i].type==VT_FUNC){
+            /* Cannot call user functions without Interpreter* */
+            /* Return current value - full pipe support in codegen */
+            return v;
         }
     }
     return v;
