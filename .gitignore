@@ -1,17 +1,32 @@
-# Build outputs
+# VCG Compiler binary
 vcgc
 vcgc_dbg
 *.o
 *.a
 
-# Generated HTML
+# Build outputs
 output/*.html
 
-# Editor
-.vscode/
+# Android build
+editor/android/.gradle/
+editor/android/app/build/
+editor/android/build/
+*.apk
+*.aab
+*.keystore
+
+# OS files
+.DS_Store
+Thumbs.db
 *.swp
 *~
 
-# OS
-.DS_Store
-Thumbs.db
+# IDE
+.idea/
+*.iml
+.vscode/
+*.class
+
+# Python
+__pycache__/
+*.pyc
