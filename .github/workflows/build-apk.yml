@@ -72,15 +72,18 @@ jobs:
   sign-apk:
     runs-on: ubuntu-latest
     needs: build-apk
-    if: github.ref == 'refs/heads/main' && secrets.KEYSTORE_BASE64 != ''
+    if: github.ref == 'refs/heads/main'
+    env:
+      KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
     steps:
       - uses: actions/download-artifact@v4
         with:
           name: vcg-editor-release-apk
           path: to-sign/
       - name: Sign
+        if: env.KEYSTORE_BASE64 != ''
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release.keystore
+          echo "$KEYSTORE_BASE64" | base64 -d > release.keystore
           find to-sign -name "*.apk" -exec jarsigner -verbose \
             -sigalg SHA256withRSA -digestalg SHA-256 \
             -keystore release.keystore \
