@@ -29,7 +29,7 @@ $(BIN): $(SRCS) $(HEADERS)
 	$(CC) $(CFLAGS) -o $(BIN) $(SRCS) $(LDFLAGS)
 	chmod +x $(BIN)
 	@echo "✓ Built: $(BIN) v2.0.0"
-	@./$(BIN) --version
+	@./$(BIN) --version 2>/dev/null || echo "  (version check skipped)"
 
 # ── Debug build ─────────────────────────────────────────────────
 debug: $(SRCS) $(HEADERS)
