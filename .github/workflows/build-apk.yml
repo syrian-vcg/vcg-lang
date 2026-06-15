@@ -11,8 +11,9 @@ on:
 
 jobs:
   build-apk:
-    name: Build Android APK
+    name: Build APK
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout code
@@ -29,71 +30,54 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Make gradlew executable
-        run: |
-          chmod +x editor/android/gradlew
-          ls -la editor/android/gradlew
+        run: chmod +x editor/android/gradlew
 
-      - name: Verify Java version
-        run: |
-          java -version
-          echo "JAVA_HOME=$JAVA_HOME"
-
-      - name: Cache Gradle packages
+      - name: Cache Gradle
         uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: ${{ runner.os }}-gradle-
+          key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-
 
       - name: Build Debug APK
         working-directory: editor/android
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
         env:
-          GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx2048m"
-        run: |
-          ./gradlew assembleDebug \
-            --no-daemon \
-            --stacktrace \
-            -Dorg.gradle.jvmargs=-Xmx2048m
+          GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m"
 
       - name: Build Release APK
         working-directory: editor/android
+        run: ./gradlew assembleRelease --no-daemon
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx2048m"
-        run: |
-          ./gradlew assembleRelease \
-            --no-daemon \
-            -Dorg.gradle.jvmargs=-Xmx2048m
+        continue-on-error: true
 
-      - name: Create APK output directory
+      - name: Collect APKs
         run: |
           mkdir -p apk-output
-          find editor/android/app/build/outputs/apk -name "*.apk" 2>/dev/null | while read f; do
-            name=$(basename "$f")
-            cp "$f" "apk-output/vcg-editor-${name}"
-            echo "Copied: $name"
-          done
-          echo "=== APK files ==="
-          ls -lh apk-output/ || echo "No APK files found"
+          find editor/android/app/build/outputs/apk -name "*.apk" 2>/dev/null \
+            -exec cp {} apk-output/ \; || true
+          echo "=== APK Output ==="; ls -lh apk-output/ || echo "No APKs"
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: vcg-editor-debug-apk
+          name: vcg-editor-debug-${{ github.sha }}
           path: apk-output/*debug*.apk
           retention-days: 30
-        continue-on-error: true
 
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: vcg-editor-release-apk
+          name: vcg-editor-release-${{ github.sha }}
           path: apk-output/*release*.apk
           retention-days: 30
-        continue-on-error: true
 
-      - name: Upload to GitHub Release
+      - name: Upload to Release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
@@ -101,43 +85,37 @@ jobs:
         continue-on-error: true
 
   sign-apk:
-    name: Sign Release APK
+    name: Sign APK
     runs-on: ubuntu-latest
     needs: build-apk
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && secrets.KEYSTORE_BASE64 != ''
 
     steps:
       - name: Download Release APK
         uses: actions/download-artifact@v4
         with:
-          name: vcg-editor-release-apk
-          path: apk-to-sign/
+          name: vcg-editor-release-${{ github.sha }}
+          path: to-sign/
         continue-on-error: true
 
-      - name: Sign APK (if keystore secret exists)
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+      - name: Sign APK
         run: |
-          if [ -z "${{ secrets.KEYSTORE_BASE64 }}" ]; then
-            echo "No keystore secret found, skipping signing"
-            exit 0
-          fi
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > vcg-release.keystore
-          find apk-to-sign -name "*.apk" | while read apk; do
-            "$JAVA_HOME/bin/jarsigner" -verbose \
-              -sigalg SHA256withRSA \
-              -digestalg SHA-256 \
-              -keystore vcg-release.keystore \
+          if [ -z "${{ secrets.KEYSTORE_BASE64 }}" ]; then exit 0; fi
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release.keystore
+          find to-sign -name "*.apk" | while read apk; do
+            $JAVA_HOME/bin/jarsigner -verbose \
+              -sigalg SHA256withRSA -digestalg SHA-256 \
+              -keystore release.keystore \
               -storepass "${{ secrets.KEYSTORE_PASS }}" \
               -keypass "${{ secrets.KEY_PASS }}" \
               "$apk" "${{ secrets.KEY_ALIAS }}"
-            echo "Signed: $apk"
           done
+        continue-on-error: true
 
       - name: Upload Signed APK
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
         uses: actions/upload-artifact@v4
         with:
-          name: vcg-editor-signed-apk
-          path: apk-to-sign/*.apk
+          name: vcg-editor-signed-${{ github.sha }}
+          path: to-sign/*.apk
           retention-days: 30
         continue-on-error: true
