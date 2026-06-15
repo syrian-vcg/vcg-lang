@@ -15,7 +15,7 @@
 #include <ctype.h>
 
 /* ── Version ── */
-#define VCG_VERSION_MAJOR 2
+#define VCG_VERSION_MAJOR 1
 #define VCG_VERSION_MINOR 0
 #define VCG_VERSION_PATCH 0
 #define VCG_VERSION_STR   "2.0.0"
