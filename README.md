@@ -4,7 +4,7 @@
 
 # Syrian Private Programming VCG
 
-**لغة برمجة سورية  — مفتوحة المصدر**
+**لغة برمجة سورية حقيقية — مفتوحة المصدر**
 
 [![Build](https://github.com/syrian-vcg/vcg-lang/actions/workflows/ci.yml/badge.svg)](https://github.com/syrian-vcg/vcg-lang/actions/workflows/ci.yml)
 [![Pages](https://github.com/syrian-vcg/vcg-lang/actions/workflows/pages.yml/badge.svg)](https://github.com/syrian-vcg/vcg-lang/actions/workflows/pages.yml)
