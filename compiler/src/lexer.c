@@ -92,7 +92,7 @@ static Token mktok(Lexer *l, TokenType t, const char *v, double n){
     tk.line = l->line;
     tk.col  = l->col;
     tk.file = l->file;
-    if(v) { strncpy(tk.sval, v, VCG_MAX_STRING-1); tk.sval[VCG_MAX_STRING-1]='\0'; }
+    if(v) strncpy(tk.sval, v, VCG_MAX_STRING-1);
     else  tk.sval[0]='\0';
     return tk;
 }
@@ -110,7 +110,7 @@ static Token lex_string(Lexer *l, char delim) {
                 case '"':  buf[i++]='"';  break;
                 case '\'': buf[i++]='\''; break;
                 case '\\': buf[i++]='\\'; break;
-                case '0':  /* \0 would truncate C string, skip it */ break;
+                case '0':  buf[i++]='\0'; break;
                 default:   buf[i++]='?';  break;
             }
         } else buf[i++]=adv(l);
