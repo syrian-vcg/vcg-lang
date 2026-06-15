@@ -427,6 +427,8 @@ static VCGVal eval(Interpreter *I, Node *n, VCGEnv *env) {
     }
 
     case ND_STRUCT: {
+        /* Register struct constructor */
+        VCGVal ctor; ctor.type=VT_BUILTIN;
         /* We store struct info in a struct value */
         VCGVal proto=vcg_struct_new(n->name);
         for(int i=0;i<n->nfields;i++) struct_set(proto.obj,n->fields[i],VCG_NIL);
@@ -522,8 +524,7 @@ static VCGVal eval(Interpreter *I, Node *n, VCGEnv *env) {
             if(strcmp(m,"slice")==0){
                 int from=nargs>0?(int)as_num(args[0]):0;
                 int to=nargs>1?(int)as_num(args[1]):obj.arr->len;
-                if(from<0) from=0;
-                if(to>obj.arr->len) to=obj.arr->len;
+                if(from<0) from=0; if(to>obj.arr->len) to=obj.arr->len;
                 VCGVal res=vcg_arr_new();
                 for(int i=from;i<to;i++){
                     if(res.arr->len>=res.arr->cap){res.arr->cap=res.arr->cap?res.arr->cap*2:8;res.arr->items=realloc(res.arr->items,res.arr->cap*sizeof(VCGVal));}
@@ -656,7 +657,9 @@ static VCGVal eval(Interpreter *I, Node *n, VCGEnv *env) {
     }
 
     case ND_PROGRAM: {
-        for(int i=0;i<n->nchildren&&!I->signal;i++) eval(I,n->children[i],env);
+        VCGEnv *benv=(n->type==ND_PROGRAM)?env:env_new(env);
+        for(int i=0;i<n->nchildren&&!I->signal;i++) eval(I,n->children[i],benv);
+        if(n->type!=ND_PROGRAM) env_free(benv);
         return VCG_NIL;
     }
 
@@ -1272,8 +1275,10 @@ void interp_init(Interpreter *I) {
     env_set(I->globals, "__watchers__", vcg_struct_new("watchers"), 0);
     env_set(I->globals, "__writeonly__",vcg_struct_new("writeonly"),0);
 
-    /* Built-in: watch(key, fn) — registered via stdlib_register */
-    /* The watch function is handled by stdlib_register(env) above */
+    /* Built-in: watch(key, fn) — register reactive watcher */
+    VCGVal watch_fn; watch_fn.type=VT_BUILTIN;
+    watch_fn.builtin = NULL; /* filled below via stdlib */
+    (void)watch_fn;
 }
 
 Interpreter *g_vcg_interp = NULL;
