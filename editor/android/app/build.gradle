@@ -8,7 +8,8 @@ android {
 
     defaultConfig {
         applicationId "com.syrianvcg.editor"
-        minSdk 24
+        // تم ترقية minSdk إلى 26 لدعم Adaptive Icons بشكل قياسي وتجنب أخطاء AAPT أثناء البناء
+        minSdk 26
         targetSdk 34
         versionCode 1
         versionName "1.0.0"
