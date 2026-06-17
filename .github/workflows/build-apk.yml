@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android APK for Editor
 
 on:
   push:
@@ -12,8 +12,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  detect-and-build:
-    name: Detect Framework & Build APK
+  build-apk:
+    name: Build Android APK (Editor)
     runs-on: ubuntu-latest
 
     steps:
@@ -26,164 +26,74 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Detect Project Type
-        id: detector
-        run: |
-          echo "=== Scanning Repository Structures ==="
-          PUBSPEC=$(find . -name "pubspec.yaml" -not -path "*/node_modules/*" -not -path "*/.*/*" | head -n 1)
-          PACKAGE_JSON=$(find . -name "package.json" -not -path "*/node_modules/*" -not -path "*/.*/*" | head -n 1)
-          GRADLE_FILE=$(find . -name "build.gradle" -o -name "build.gradle.kts" -not -path "*/node_modules/*" -not -path "*/.*/*" | head -n 1)
-
-          PROJECT_TYPE="unknown"
-          PROJECT_DIR="."
-
-          if [ -n "$PUBSPEC" ]; then
-            PROJECT_TYPE="flutter"
-            PROJECT_DIR=$(dirname "$PUBSPEC")
-          elif [ -n "$PACKAGE_JSON" ]; then
-            PROJECT_TYPE="node"
-            PROJECT_DIR=$(dirname "$PACKAGE_JSON")
-          elif [ -n "$GRADLE_FILE" ]; then
-            PROJECT_TYPE="android-gradle"
-            PROJECT_DIR=$(dirname "$GRADLE_FILE")
-          fi
-
-          echo "Detected Project Type: $PROJECT_TYPE"
-          echo "Detected Project Directory: $PROJECT_DIR"
-
-          # Check for gradlew
-          GRADLEW=$(find . -name "gradlew" -not -path "*/node_modules/*" -not -path "*/.*/*" | head -n 1)
-          if [ -n "$GRADLEW" ]; then
-            echo "has_gradlew=true" >> $GITHUB_OUTPUT
-            echo "gradlew_path=$GRADLEW" >> $GITHUB_OUTPUT
-          else
-            echo "has_gradlew=false" >> $GITHUB_OUTPUT
-          fi
-
-          echo "project_type=$PROJECT_TYPE" >> $GITHUB_OUTPUT
-          echo "project_dir=$PROJECT_DIR" >> $GITHUB_OUTPUT
-
-      # --- FLUTTER SPECIFIC BUILD ---
-      - name: Set up Flutter
-        if: steps.detector.outputs.project_type == 'flutter'
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          cache: true
-
-      - name: Build Flutter APK
-        if: steps.detector.outputs.project_type == 'flutter'
-        run: |
-          cd "${{ steps.detector.outputs.project_dir }}"
-          flutter pub get
-          flutter build apk --debug
-
-      # --- NODE / REACT NATIVE / CAPACITOR / EXPO BUILD ---
       - name: Set up Node.js
-        if: steps.detector.outputs.project_type == 'node'
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
-      - name: Install Node Dependencies
-        if: steps.detector.outputs.project_type == 'node'
+      - name: Install Dependencies & Build Web Editor
         run: |
-          cd "${{ steps.detector.outputs.project_dir }}"
-          npm install --legacy-peer-deps
-
-      - name: Build JS Web App (if Capacitor/Cordova)
-        if: steps.detector.outputs.project_type == 'node'
-        run: |
-          cd "${{ steps.detector.outputs.project_dir }}"
-          # Run build only if there's a build script
-          if grep -q '"build"' package.json; then
-            npm run build || echo "Web build failed or not strictly required."
-          fi
-
-      - name: Set up Capacitor / Sync Web Assets (if applicable)
-        if: steps.detector.outputs.project_type == 'node'
-        run: |
-          cd "${{ steps.detector.outputs.project_dir }}"
-          # Check if Capacitor is used
-          if grep -q "@capacitor/core" package.json; then
-            npm install @capacitor/core @capacitor/cli @capacitor/android --save-dev
-            if [ ! -f "capacitor.config.json" ] && [ ! -f "capacitor.config.ts" ]; then
-              npx cap init "App" "com.example.app" --web-dir=dist
-            fi
-            if [ ! -d "android" ]; then
-              npx cap add android
-            fi
-            npx cap sync android
-          fi
-
-      - name: Set up Expo Prebuild (if applicable)
-        if: steps.detector.outputs.project_type == 'node'
-        run: |
-          cd "${{ steps.detector.outputs.project_dir }}"
-          if grep -q "expo" package.json; then
-            npx expo prebuild --platform android
-          fi
-
-      # --- PURE GRADLE / ANDROID BUILD ---
-      - name: Set up Gradle Action
-        if: steps.detector.outputs.project_type == 'android-gradle' || steps.detector.outputs.project_type == 'node'
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Generate Gradle Wrapper (if missing)
-        if: (steps.detector.outputs.project_type == 'android-gradle' || steps.detector.outputs.project_type == 'node') && steps.detector.outputs.has_gradlew == 'false'
-        run: |
-          # Find directory with build.gradle
-          GRADLE_DIR=$(find . -name "build.gradle" -o -name "build.gradle.kts" -not -path "*/node_modules/*" -not -path "*/.*/*" | head -n 1 | xargs dirname)
-          if [ -n "$GRADLE_DIR" ]; then
-            cd "$GRADLE_DIR"
-            gradle wrapper
-            chmod +x gradlew
-          fi
-
-      - name: Build Android App with Gradle (for Native / Node apps)
-        if: steps.detector.outputs.project_type == 'android-gradle' || steps.detector.outputs.project_type == 'node'
-        run: |
-          # Find directory with gradlew or fall back to gradle command
-          GRADLEW_PATH=$(find . -name "gradlew" -not -path "*/node_modules/*" -not -path "*/.*/*" | head -n 1)
-          if [ -n "$GRADLEW_PATH" ]; then
-            GRADLE_DIR=$(dirname "$GRADLEW_PATH")
-            cd "$GRADLE_DIR"
-            chmod +x gradlew
-            ./gradlew assembleDebug
-          else
-            # Try running gradle directly if setup-gradle is active
-            GRADLE_DIR=$(find . -name "build.gradle" -o -name "build.gradle.kts" -not -path "*/node_modules/*" -not -path "*/.*/*" | head -n 1 | xargs dirname)
-            if [ -n "$GRADLE_DIR" ]; then
-              cd "$GRADLE_DIR"
-              gradle assembleDebug
-            else
-              echo "No gradle file found."
-              exit 1
-            fi
-          fi
-
-      # --- GENERIC GRADLE FALLBACK (if unknown but build.gradle exists) ---
-      - name: Fallback Build
-        if: steps.detector.outputs.project_type == 'unknown'
-        run: |
-          GRADLE_DIR=$(find . -name "build.gradle" -o -name "build.gradle.kts" -not -path "*/node_modules/*" -not -path "*/.*/*" | head -n 1 | xargs dirname)
-          if [ -n "$GRADLE_DIR" ]; then
-            echo "Found gradle project at $GRADLE_DIR in unknown context. Attempting to build."
-            cd "$GRADLE_DIR"
-            if [ -f "./gradlew" ]; then
-              chmod +x ./gradlew
-              ./gradlew assembleDebug
-            else
-              gradle assembleDebug
+          if [ -d "editor" ]; then
+            cd editor
+            echo "Installing dependencies inside editor..."
+            npm install --legacy-peer-deps
+            
+            echo "Building static web assets..."
+            if grep -q '"build"' package.json; then
+              npm run build || echo "No custom build or failed, continuing..."
             fi
           else
-            echo "Could not auto-detect any buildable mobile project."
+            echo "Error: Directory 'editor' not found!"
             exit 1
           fi
 
-      # --- UPLOAD ARTIFACTS ---
+      - name: Set up Capacitor & Sync Android
+        run: |
+          cd editor
+          
+          # Install capacitor dependencies if they are not already installed
+          echo "Installing Capacitor..."
+          npm install @capacitor/core @capacitor/cli @capacitor/android --save-dev
+
+          # Detemine build/web output directory (commonly 'dist', 'build', or 'public')
+          WEB_DIR="dist"
+          if [ -d "build" ]; then
+            WEB_DIR="build"
+          elif [ -d "dist" ]; then
+            WEB_DIR="dist"
+          elif [ -d "public" ]; then
+            WEB_DIR="public"
+          fi
+          echo "Web Assets Directory is: $WEB_DIR"
+
+          # Initialize Capacitor if config doesn't exist
+          if [ ! -f "capacitor.config.json" ] && [ ! -f "capacitor.config.ts" ]; then
+            echo "Initializing Capacitor config..."
+            npx cap init "VCG Editor" "com.syrianvcg.editor" --web-dir=$WEB_DIR
+          fi
+
+          # Add Android platform if it doesn't exist
+          if [ ! -d "android" ]; then
+            echo "Adding Android platform..."
+            npx cap add android
+          fi
+
+          # Sync assets to native project
+          echo "Syncing assets..."
+          npx cap sync android
+
+      - name: Set up Gradle Cache
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build Debug APK with Gradle
+        run: |
+          cd editor/android
+          echo "Granting permissions & building APK..."
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-apk
+          name: vcg-editor-debug-apk
           path: "**/build/outputs/apk/debug/*.apk"
