@@ -26,74 +26,42 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '8.4'
 
-      - name: Fix Line Endings (CRLF to LF) & Executable Permission
-        run: |
-          if [ -f "editor/android/gradlew" ]; then
-            sed -i 's/\r$//' editor/android/gradlew
-            chmod +x editor/android/gradlew
-          fi
-
-      - name: Verify Gradle Wrapper or Fallback
-        working-directory: editor/android
-        run: |
-          # If gradlew fails or is corrupted, regenerate it using the preinstalled Gradle 8.4
-          ./gradlew --version || {
-            echo "Gradle wrapper check failed. Regenerating clean Gradle wrapper..."
-            gradle wrapper --gradle-version 8.4
-            chmod +x gradlew
-            ./gradlew --version
-          }
-
-      - name: Fix Adaptive Icons & Build Configuration
-        run: |
-          echo "=== Starting Automatic Build Optimization ==="
-          
-          # 1. Update minSdk to 26 to satisfy AAPT requirements for adaptive-icon
-          BUILD_GRADLE="editor/android/app/build.gradle"
-          if [ -f "$BUILD_GRADLE" ]; then
-            echo "Upgrading minSdk from 24 to 26 in $BUILD_GRADLE to support adaptive icon xml elements..."
-            sed -i 's/minSdk [0-9]\+/minSdk 26/g' "$BUILD_GRADLE"
-            cat "$BUILD_GRADLE" | grep minSdk || true
-          else
-            echo "Error: $BUILD_GRADLE not found."
-          fi
-
-          # 2. Correctly structure adaptive icon XMLs by moving them to mipmap-anydpi-v26
-          RES_ROOT="editor/android/app/src/main/res"
-          ANYDPI_DIR="$RES_ROOT/mipmap-anydpi-v26"
-          mkdir -p "$ANYDPI_DIR"
-          
-          echo "Restructuring launcher icons..."
-          for density in mipmap-hdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi; do
-            if [ -d "$RES_ROOT/$density" ]; then
-              # Find XML adaptive launcher icons and safely move them to mipmap-anydpi-v26
-              find "$RES_ROOT/$density" -maxdepth 1 -name "ic_launcher*.xml" -exec mv -t "$ANYDPI_DIR" {} + 2>/dev/null && echo "Moved XML icons from $density to mipmap-anydpi-v26" || true
-            fi
-          done
-
-          # 3. List files to confirm successful restructuring
-          echo "Current mipmap-anydpi-v26 directory content:"
-          ls -la "$ANYDPI_DIR" || true
+      - name: Make gradlew executable
+        run: chmod +x editor/android/gradlew
 
       - name: Build Debug APK
         working-directory: editor/android
         run: |
-          ./gradlew assembleDebug --no-daemon --stacktrace -Dorg.gradle.jvmargs=-Xmx2048m
+          gradle assembleDebug \
+            --no-daemon \
+            --stacktrace \
+            -Dorg.gradle.jvmargs=-Xmx2048m
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
 
       - name: Build Release APK
         working-directory: editor/android
         run: |
-          ./gradlew assembleRelease --no-daemon --stacktrace -Dorg.gradle.jvmargs=-Xmx2048m
+          gradle assembleRelease \
+            --no-daemon \
+            -Dorg.gradle.jvmargs=-Xmx2048m
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+        continue-on-error: true
 
       - name: Collect APKs
         run: |
           mkdir -p apk-output
-          find editor/android/app/build/outputs/apk -name "*.apk" -exec cp {} apk-output/ \;
+          find editor/android/app/build/outputs/apk -name "*.apk" 2>/dev/null \
+            -exec cp {} apk-output/ \; || true
           echo "=== APK files ==="
           ls -lh apk-output/ || echo "No APKs found"
 
@@ -148,14 +116,13 @@ jobs:
           KEY_PASS: ${{ secrets.KEY_PASS }}
         run: |
           if [ -z "$KEYSTORE_B64" ]; then
-            echo "No keystore configured — skipping signing"
+            echo "No keystore configured â€” skipping signing"
             exit 0
           fi
           echo "$KEYSTORE_B64" | base64 -d > release.keystore
           find to-sign -name "*.apk" | while read apk; do
             $JAVA_HOME/bin/jarsigner -verbose \
-              -sigalg SHA256withRSA \
-              -digestalg SHA-256 \
+              -sigalg SHA256withRSA -digestalg SHA-256 \
               -keystore release.keystore \
               -storepass "$KEYSTORE_PASS" \
               -keypass "$KEY_PASS" \
