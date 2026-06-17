@@ -1,4 +1,4 @@
-name: Build Android APK for Editor
+name: Build VCG Editor APK
 
 on:
   push:
@@ -26,74 +26,24 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Install Dependencies & Build Web Editor
-        run: |
-          if [ -d "editor" ]; then
-            cd editor
-            echo "Installing dependencies inside editor..."
-            npm install --legacy-peer-deps
-            
-            echo "Building static web assets..."
-            if grep -q '"build"' package.json; then
-              npm run build || echo "No custom build or failed, continuing..."
-            fi
-          else
-            echo "Error: Directory 'editor' not found!"
-            exit 1
-          fi
-
-      - name: Set up Capacitor & Sync Android
-        run: |
-          cd editor
-          
-          # Install capacitor dependencies if they are not already installed
-          echo "Installing Capacitor..."
-          npm install @capacitor/core @capacitor/cli @capacitor/android --save-dev
-
-          # Detemine build/web output directory (commonly 'dist', 'build', or 'public')
-          WEB_DIR="dist"
-          if [ -d "build" ]; then
-            WEB_DIR="build"
-          elif [ -d "dist" ]; then
-            WEB_DIR="dist"
-          elif [ -d "public" ]; then
-            WEB_DIR="public"
-          fi
-          echo "Web Assets Directory is: $WEB_DIR"
-
-          # Initialize Capacitor if config doesn't exist
-          if [ ! -f "capacitor.config.json" ] && [ ! -f "capacitor.config.ts" ]; then
-            echo "Initializing Capacitor config..."
-            npx cap init "VCG Editor" "com.syrianvcg.editor" --web-dir=$WEB_DIR
-          fi
-
-          # Add Android platform if it doesn't exist
-          if [ ! -d "android" ]; then
-            echo "Adding Android platform..."
-            npx cap add android
-          fi
-
-          # Sync assets to native project
-          echo "Syncing assets..."
-          npx cap sync android
-
       - name: Set up Gradle Cache
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build Debug APK with Gradle
         run: |
-          cd editor/android
-          echo "Granting permissions & building APK..."
-          chmod +x gradlew
-          ./gradlew assembleDebug
+          if [ -d "editor/android" ]; then
+            cd editor/android
+            echo "Granting executable permissions to Gradle wrapper..."
+            chmod +x gradlew
+            echo "Building Debug APK..."
+            ./gradlew assembleDebug
+          else
+            echo "Error: Directory 'editor/android' not found!"
+            exit 1
+          fi
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: vcg-editor-debug-apk
-          path: "**/build/outputs/apk/debug/*.apk"
+          path: editor/android/app/build/outputs/apk/debug/app-debug.apk
