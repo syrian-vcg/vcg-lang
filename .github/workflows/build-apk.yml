@@ -1,15 +1,13 @@
-name: Android Build & Download (Debug)
+name: Android Build & Sign Release
 
 on:
   push:
     branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
-  workflow_dispatch: # يتيح لك بدء البناء يدوياً من واجهة GitHub
+  workflow_dispatch:
 
 jobs:
   build:
-    name: Build Android APK
+    name: Build & Sign APK
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -24,17 +22,27 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: 'gradle' # ⚡ تسريع بناء التطبيق بحفظ مكتبات Gradle مؤقتاً
+          cache: 'gradle'
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug # يولد ملف APK قابل للتثبيت فوراً للمبرمجين
+      - name: Build Unsigned Release APK
+        run: ./gradlew assembleRelease
 
-      - name: Upload Debug APK
+      - name: Sign Release APK
+        uses: r0adkll/sign-android-release@v1
+        id: sign_app
+        with:
+          releaseDirectory: editor/android/app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+          alias: ${{ secrets.ANDROID_ALIAS }}
+          keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      - name: Upload Signed Production APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-version
-          path: editor/android/app/build/outputs/apk/debug/app-debug.apk
+          name: signed-production-apk
+          path: ${{ steps.sign_app.outputs.signedReleaseFile }}
           if-no-files-found: error
