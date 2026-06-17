@@ -72,6 +72,8 @@ EOF
         run: |
           if [ -d "editor/android" ]; then
             cd editor/android
+            echo "Converting potential Windows CRLF line endings in gradlew..."
+            sed -i 's/\r$//' gradlew
             echo "Granting executable permissions to Gradle wrapper..."
             chmod +x gradlew
             echo "Building Debug APK..."
