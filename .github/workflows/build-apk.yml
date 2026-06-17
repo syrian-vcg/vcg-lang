@@ -35,6 +35,28 @@ jobs:
       - name: Install required SDK components
         run: sdkmanager "platforms;android-34" "build-tools;34.0.0"
 
+      - name: Fix string escape bug in VcgInterpreter.java
+        run: |
+          python3 << 'PYEOF'
+          path = 'editor/android/app/src/main/java/com/syrianvcg/editor/VcgInterpreter.java'
+          with open(path, 'r') as f:
+              lines = f.readlines()
+          fixed = False
+          for i, line in enumerate(lines):
+              if '_out.innerHTML=' in line and 'empty' in line and 'No output' in line:
+                  old = line
+                  lines[i] = "            \"    var e2=document.createElement('span');e2.className='empty';e2.textContent='No output';_out.appendChild(e2);\\n\" +\n"
+                  print(f'Line {i+1} patched')
+                  print(f'  Before: {repr(old.strip())}')
+                  print(f'  After:  {repr(lines[i].strip())}')
+                  fixed = True
+                  break
+          if not fixed:
+              print('Line already clean or pattern not found')
+          with open(path, 'w') as f:
+              f.writelines(lines)
+          PYEOF
+
       - name: Make gradlew executable
         run: chmod +x editor/android/gradlew
 
