@@ -39,7 +39,7 @@ public class VcgInterpreter {
             "  _rt.run();\n" +
             "  var _out=document.getElementById('out');\n" +
             "  if(_rt.out.length===0){\n" +
-            "    _out.innerHTML='<span class=\\"empty\\">No output</span>';\n" +
+            "                "    _out.innerHTML='<span class=\"empty\">No output</span>';\n" +
             "  } else {\n" +
             "    _rt.out.forEach(function(item){\n" +
             "      if(item.t==='html'){\n" +
