@@ -1,16 +1,8 @@
 package com.syrianvcg.editor;
 
-/**
- * VcgInterpreter v2.0 - Full VCG Language Support
- * Converts VCG source code to self-contained HTML+JS for execution in WebView.
- * Supports all VCG v2.0 features: variables, functions, classes, modules, enums,
- * async/await, try/catch, match/when, reactive store ($set/$get), channels,
- * UI elements, guard, safe/unsafe blocks, test blocks, lambdas, pipeline, etc.
- */
 public class VcgInterpreter {
 
     public static String buildHtml(String vcgCode, String title) {
-        // Escape VCG code for embedding in JS string (backtick template)
         String escaped = vcgCode
             .replace("\\", "\\\\")
             .replace("`", "\\`")
@@ -39,7 +31,7 @@ public class VcgInterpreter {
             "  _rt.run();\n" +
             "  var _out=document.getElementById('out');\n" +
             "  if(_rt.out.length===0){\n" +
-            "                "    _out.innerHTML='<span class=\"empty\">No output</span>';\n" +
+            "    var e2=document.createElement('span');e2.className='empty';e2.textContent='No output';_out.appendChild(e2);\n" +
             "  } else {\n" +
             "    _rt.out.forEach(function(item){\n" +
             "      if(item.t==='html'){\n" +
@@ -352,22 +344,6 @@ public class VcgInterpreter {
             "  if(t.v=='throw'){this.eat();var v=this.parseExpr(e);throw new Error(String(v));}\n" +
             "  if(t.v=='try'){this.eat();var bp=this.pos;this._skipBlock();var be=this.pos;this.eat('catch');var nm2=null;if(this.cur().t=='ID')nm2=this.eat().v;var cp=this.pos;this._skipBlock();var ce2=this.pos;var err=null;try{this.pos=bp;this.parseBlock(this._scope(e));}catch(ex){err=ex;}if(err){this.pos=cp;var cv=this._scope(e);if(nm2)this._def(cv,nm2,err.message);this.parseBlock(cv);}this.pos=ce2;return;}\n" +
             "  if(t.v=='match'){this.eat();var val=this.parseExpr(e);this.eat('{');while(this.cur().v=='when'&&!this._hasRet){this.eat();var arm=this.parseExpr(e);if(this.cur().v=='->'||this.cur().v==':')this.eat();if(val==arm)this.parseStmt(e);else this._skipStmt();}this.eat('}');return;}\n" +
-            "  if(t.v=='guard'){this.eat();var cond=this.parseExpr(e);if(this.cur().v=='else'){this.eat();if(!cond){this.parseBlock(this._scope(e));}else this._skipBlock();}return;}\n" +
-            "  if(t.v=='safe'){this.eat();var bp=this.pos;this._skipBlock();var be=this.pos;try{this.pos=bp;this.parseBlock(this._scope(e));}catch(ex){this.out.push({t:'txt',v:'[safe] '+ex.message});}this.pos=be;return;}\n" +
-            "  if(t.v=='unsafe'){this.eat();this.parseBlock(e);return;}\n" +
-            "  if(t.v=='defer'){this.eat();var sp=this.pos;this._skipStmt();var ep=this.pos;this._defer.push({s:sp,e:ep,env:e});return;}\n" +
-            "  if(t.v=='promise'){this.eat();this.parseBlock(e);return;}\n" +
-            "  if(t.v=='await'){this.eat();var prom=this.parseExpr(e);if(prom&&typeof prom.then=='function'){var self2=this;var res=null;prom.then(function(v){res=v;});this._def(e,'_await_res',res);}return;}\n" +
-            "  if(t.v=='doc'){this.eat();var txt='';if(this.cur().t=='STR'||this.cur().t=='ID')txt=this.eat().v;this.out.push({t:'html',v:'<div class=\"doc-block\">'+self._str(txt)+'</div>'});return;}\n" +
-            "  if(t.v=='test'){this.eat();var tname='test';if(this.cur().t=='STR')tname=this.eat().v;this.parseBlock(e);return;}\n" +
-            "  if(t.v=='with'){this.eat();var ctx=this.parseExpr(e);var alias='_with';if(this.cur().v=='as'){this.eat();alias=this.eat().v;}var we=this._scope(e);this._def(we,alias,ctx);this.parseBlock(we);return;}\n" +
-            "  if(t.v=='alloc'){this.eat();this.eat('(');var sz=this.parseExpr(e);this.eat(')');return new Array(Math.max(0,sz||0)).fill(0);}\n" +
-            "  if(t.v=='free'){this.eat();this.eat('(');this.parseExpr(e);this.eat(')');return;}\n" +
-            "  var expr=this.parseExpr(e);\n" +
-            "  var op=this.cur().v;\n" +
-            "  if(op=='='||op=='+='||op=='-='||op=='*='||op=='/='){this.eat();var rhs=this.parseExpr(e);if(t.t=='ID'||t.t=='KW'){var nm=t.v;var cur=this._tryGet(e,nm);var nv=op=='='?rhs:op=='+='?cur+rhs:op=='-='?cur-rhs:op=='*='?cur*rhs:cur/rhs;this._set(e,nm,nv);}}\n" +
-            "  else if(this.cur().v=='++'){this.eat();if(t.t=='ID'||t.t=='KW'){var nm=t.v;var cur=this._tryGet(e,nm);this._set(e,nm,cur+1);}}\n" +
-            "  else if(this.cur().v=='--'){this.eat();if(t.t=='ID'||t.t=='KW'){var nm=t.v;var cur=this._tryGet(e,nm);this._set(e,nm,cur-1);}}\n" +
-            "};\n";
-    }
-}
+            "  if(t. **...**
+
+_This response is too long to display in full._
