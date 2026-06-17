@@ -30,39 +30,37 @@ jobs:
         run: |
           echo "=== Auto-correcting editor/android/app/build.gradle formatting and syntax ==="
           cat << 'EOF' > editor/android/app/build.gradle
-          plugins {
-              id 'com.android.application'
-          }
+apply plugin: 'com.android.application'
 
-          android {
-              namespace 'com.vcg.lang'
-              compileSdk 34
+android {
+    namespace 'com.vcg.lang'
+    compileSdk 34
 
-              defaultConfig {
-                  applicationId 'com.vcg.lang'
-                  minSdk 26
-                  targetSdk 34
-                  versionCode 1
-                  versionName '1.0'
-              }
+    defaultConfig {
+        applicationId 'com.vcg.lang'
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
 
-              buildTypes {
-                  release {
-                      minifyEnabled false
-                  }
-              }
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
 
-              compileOptions {
-                  sourceCompatibility JavaVersion.VERSION_17
-                  targetCompatibility JavaVersion.VERSION_17
-              }
-          }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
 
-          dependencies {
-              implementation 'androidx.appcompat:appcompat:1.6.1'
-              implementation 'com.google.android.material:material:1.11.0'
-          }
-          EOF
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+}
+EOF
           echo "=== Updated file contents ==="
           cat editor/android/app/build.gradle
 
