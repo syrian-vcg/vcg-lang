@@ -19,6 +19,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Detect Gradle Project Directory
+        id: detect-gradle
+        run: |
+          SETTINGS_FILE=$(find . -name "settings.gradle" -not -path "*/node_modules/*" -not -path "*/.*" | head -n 1)
+          if [ -n "$SETTINGS_FILE" ]; then
+            GRADLE_DIR=$(dirname "$SETTINGS_FILE")
+            echo "Detected Gradle project directory: $GRADLE_DIR"
+            echo "gradle_dir=$GRADLE_DIR" >> "$GITHUB_OUTPUT"
+          else
+            echo "No settings.gradle found. Defaulting to ."
+            echo "gradle_dir=." >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -31,69 +44,71 @@ jobs:
         with:
           gradle-version: '8.4'
 
-      - name: Fix Line Endings (CRLF to LF) & Executable Permission
+      - name: Fix Line Endings & Verify Gradle Wrapper
+        working-directory: ${{ steps.detect-gradle.outputs.gradle_dir }}
         run: |
-          if [ -f "editor/android/gradlew" ]; then
-            sed -i 's/\r$//' editor/android/gradlew
-            chmod +x editor/android/gradlew
-          fi
-
-      - name: Verify Gradle Wrapper or Fallback
-        working-directory: editor/android
-        run: |
-          # If gradlew fails or is corrupted, regenerate it using the preinstalled Gradle 8.4
-          ./gradlew --version || {
-            echo "Gradle wrapper check failed. Regenerating clean Gradle wrapper..."
+          if [ -f "gradlew" ]; then
+            sed -i 's/\r$//' gradlew
+            chmod +x gradlew
+            ./gradlew --version || {
+              echo "Gradle wrapper failed. Regenerating wrapper..."
+              gradle wrapper --gradle-version 8.4
+              chmod +x gradlew
+            }
+          else
+            echo "No gradlew wrapper found! Creating one using Gradle 8.4..."
             gradle wrapper --gradle-version 8.4
             chmod +x gradlew
-            ./gradlew --version
-          }
+          fi
 
       - name: Fix Adaptive Icons & Build Configuration
+        working-directory: ${{ steps.detect-gradle.outputs.gradle_dir }}
         run: |
           echo "=== Starting Automatic Build Optimization ==="
           
           # 1. Update minSdk to 26 to satisfy AAPT requirements for adaptive-icon
-          BUILD_GRADLE="editor/android/app/build.gradle"
+          BUILD_GRADLE="app/build.gradle"
           if [ -f "$BUILD_GRADLE" ]; then
-            echo "Upgrading minSdk from 24 to 26 in $BUILD_GRADLE to support adaptive icon xml elements..."
+            echo "Upgrading minSdk to 26 in $BUILD_GRADLE to support adaptive icon xml elements..."
             sed -i 's/minSdk [0-9]\+/minSdk 26/g' "$BUILD_GRADLE"
-            cat "$BUILD_GRADLE" | grep minSdk || true
+            sed -i 's/minSdkVersion [0-9]\+/minSdkVersion 26/g' "$BUILD_GRADLE"
+            cat "$BUILD_GRADLE" | grep -E "minSdk|minSdkVersion" || true
           else
-            echo "Error: $BUILD_GRADLE not found."
+            echo "Warning: $BUILD_GRADLE not found in working directory."
           fi
 
           # 2. Correctly structure adaptive icon XMLs by moving them to mipmap-anydpi-v26
-          RES_ROOT="editor/android/app/src/main/res"
+          RES_ROOT="app/src/main/res"
           ANYDPI_DIR="$RES_ROOT/mipmap-anydpi-v26"
-          mkdir -p "$ANYDPI_DIR"
-          
-          echo "Restructuring launcher icons..."
-          for density in mipmap-hdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi; do
-            if [ -d "$RES_ROOT/$density" ]; then
-              # Find XML adaptive launcher icons and safely move them to mipmap-anydpi-v26
-              find "$RES_ROOT/$density" -maxdepth 1 -name "ic_launcher*.xml" -exec mv -t "$ANYDPI_DIR" {} + 2>/dev/null && echo "Moved XML icons from $density to mipmap-anydpi-v26" || true
-            fi
-          done
-
-          # 3. List files to confirm successful restructuring
-          echo "Current mipmap-anydpi-v26 directory content:"
-          ls -la "$ANYDPI_DIR" || true
+          if [ -d "$RES_ROOT" ]; then
+            mkdir -p "$ANYDPI_DIR"
+            echo "Restructuring launcher icons..."
+            for density in mipmap-hdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi; do
+              if [ -d "$RES_ROOT/$density" ]; then
+                find "$RES_ROOT/$density" -maxdepth 1 -name "ic_launcher*.xml" -exec mv -t "$ANYDPI_DIR" {} + 2>/dev/null && echo "Moved XML icons from $density to mipmap-anydpi-v26" || true
+              fi
+            done
+            echo "Current mipmap-anydpi-v26 directory content:"
+            ls -la "$ANYDPI_DIR" || true
+          else
+            echo "Warning: resources folder $RES_ROOT not found."
+          fi
 
       - name: Build Debug APK
-        working-directory: editor/android
+        working-directory: ${{ steps.detect-gradle.outputs.gradle_dir }}
         run: |
           ./gradlew assembleDebug --no-daemon --stacktrace -Dorg.gradle.jvmargs=-Xmx2048m
 
       - name: Build Release APK
-        working-directory: editor/android
+        working-directory: ${{ steps.detect-gradle.outputs.gradle_dir }}
         run: |
           ./gradlew assembleRelease --no-daemon --stacktrace -Dorg.gradle.jvmargs=-Xmx2048m
 
       - name: Collect APKs
+        working-directory: ${{ steps.detect-gradle.outputs.gradle_dir }}
         run: |
           mkdir -p apk-output
-          find editor/android/app/build/outputs/apk -name "*.apk" -exec cp {} apk-output/ \;
+          find . -name "*.apk" -type f -exec cp {} apk-output/ \; 2>/dev/null || true
           echo "=== APK files ==="
           ls -lh apk-output/ || echo "No APKs found"
 
@@ -102,7 +117,9 @@ jobs:
         if: always()
         with:
           name: vcg-editor-debug-apk
-          path: apk-output/*debug*.apk
+          path: |
+            ${{ steps.detect-gradle.outputs.gradle_dir }}/apk-output/*debug*.apk
+            **/build/outputs/apk/debug/*.apk
           retention-days: 30
 
       - name: Upload Release APK
@@ -110,14 +127,16 @@ jobs:
         if: always()
         with:
           name: vcg-editor-release-apk
-          path: apk-output/*release*.apk
+          path: |
+            ${{ steps.detect-gradle.outputs.gradle_dir }}/apk-output/*release*.apk
+            **/build/outputs/apk/release/*.apk
           retention-days: 30
 
       - name: Upload to Release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
-          files: apk-output/*.apk
+          files: ${{ steps.detect-gradle.outputs.gradle_dir }}/apk-output/*.apk
         continue-on-error: true
 
   sign-apk:
