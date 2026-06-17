@@ -26,13 +26,8 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Setup Gradle
+      - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.4'
 
       - name: Make gradlew executable
         run: chmod +x editor/android/gradlew
@@ -40,21 +35,17 @@ jobs:
       - name: Build Debug APK
         working-directory: editor/android
         run: |
-          gradle assembleDebug \
+          ./gradlew assembleDebug \
             --no-daemon \
             --stacktrace \
             -Dorg.gradle.jvmargs=-Xmx2048m
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
 
       - name: Build Release APK
         working-directory: editor/android
         run: |
-          gradle assembleRelease \
+          ./gradlew assembleRelease \
             --no-daemon \
             -Dorg.gradle.jvmargs=-Xmx2048m
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
         continue-on-error: true
 
       - name: Collect APKs
@@ -116,7 +107,7 @@ jobs:
           KEY_PASS: ${{ secrets.KEY_PASS }}
         run: |
           if [ -z "$KEYSTORE_B64" ]; then
-            echo "No keystore configured â€” skipping signing"
+            echo "No keystore configured -- skipping signing"
             exit 0
           fi
           echo "$KEYSTORE_B64" | base64 -d > release.keystore
