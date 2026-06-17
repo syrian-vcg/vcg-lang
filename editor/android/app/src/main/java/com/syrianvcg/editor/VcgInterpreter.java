@@ -39,7 +39,7 @@ public class VcgInterpreter {
             "  _rt.run();\n" +
             "  var _out=document.getElementById('out');\n" +
             "  if(_rt.out.length===0){\n" +
-            "    _out.innerHTML='<span class=\\"empty\\">No output</span>';\n" +
+            "    _out.innerHTML='<span class=\u0022empty\u0022>No output</span>';\n" +
             "  } else {\n" +
             "    _rt.out.forEach(function(item){\n" +
             "      if(item.t==='html'){\n" +
@@ -69,7 +69,7 @@ public class VcgInterpreter {
     private static String escapeHtml(String s) {
         if (s == null) return "";
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-                .replace("\"", "&quot;").replace("'", "&#39;");
+                .replace("\u0022", "&quot;").replace("'", "&#39;");
     }
 
     private static String getStyles() {
