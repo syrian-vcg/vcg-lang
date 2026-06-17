@@ -10,7 +10,6 @@ on:
     types: [ created ]
 
 jobs:
-  # ── Build APK ─────────────────────────────────────────────
   build-apk:
     name: Build APK
     runs-on: ubuntu-latest
@@ -30,29 +29,32 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.4'
+
       - name: Make gradlew executable
         run: chmod +x editor/android/gradlew
 
-      - name: Cache Gradle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: gradle-
-
       - name: Build Debug APK
         working-directory: editor/android
+        run: |
+          gradle assembleDebug \
+            --no-daemon \
+            --stacktrace \
+            -Dorg.gradle.jvmargs=-Xmx2048m
         env:
-          GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx2048m"
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
 
       - name: Build Release APK
         working-directory: editor/android
+        run: |
+          gradle assembleRelease \
+            --no-daemon \
+            -Dorg.gradle.jvmargs=-Xmx2048m
         env:
-          GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx2048m"
-        run: ./gradlew assembleRelease --no-daemon
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
         continue-on-error: true
 
       - name: Collect APKs
@@ -60,7 +62,8 @@ jobs:
           mkdir -p apk-output
           find editor/android/app/build/outputs/apk -name "*.apk" 2>/dev/null \
             -exec cp {} apk-output/ \; || true
-          echo "=== APK files ==="; ls -lh apk-output/ || echo "No APKs"
+          echo "=== APK files ==="
+          ls -lh apk-output/ || echo "No APKs found"
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
@@ -85,7 +88,6 @@ jobs:
           files: apk-output/*.apk
         continue-on-error: true
 
-  # ── Sign APK (only if keystore secrets are configured) ────
   sign-apk:
     name: Sign APK
     runs-on: ubuntu-latest
@@ -106,7 +108,7 @@ jobs:
           path: to-sign/
         continue-on-error: true
 
-      - name: Sign APK (if keystore configured)
+      - name: Sign APK
         env:
           KEYSTORE_B64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
@@ -125,7 +127,6 @@ jobs:
               -storepass "$KEYSTORE_PASS" \
               -keypass "$KEY_PASS" \
               "$apk" "$KEY_ALIAS"
-            echo "Signed: $apk"
           done
         continue-on-error: true
 
