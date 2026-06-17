@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace 'org.vcg.lang.editor'
+    namespace 'com.syrian_vcg.vcglang'
     compileSdk 34
 
     defaultConfig {
-        applicationId "org.vcg.lang.editor"
+        applicationId "com.syrian_vcg.vcglang"
         minSdk 26
         targetSdk 34
         versionCode 1
@@ -21,7 +21,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
+        } 
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
