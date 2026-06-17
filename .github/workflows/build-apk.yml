@@ -13,7 +13,7 @@ jobs:
   build-apk:
     name: Build APK
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Checkout code
@@ -26,8 +26,15 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Setup Gradle cache
-        uses: gradle/actions/setup-gradle@v3
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept Android SDK licenses
+        run: yes | sdkmanager --licenses || true
+
+      - name: Install required SDK components
+        run: |
+          sdkmanager "platforms;android-34" "build-tools;34.0.0"
 
       - name: Make gradlew executable
         run: chmod +x editor/android/gradlew
@@ -49,6 +56,7 @@ jobs:
         continue-on-error: true
 
       - name: Collect APKs
+        if: always()
         run: |
           mkdir -p apk-output
           find editor/android/app/build/outputs/apk -name "*.apk" 2>/dev/null \
@@ -62,6 +70,7 @@ jobs:
         with:
           name: vcg-editor-debug-apk
           path: apk-output/*debug*.apk
+          if-no-files-found: warn
           retention-days: 30
 
       - name: Upload Release APK
@@ -70,6 +79,7 @@ jobs:
         with:
           name: vcg-editor-release-apk
           path: apk-output/*release*.apk
+          if-no-files-found: warn
           retention-days: 30
 
       - name: Upload to Release
@@ -126,5 +136,6 @@ jobs:
         with:
           name: vcg-editor-signed-apk
           path: to-sign/*.apk
+          if-no-files-found: warn
           retention-days: 30
         continue-on-error: true
