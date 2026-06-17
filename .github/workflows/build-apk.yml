@@ -43,19 +43,7 @@ jobs:
         run: |
           ./gradlew assembleDebug \
             --no-daemon \
-            --info \
-            -Dorg.gradle.jvmargs=-Xmx2048m \
-            2>&1 | tee /tmp/gradle.log; BUILD_EXIT=${PIPESTATUS[0]}
-          if [ "$BUILD_EXIT" != "0" ]; then
-            echo ""
-            echo "╔══════════════════════════════════════╗"
-            echo "║         BUILD FAILURE DETAILS        ║"
-            echo "╚══════════════════════════════════════╝"
-            grep -E "^(FAILURE|error:|> |Caused by:|What went wrong)" /tmp/gradle.log | head -40 || true
-            echo "──────── Full error context ────────"
-            grep -A 30 "What went wrong" /tmp/gradle.log | head -50 || true
-            exit "$BUILD_EXIT"
-          fi
+            -Dorg.gradle.jvmargs=-Xmx2048m
 
       - name: Build Release APK
         working-directory: editor/android
@@ -73,14 +61,6 @@ jobs:
             -exec cp {} apk-output/ \; || true
           echo "=== APK files ==="
           ls -lh apk-output/ || echo "No APKs found"
-
-      - name: Upload build log
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: build-log
-          path: /tmp/gradle.log
-          retention-days: 7
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
