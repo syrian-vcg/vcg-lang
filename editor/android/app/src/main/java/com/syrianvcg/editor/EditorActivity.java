@@ -29,15 +29,44 @@ public class EditorActivity extends AppCompatActivity {
     private boolean modified = false;
     private LinearLayout toolbar_keys;
 
-    // Quick-insert keys for mobile
+    // Quick-insert keys for mobile — VCG v2.0 Full
     private static final String[] QUICK_KEYS = {
-        "show", "let", "func", "if", "else", "while", "for", "in",
-        "return", "h(", "l(", "btn(", "url(", "key(", "img(",
+        // Core
+        "show", "let", "const", "func", "if", "else", "while", "for", "in",
+        "return", "break", "continue", "repeat",
+        // UI/Media
+        "h(", "l(", "btn(", "url(", "key(", "img(", "video(",
         "youtube(", "facebook(", "instagram(", "xsocial(",
-        "$set(", "$get(", "watch(", "c ", "w ", "public",
-        "repeat", "match", "when", "try", "catch", "throw",
-        "true", "false", "nil", "and", "or", "not",
-        "{", "}", "(", ")", "[", "]", "\"\"", "→"
+        // Reactive/Store
+        "$set(", "$get(", "watch(", "c ", "w ", "x ", "public",
+        // Error handling
+        "try", "catch", "throw", "safe", "guard",
+        // Match
+        "match", "when",
+        // v2.0 OOP
+        "class", "extends", "new", "self", "super",
+        // v2.0 Modules
+        "module", "export", "from", "import", "as",
+        // v2.0 Async
+        "async", "await", "promise", "defer",
+        // v2.0 Types
+        "struct", "enum", "type", "union",
+        // v2.0 Testing
+        "test", "assert", "doc", "mock",
+        // v2.0 I/O
+        "file", "read", "write", "append",
+        // v2.0 Functional
+        "map", "filter", "reduce", "find", "pipe",
+        // Values
+        "true", "false", "nil", "null",
+        // Operators
+        "and", "or", "not", "|>",
+        // Brackets
+        "{", "}", "(", ")", "[", "]",
+        // String delimiters
+        "\"\"", "``",
+        // Arrow
+        "->"
     };
 
     @Override
