@@ -29,39 +29,40 @@ jobs:
       - name: Auto-Correct and Format build.gradle
         run: |
           echo "=== Auto-correcting editor/android/app/build.gradle formatting and syntax ==="
-          cat << 'EOF' > editor/android/app/build.gradle
-apply plugin: 'com.android.application'
+          mkdir -p editor/android/app
+          cat > editor/android/app/build.gradle <<'EOF'
+          apply plugin: 'com.android.application'
 
-android {
-    namespace 'com.syrianvcg.editor'
-    compileSdk 34
+          android {
+              namespace 'com.syrianvcg.editor'
+              compileSdk 34
 
-    defaultConfig {
-        applicationId 'com.syrianvcg.editor'
-        minSdk 26
-        targetSdk 34
-        versionCode 1
-        versionName '1.0'
-    }
+              defaultConfig {
+                  applicationId 'com.syrianvcg.editor'
+                  minSdk 26
+                  targetSdk 34
+                  versionCode 1
+                  versionName '1.0'
+              }
 
-    buildTypes {
-        release {
-            minifyEnabled false
-        }
-    }
+              buildTypes {
+                  release {
+                      minifyEnabled false
+                  }
+              }
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
-}
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+          }
 
-dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.11.0'
-    implementation 'androidx.recyclerview:recyclerview:1.3.2'
-}
-EOF
+          dependencies {
+              implementation 'androidx.appcompat:appcompat:1.6.1'
+              implementation 'com.google.android.material:material:1.11.0'
+              implementation 'androidx.recyclerview:recyclerview:1.3.2'
+          }
+          EOF
           echo "=== Updated file contents ==="
           cat editor/android/app/build.gradle
 
