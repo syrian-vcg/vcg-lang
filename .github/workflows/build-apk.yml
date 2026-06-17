@@ -37,25 +37,23 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x editor/android/gradlew
 
+      - name: Verify gradlew exists
+        working-directory: editor/android
+        run: ls -l ./gradlew
+
+      - name: Check Gradle version
+        working-directory: editor/android
+        run: ./gradlew --version
+
       - name: Build Debug APK
         working-directory: editor/android
         run: |
-          ./gradlew assembleDebug \
-            --no-daemon \
-            --stacktrace \
-            -Dorg.gradle.jvmargs=-Xmx2048m
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          ./gradlew assembleDebug --no-daemon --stacktrace -Dorg.gradle.jvmargs=-Xmx2048m
 
       - name: Build Release APK
         working-directory: editor/android
         run: |
-          ./gradlew assembleRelease \
-            --no-daemon \
-            --stacktrace \
-            -Dorg.gradle.jvmargs=-Xmx2048m
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          ./gradlew assembleRelease --no-daemon --stacktrace -Dorg.gradle.jvmargs=-Xmx2048m
 
       - name: Collect APKs
         run: |
@@ -121,7 +119,8 @@ jobs:
           echo "$KEYSTORE_B64" | base64 -d > release.keystore
           find to-sign -name "*.apk" | while read apk; do
             $JAVA_HOME/bin/jarsigner -verbose \
-              -sigalg SHA256withRSA -digestalg SHA-256 \
+              -sigalg SHA256withRSA \
+              -digestalg SHA-256 \
               -keystore release.keystore \
               -storepass "$KEYSTORE_PASS" \
               -keypass "$KEY_PASS" \
