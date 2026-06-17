@@ -40,7 +40,7 @@ jobs:
       - name: Build Debug APK
         working-directory: editor/android
         run: |
-          gradle assembleDebug \
+          ./gradlew assembleDebug \
             --no-daemon \
             --stacktrace \
             -Dorg.gradle.jvmargs=-Xmx2048m
@@ -50,18 +50,17 @@ jobs:
       - name: Build Release APK
         working-directory: editor/android
         run: |
-          gradle assembleRelease \
+          ./gradlew assembleRelease \
             --no-daemon \
+            --stacktrace \
             -Dorg.gradle.jvmargs=-Xmx2048m
         env:
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
-        continue-on-error: true
 
       - name: Collect APKs
         run: |
           mkdir -p apk-output
-          find editor/android/app/build/outputs/apk -name "*.apk" 2>/dev/null \
-            -exec cp {} apk-output/ \; || true
+          find editor/android/app/build/outputs/apk -name "*.apk" -exec cp {} apk-output/ \;
           echo "=== APK files ==="
           ls -lh apk-output/ || echo "No APKs found"
 
