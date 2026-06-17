@@ -1,1 +1,2 @@
-rootProject.name = 'vcg-lang' include ':app'
+rootProject.name = 'vcg-lang'
+include ':app'
