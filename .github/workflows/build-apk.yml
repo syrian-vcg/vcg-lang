@@ -26,24 +26,28 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.4'
 
-      - name: Make gradlew executable
-        run: chmod +x editor/android/gradlew
+      - name: Fix Line Endings (CRLF to LF) & Executable Permission
+        run: |
+          if [ -f "editor/android/gradlew" ]; then
+            sed -i 's/\r$//' editor/android/gradlew
+            chmod +x editor/android/gradlew
+          fi
 
-      - name: Verify gradlew exists
+      - name: Verify Gradle Wrapper or Fallback
         working-directory: editor/android
-        run: ls -l ./gradlew
-
-      - name: Check Gradle version
-        working-directory: editor/android
-        run: ./gradlew --version
+        run: |
+          # في حال وجود عطب في ملف gradlew الحالي، تتم إعادة تعيينه وبنائه فوراً لضمان التشغيل السليم بنسبة 100%
+          ./gradlew --version || {
+            echo "Gradle wrapper check failed. Regenerating clean Gradle wrapper..."
+            gradle wrapper --gradle-version 8.4
+            chmod +x gradlew
+            ./gradlew --version
+          }
 
       - name: Build Debug APK
         working-directory: editor/android
