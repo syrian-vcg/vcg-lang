@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">VCG Editor</string>
     <string name="app_name_full">Syrian VCG Editor</string>
-    <string name="version">2.0.0</string>
+    <string name="version">1.0.0</string>
     <string name="new_file">ملف جديد</string>
     <string name="save">حفظ</string>
     <string name="run">تشغيل</string>
