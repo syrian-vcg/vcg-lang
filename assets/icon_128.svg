@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="bg128" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a3a0a"/>
+      <stop offset="100%" stop-color="#2d5a1b"/>
+    </linearGradient>
+    <linearGradient id="star128" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e8f5e0"/>
+    </linearGradient>
+    <filter id="glow128" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.2" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="shadow128">
+      <feDropShadow dx="0" dy="1.536" stdDeviation="2.56" flood-color="rgba(0,0,0,0.4)"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded rect -->
+  <rect width="128" height="128" rx="17.92" ry="17.92" fill="url(#bg128)"/>
+
+  <!-- Subtle gradient overlay -->
+  <rect width="128" height="128" rx="17.92" ry="17.92"
+    fill="rgba(255,255,255,0.04)"/>
+
+  <!-- Glow ring behind star -->
+  <circle cx="64.0" cy="48.64" r="41.216"
+    fill="rgba(77,201,90,0.12)"/>
+
+  <!-- Star with glow -->
+  <path d="M64.000,12.800 L72.276,37.249 L98.086,37.565 L77.391,52.991 L85.066,77.635 L64.000,62.720 L42.934,77.635 L50.609,52.991 L29.914,37.565 L55.724,37.249 Z"
+    fill="url(#star128)"
+    filter="url(#glow128)"
+    opacity="0.97"/>
+
+  <!-- VCG text -->
+  <text
+    x="64.0"
+    y="104.96"
+    font-family="'Segoe UI', 'Arial Black', Arial, sans-serif"
+    font-size="28.16"
+    font-weight="900"
+    letter-spacing="1.024"
+    text-anchor="middle"
+    fill="#ffffff"
+    filter="url(#shadow128)"
+    opacity="0.97">VCG</text>
+
+  <!-- Bottom label (only for larger sizes) -->
+  <text x="64.0" y="121.6"
+    font-family="Arial, sans-serif"
+    font-size="8.32"
+    font-weight="600"
+    letter-spacing="2.304"
+    text-anchor="middle"
+    fill="#4dc95a"
+    opacity="0.75">SYRIAN</text>
+</svg>
