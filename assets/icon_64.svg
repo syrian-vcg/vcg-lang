@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg64" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a3a0a"/>
+      <stop offset="100%" stop-color="#2d5a1b"/>
+    </linearGradient>
+    <linearGradient id="star64" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e8f5e0"/>
+    </linearGradient>
+    <filter id="glow64" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="1.6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="shadow64">
+      <feDropShadow dx="0" dy="0.768" stdDeviation="1.28" flood-color="rgba(0,0,0,0.4)"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded rect -->
+  <rect width="64" height="64" rx="8.96" ry="8.96" fill="url(#bg64)"/>
+
+  <!-- Subtle gradient overlay -->
+  <rect width="64" height="64" rx="8.96" ry="8.96"
+    fill="rgba(255,255,255,0.04)"/>
+
+  <!-- Glow ring behind star -->
+  <circle cx="32.0" cy="24.32" r="20.608"
+    fill="rgba(77,201,90,0.12)"/>
+
+  <!-- Star with glow -->
+  <path d="M32.000,6.400 L36.138,18.625 L49.043,18.782 L38.695,26.495 L42.533,38.818 L32.000,31.360 L21.467,38.818 L25.305,26.495 L14.957,18.782 L27.862,18.625 Z"
+    fill="url(#star64)"
+    filter="url(#glow64)"
+    opacity="0.97"/>
+
+  <!-- VCG text -->
+  <text
+    x="32.0"
+    y="52.48"
+    font-family="'Segoe UI', 'Arial Black', Arial, sans-serif"
+    font-size="14.08"
+    font-weight="900"
+    letter-spacing="0.512"
+    text-anchor="middle"
+    fill="#ffffff"
+    filter="url(#shadow64)"
+    opacity="0.97">VCG</text>
+
+  <!-- Bottom label (only for larger sizes) -->
+  <text x="32.0" y="60.8"
+    font-family="Arial, sans-serif"
+    font-size="4.16"
+    font-weight="600"
+    letter-spacing="1.152"
+    text-anchor="middle"
+    fill="#4dc95a"
+    opacity="0.75">SYRIAN</text>
+</svg>
