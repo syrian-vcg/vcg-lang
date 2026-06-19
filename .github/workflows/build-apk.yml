@@ -13,7 +13,7 @@ jobs:
   build-apk:
     name: Build APK
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 30
 
     steps:
       - name: Checkout code
@@ -29,33 +29,10 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Accept Android SDK licenses
-        run: yes | sdkmanager --licenses || true
-
-      - name: Install required SDK components
-        run: sdkmanager "platforms;android-34" "build-tools;34.0.0"
-
-      - name: Fix string escape bug in VcgInterpreter.java
-        run: |
-          python3 << 'PYEOF'
-          path = 'editor/android/app/src/main/java/com/syrianvcg/editor/VcgInterpreter.java'
-          with open(path, 'r') as f:
-              lines = f.readlines()
-          fixed = False
-          for i, line in enumerate(lines):
-              if '_out.innerHTML=' in line and 'empty' in line and 'No output' in line:
-                  old = line
-                  lines[i] = "            \"    var e2=document.createElement('span');e2.className='empty';e2.textContent='No output';_out.appendChild(e2);\\n\" +\n"
-                  print(f'Line {i+1} patched')
-                  print(f'  Before: {repr(old.strip())}')
-                  print(f'  After:  {repr(lines[i].strip())}')
-                  fixed = True
-                  break
-          if not fixed:
-              print('Line already clean or pattern not found')
-          with open(path, 'w') as f:
-              f.writelines(lines)
-          PYEOF
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.4'
 
       - name: Make gradlew executable
         run: chmod +x editor/android/gradlew
@@ -63,20 +40,24 @@ jobs:
       - name: Build Debug APK
         working-directory: editor/android
         run: |
-          ./gradlew assembleDebug \
+          gradle assembleDebug \
             --no-daemon \
+            --stacktrace \
             -Dorg.gradle.jvmargs=-Xmx2048m
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
 
       - name: Build Release APK
         working-directory: editor/android
         run: |
-          ./gradlew assembleRelease \
+          gradle assembleRelease \
             --no-daemon \
             -Dorg.gradle.jvmargs=-Xmx2048m
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
         continue-on-error: true
 
       - name: Collect APKs
-        if: always()
         run: |
           mkdir -p apk-output
           find editor/android/app/build/outputs/apk -name "*.apk" 2>/dev/null \
@@ -90,7 +71,6 @@ jobs:
         with:
           name: vcg-editor-debug-apk
           path: apk-output/*debug*.apk
-          if-no-files-found: warn
           retention-days: 30
 
       - name: Upload Release APK
@@ -99,7 +79,6 @@ jobs:
         with:
           name: vcg-editor-release-apk
           path: apk-output/*release*.apk
-          if-no-files-found: warn
           retention-days: 30
 
       - name: Upload to Release
@@ -137,7 +116,7 @@ jobs:
           KEY_PASS: ${{ secrets.KEY_PASS }}
         run: |
           if [ -z "$KEYSTORE_B64" ]; then
-            echo "No keystore configured -- skipping signing"
+            echo "No keystore configured — skipping signing"
             exit 0
           fi
           echo "$KEYSTORE_B64" | base64 -d > release.keystore
@@ -156,6 +135,5 @@ jobs:
         with:
           name: vcg-editor-signed-apk
           path: to-sign/*.apk
-          if-no-files-found: warn
           retention-days: 30
         continue-on-error: true
