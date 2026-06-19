@@ -1,3 +1,18 @@
+## [2.0.0] - Android Editor Sync — 2026-06-06
+
+### Changed
+- VCG Editor APK bumped to v2.0.0 (versionCode 2)
+- VcgInterpreter.java (in-app JS runtime) fully rewritten to match
+  compiler v2.0: class/extends/new/self, enum, module, async/await,
+  safe/guard/test, map/filter/reduce/find, $set/$get/watch, channels,
+  all UI/social keywords (h, l, btn, url, key, img, video, youtube,
+  facebook, instagram, xsocial)
+- Syntax highlighter (VcgCodeEditor.java) updated with all v2.0 keywords
+- Quick keyboard (EditorActivity.java) reorganized with v2.0 keyword groups
+- 10 sample files on first launch now demonstrate v2.0 features:
+  hello, oop, enum, fibonacci, ui_demo, social, reactive, tests, safety
+- App launcher icon replaced with official green+star VCG icon (all densities)
+
 # Changelog — Syrian VCG Language
 
 All notable changes to this project will be documented in this file.
