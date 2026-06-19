@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="bg32" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a3a0a"/>
+      <stop offset="100%" stop-color="#2d5a1b"/>
+    </linearGradient>
+    <linearGradient id="star32" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e8f5e0"/>
+    </linearGradient>
+    <filter id="glow32" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="0.8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="shadow32">
+      <feDropShadow dx="0" dy="0.384" stdDeviation="0.64" flood-color="rgba(0,0,0,0.4)"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded rect -->
+  <rect width="32" height="32" rx="4.48" ry="4.48" fill="url(#bg32)"/>
+
+  <!-- Subtle gradient overlay -->
+  <rect width="32" height="32" rx="4.48" ry="4.48"
+    fill="rgba(255,255,255,0.04)"/>
+
+  <!-- Glow ring behind star -->
+  <circle cx="16.0" cy="12.16" r="10.304"
+    fill="rgba(77,201,90,0.12)"/>
+
+  <!-- Star with glow -->
+  <path d="M16.000,3.200 L18.069,9.312 L24.521,9.391 L19.348,13.248 L21.267,19.409 L16.000,15.680 L10.733,19.409 L12.652,13.248 L7.479,9.391 L13.931,9.312 Z"
+    fill="url(#star32)"
+    filter="url(#glow32)"
+    opacity="0.97"/>
+
+  <!-- VCG text -->
+  <text
+    x="16.0"
+    y="26.24"
+    font-family="'Segoe UI', 'Arial Black', Arial, sans-serif"
+    font-size="7.04"
+    font-weight="900"
+    letter-spacing="0.256"
+    text-anchor="middle"
+    fill="#ffffff"
+    filter="url(#shadow32)"
+    opacity="0.97">VCG</text>
+
+  <!-- Bottom label (only for larger sizes) -->
+  
+</svg>
