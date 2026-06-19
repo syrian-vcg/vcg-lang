@@ -39,10 +39,24 @@ public class VcgCodeEditor extends AppCompatEditText {
     private static final Pattern PAT_KEYWORD  = Pattern.compile(
         "\\b(let|const|func|return|if|else|while|for|in|repeat|break|continue" +
         "|and|or|not|true|false|nil|null|match|when|try|catch|throw|assert" +
-        "|public|w|x|c|struct|new|self|import|as)\\b");
+        "|public|w|x|c|struct|new|self|import|as" +
+        "|class|extends|implements|interface|super|this" +
+        "|module|export|from" +
+        "|async|await|promise|defer" +
+        "|type|enum|union|generic" +
+        "|ref|ptr|alloc|free" +
+        "|safe|unsafe|guard" +
+        "|doc|test|expect|mock" +
+        "|with|case|pipeline)\\b");
     private static final Pattern PAT_UI_KW    = Pattern.compile(
         "\\b(show|input|html|youtube|facebook|instagram|xsocial|url|btn|key" +
-        "|video|img|h|l|typeof|sizeof|watch|send|recv|pipe)\\b");
+        "|video|img|h|l|typeof|sizeof|watch|send|recv|pipe" +
+        "|map|filter|reduce|find" +
+        "|sum|avg|unique|flat|chunk|zip|first|last" +
+        "|merge|has|del|entries|keys|values" +
+        "|gcd|lcm|fib|factorial|is_prime" +
+        "|JSON_stringify|JSON_parse|uuid|hash|copy|type_of|sleep" +
+        "|assert_eq|assert_ne|assert_true|assert_false)\\b");
     private static final Pattern PAT_REACTIVE = Pattern.compile("\\$set|\\$get|\\$x");
     private static final Pattern PAT_FUNC_DEF = Pattern.compile(
         "(?<=func\\s)(\\w+)");
