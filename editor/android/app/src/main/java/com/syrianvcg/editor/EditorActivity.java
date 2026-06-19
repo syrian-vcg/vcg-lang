@@ -31,13 +31,44 @@ public class EditorActivity extends AppCompatActivity {
 
     // Quick-insert keys for mobile
     private static final String[] QUICK_KEYS = {
-        "show", "let", "func", "if", "else", "while", "for", "in",
-        "return", "h(", "l(", "btn(", "url(", "key(", "img(",
+        // Core
+        "show(", "let ", "const ", "func ", "return",
+        "if ", "else", "while ", "for ", "in ", "repeat ",
+        "break", "continue",
+        // OOP v2.0
+        "class ", "extends ", "new ", "self.", "super",
+        // Modules v2.0
+        "module ", "export ", "from ", "import ", "as ",
+        // Async v2.0
+        "async func ", "await ", "defer ",
+        // Types v2.0
+        "type ", "enum ", "union ",
+        // Errors
+        "try", "catch ", "throw ", "safe", "guard ", "assert(",
+        // Pattern matching
+        "match ", "when ",
+        // Reactive
+        "$set(", "$get(", "watch(",
+        // Channels
+        "c ", "send(", "recv(",
+        // Functional v2.0
+        "map(", "filter(", "reduce(", "find(",
+        // Testing v2.0
+        "test ", "assert_eq(", "assert_true(",
+        // UI
+        "h(", "l(", "btn(", "url(", "key(", "img(", "video(",
+        // Social
         "youtube(", "facebook(", "instagram(", "xsocial(",
-        "$set(", "$get(", "watch(", "c ", "w ", "public",
-        "repeat", "match", "when", "try", "catch", "throw",
+        // Array/Object helpers v2.0
+        "sum(", "avg(", "unique(", "merge(", "has(",
+        // Math v2.0
+        "gcd(", "lcm(", "fib(", "factorial(", "is_prime(",
+        // Util v2.0
+        "uuid()", "hash(", "copy(", "type_of(",
+        "public ", "w ", "x ",
+        // Literals
         "true", "false", "nil", "and", "or", "not",
-        "{", "}", "(", ")", "[", "]", "\"\"", "→"
+        "{", "}", "(", ")", "[", "]", "\"\"", "->", "|>"
     };
 
     @Override
