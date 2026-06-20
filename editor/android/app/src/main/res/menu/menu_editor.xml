@@ -9,8 +9,8 @@
         android:title="تشغيل"
         android:icon="@android:drawable/ic_media_play"
         app:showAsAction="ifRoom|withText"/>
-    <item android:id="@+id/action_undo"
-        android:title="تراجع"
+    <item android:id="@+id/action_terminal"
+        android:title="Terminal"
         app:showAsAction="never"/>
     <item android:id="@+id/action_share"
         android:title="مشاركة"
