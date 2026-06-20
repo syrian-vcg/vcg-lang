@@ -3,6 +3,7 @@
     <!-- VCG Dark Olive Theme -->
     <color name="bg_dark">#060C0E</color>
     <color name="surface_dark">#0F1E10</color>
+    <color name="surface_dark_2">#142817</color>
     <color name="code_bg">#081208</color>
     <color name="border_color">#1A3A1A</color>
     <color name="olive_green">#2D5A1B</color>
@@ -12,6 +13,9 @@
     <color name="text_primary">#E8F5E0</color>
     <color name="text_muted">#4A6A4A</color>
     <color name="error_red">#F87171</color>
+    <color name="info_blue">#6AB0FF</color>
     <!-- Status/Nav bar -->
     <color name="status_bar">#060C0E</color>
+    <!-- Terminal -->
+    <color name="terminal_bg">#040A05</color>
 </resources>
