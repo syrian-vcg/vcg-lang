@@ -32,23 +32,28 @@
                 <RadioButton android:id="@+id/theme_olive"
                     android:layout_width="0dp" android:layout_height="wrap_content"
                     android:layout_weight="1" android:text="زيتوني"
-                    android:textColor="@color/text_primary" android:textSize="12.5sp"
-                    android:buttonTint="@color/accent_green"/>
+                    android:textColor="@color/text_primary" android:textSize="11.5sp"
+                    android:buttonTint="@color/olive_green"/>
+                <RadioButton android:id="@+id/theme_white"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="أبيض"
+                    android:textColor="@color/text_primary" android:textSize="11.5sp"
+                    android:buttonTint="@color/olive_green"/>
                 <RadioButton android:id="@+id/theme_midnight"
                     android:layout_width="0dp" android:layout_height="wrap_content"
                     android:layout_weight="1" android:text="ليلي"
-                    android:textColor="@color/text_primary" android:textSize="12.5sp"
-                    android:buttonTint="@color/accent_green"/>
+                    android:textColor="@color/text_primary" android:textSize="11.5sp"
+                    android:buttonTint="@color/olive_green"/>
                 <RadioButton android:id="@+id/theme_amoled"
                     android:layout_width="0dp" android:layout_height="wrap_content"
                     android:layout_weight="1" android:text="أسود"
-                    android:textColor="@color/text_primary" android:textSize="12.5sp"
-                    android:buttonTint="@color/accent_green"/>
+                    android:textColor="@color/text_primary" android:textSize="11.5sp"
+                    android:buttonTint="@color/olive_green"/>
                 <RadioButton android:id="@+id/theme_sand"
                     android:layout_width="0dp" android:layout_height="wrap_content"
                     android:layout_weight="1" android:text="رملي"
-                    android:textColor="@color/text_primary" android:textSize="12.5sp"
-                    android:buttonTint="@color/accent_green"/>
+                    android:textColor="@color/text_primary" android:textSize="11.5sp"
+                    android:buttonTint="@color/olive_green"/>
             </RadioGroup>
 
             <View android:layout_width="match_parent" android:layout_height="1dp"
