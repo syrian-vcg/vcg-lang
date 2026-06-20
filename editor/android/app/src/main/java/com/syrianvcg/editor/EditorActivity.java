@@ -1,72 +1,69 @@
 package com.syrianvcg.editor;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
-import android.text.SpannableString;
-import android.text.Spanned;
 import android.text.TextWatcher;
-import android.text.style.ForegroundColorSpan;
+import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import com.google.android.material.button.MaterialButton;
+import org.json.JSONObject;
+import java.util.List;
 
 public class EditorActivity extends AppCompatActivity {
 
     private VcgCodeEditor codeEditor;
     private TextView lineNumbers;
     private String filename;
+    private String projectId;
+    private String projectName;
     private VcgStorage storage;
+    private VcgSettings settings;
     private boolean modified = false;
-    private LinearLayout toolbar_keys;
+    private boolean previewVisible = true;
+
+    private WebView previewWebView;
+    private View previewContainer;
+    private View editorContainer;
+    private Handler debounceHandler = new Handler(Looper.getMainLooper());
+    private Runnable debouncedPreview;
 
     // Quick-insert keys for mobile
     private static final String[] QUICK_KEYS = {
-        // Core
         "show(", "let ", "const ", "func ", "return",
         "if ", "else", "while ", "for ", "in ", "repeat ",
         "break", "continue",
-        // OOP v2.0
         "class ", "extends ", "new ", "self.", "super",
-        // Modules v2.0
         "module ", "export ", "from ", "import ", "as ",
-        // Async v2.0
         "async func ", "await ", "defer ",
-        // Types v2.0
         "type ", "enum ", "union ",
-        // Errors
         "try", "catch ", "throw ", "safe", "guard ", "assert(",
-        // Pattern matching
         "match ", "when ",
-        // Reactive
         "$set(", "$get(", "watch(",
-        // Channels
         "c ", "send(", "recv(",
-        // Functional v2.0
         "map(", "filter(", "reduce(", "find(",
-        // Testing v2.0
         "test ", "assert_eq(", "assert_true(",
-        // UI
         "h(", "l(", "btn(", "url(", "key(", "img(", "video(",
-        // Social
         "youtube(", "facebook(", "instagram(", "xsocial(",
-        // Array/Object helpers v2.0
         "sum(", "avg(", "unique(", "merge(", "has(",
-        // Math v2.0
         "gcd(", "lcm(", "fib(", "factorial(", "is_prime(",
-        // Util v2.0
         "uuid()", "hash(", "copy(", "type_of(",
         "public ", "w ", "x ",
-        // Literals
         "true", "false", "nil", "and", "or", "not",
         "{", "}", "(", ")", "[", "]", "\"\"", "->", "|>"
     };
@@ -76,24 +73,30 @@ public class EditorActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
 
-        filename = getIntent().getStringExtra("filename");
-        storage  = new VcgStorage(this);
+        filename    = getIntent().getStringExtra("filename");
+        projectId   = getIntent().getStringExtra("projectId");
+        projectName = getIntent().getStringExtra("projectName");
+        storage     = new VcgStorage(this);
+        settings    = new VcgSettings(this);
 
         setSupportActionBar(findViewById(R.id.editor_toolbar));
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle(filename);
+            getSupportActionBar().setSubtitle(projectName);
         }
 
         codeEditor  = findViewById(R.id.code_editor);
         lineNumbers = findViewById(R.id.line_numbers);
+        previewWebView   = findViewById(R.id.preview_webview);
+        previewContainer = findViewById(R.id.preview_container);
+        editorContainer  = findViewById(R.id.editor_code_container);
 
-        // Setup editor
-        codeEditor.setTypeface(Typeface.MONOSPACE);
-        codeEditor.setTextSize(14f);
+        applySettingsToEditor();
+        setupPreviewWebView();
 
         // Load file content
-        VcgFile file = storage.getFile(filename);
+        VcgFile file = storage.getFile(projectId, filename);
         if (file != null) {
             codeEditor.setText(file.getContent());
         }
@@ -108,6 +111,7 @@ public class EditorActivity extends AppCompatActivity {
                 updateLineNumbers();
                 if (getSupportActionBar() != null)
                     getSupportActionBar().setTitle("• " + filename);
+                schedulePreviewUpdate();
             }
         });
 
@@ -120,8 +124,111 @@ public class EditorActivity extends AppCompatActivity {
         editorScroll.setOnScrollChangeListener((v, x, y, ox, oy) ->
             lineScroll.scrollTo(0, y));
 
-        // Run button
         findViewById(R.id.btn_run).setOnClickListener(v -> runCode());
+        findViewById(R.id.btn_toggle_preview).setOnClickListener(v -> togglePreview());
+        findViewById(R.id.btn_insert_asset).setOnClickListener(v -> showAssetPicker());
+
+        previewVisible = settings.getLivePreview();
+        updatePreviewVisibility();
+        if (previewVisible) schedulePreviewUpdate();
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    private void setupPreviewWebView() {
+        WebSettings ws = previewWebView.getSettings();
+        ws.setJavaScriptEnabled(true);
+        ws.setDomStorageEnabled(true);
+        ws.setLoadWithOverviewMode(true);
+        ws.setUseWideViewPort(true);
+    }
+
+    private void applySettingsToEditor() {
+        int fontSize = settings.getFontSize();
+        codeEditor.setTextSize(fontSize);
+        lineNumbers.setTextSize(fontSize);
+
+        String fontFamily = settings.getFontFamily();
+        Typeface tf = "sans-serif".equals(fontFamily) ? Typeface.SANS_SERIF : Typeface.MONOSPACE;
+        codeEditor.setTypeface(tf);
+        lineNumbers.setTypeface(Typeface.MONOSPACE);
+
+        codeEditor.setHorizontallyScrolling(!settings.getWordWrap());
+        lineNumbers.setVisibility(settings.getShowLineNumbers() ? View.VISIBLE : View.GONE);
+    }
+
+    private void schedulePreviewUpdate() {
+        if (!previewVisible) return;
+        if (debouncedPreview != null) debounceHandler.removeCallbacks(debouncedPreview);
+        debouncedPreview = this::updatePreview;
+        debounceHandler.postDelayed(debouncedPreview, 500);
+    }
+
+    private void updatePreview() {
+        String code = codeEditor.getText() != null ? codeEditor.getText().toString() : "";
+        String assetsJson = buildAssetsJson();
+        String html = VcgInterpreter.buildHtml(code, filename, assetsJson, settings.getTheme());
+        String encoded = Base64.encodeToString(html.getBytes(), Base64.NO_PADDING);
+        previewWebView.loadData(encoded, "text/html", "base64");
+    }
+
+    private String buildAssetsJson() {
+        try {
+            JSONObject o = new JSONObject();
+            List<VcgAsset> assetList = storage.getAssetsInProject(projectId);
+            for (VcgAsset a : assetList) {
+                o.put(a.getAssetRef(), a.getDataUrl());
+            }
+            return o.toString();
+        } catch (Exception e) {
+            return "{}";
+        }
+    }
+
+    private void togglePreview() {
+        previewVisible = !previewVisible;
+        settings.setLivePreview(previewVisible);
+        updatePreviewVisibility();
+        if (previewVisible) updatePreview();
+    }
+
+    private void updatePreviewVisibility() {
+        previewContainer.setVisibility(previewVisible ? View.VISIBLE : View.GONE);
+        MaterialButton btn = findViewById(R.id.btn_toggle_preview);
+        btn.setText(previewVisible ? "▦ إخفاء المعاينة" : "▦ معاينة مباشرة");
+    }
+
+    private void showAssetPicker() {
+        List<VcgAsset> assetList = storage.getAssetsInProject(projectId);
+        if (assetList.isEmpty()) {
+            new AlertDialog.Builder(this, R.style.VCGDialog)
+                .setTitle("لا يوجد وسائط")
+                .setMessage("لم تقم برفع أي صور أو فيديو لهذا المشروع بعد. اذهب إلى \"الوسائط\" لإضافة ملفات.")
+                .setPositiveButton("فتح الوسائط", (d, w) -> {
+                    Intent i = new Intent(this, AssetsActivity.class);
+                    i.putExtra("projectId", projectId);
+                    i.putExtra("projectName", projectName);
+                    startActivity(i);
+                })
+                .setNegativeButton("إلغاء", null)
+                .show();
+            return;
+        }
+        String[] labels = new String[assetList.size()];
+        for (int i = 0; i < assetList.size(); i++) {
+            VcgAsset a = assetList.get(i);
+            labels[i] = (a.isVideo() ? "🎬 " : "🖼 ") + a.getName();
+        }
+        new AlertDialog.Builder(this, R.style.VCGDialog)
+            .setTitle("إدراج وسائط")
+            .setItems(labels, (d, which) -> {
+                VcgAsset a = assetList.get(which);
+                String snippet = a.isVideo()
+                    ? "video(\"" + a.getAssetRef() + "\")"
+                    : "img(\"" + a.getAssetRef() + "\")";
+                insertAtCursor(snippet);
+            })
+            .setNegativeButton("إلغاء", null)
+            .show();
     }
 
     private void updateLineNumbers() {
@@ -135,7 +242,6 @@ public class EditorActivity extends AppCompatActivity {
     }
 
     private void buildQuickKeyboard() {
-        HorizontalScrollView scroll = findViewById(R.id.quick_keyboard_scroll);
         LinearLayout container = findViewById(R.id.quick_keyboard);
 
         for (String key : QUICK_KEYS) {
@@ -164,7 +270,6 @@ public class EditorActivity extends AppCompatActivity {
         int end   = Math.max(codeEditor.getSelectionEnd(), 0);
         if (start > end) { int tmp = start; start = end; end = tmp; }
 
-        // Smart insert: add () or newline where appropriate
         String insert = text;
         if (text.equals("\"\"")) {
             codeEditor.getEditableText().replace(start, end, "\"\"");
@@ -176,10 +281,6 @@ public class EditorActivity extends AppCompatActivity {
         }
 
         codeEditor.getEditableText().replace(start, end, insert);
-        // Move cursor inside parens
-        if (insert.endsWith("(")) {
-            // position stays after (
-        }
     }
 
     private void runCode() {
@@ -188,13 +289,16 @@ public class EditorActivity extends AppCompatActivity {
         Intent intent = new Intent(this, OutputActivity.class);
         intent.putExtra("code", code);
         intent.putExtra("filename", filename);
+        intent.putExtra("projectId", projectId);
+        intent.putExtra("assetsJson", buildAssetsJson());
+        intent.putExtra("theme", settings.getTheme());
         startActivity(intent);
     }
 
     private void saveFile() {
         if (codeEditor.getText() == null) return;
         String content = codeEditor.getText().toString();
-        VcgFile file = new VcgFile(filename, content);
+        VcgFile file = new VcgFile(projectId, filename, content);
         storage.saveFile(file);
         modified = false;
         if (getSupportActionBar() != null)
@@ -217,13 +321,15 @@ public class EditorActivity extends AppCompatActivity {
         }
         if (id == R.id.action_save) { saveFile(); return true; }
         if (id == R.id.action_run)  { runCode();  return true; }
-        if (id == R.id.action_undo) {
-            // basic undo
-            Toast.makeText(this, "Undo", Toast.LENGTH_SHORT).show();
-            return true;
-        }
+        if (id == R.id.action_terminal) { openTerminal(); return true; }
         if (id == R.id.action_share) { shareCode(); return true; }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void openTerminal() {
+        Intent intent = new Intent(this, TerminalActivity.class);
+        intent.putExtra("projectId", projectId);
+        startActivity(intent);
     }
 
     private void shareCode() {
@@ -236,9 +342,16 @@ public class EditorActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        applySettingsToEditor();
+        if (previewVisible) schedulePreviewUpdate();
+    }
+
+    @Override
     public void onBackPressed() {
         if (modified) {
-            new androidx.appcompat.app.AlertDialog.Builder(this, R.style.VCGDialog)
+            new AlertDialog.Builder(this, R.style.VCGDialog)
                 .setTitle("حفظ التغييرات؟")
                 .setMessage("هل تريد حفظ " + filename + " قبل الخروج؟")
                 .setPositiveButton("حفظ", (d, w) -> { saveFile(); finish(); })
