@@ -10,47 +10,76 @@
         <androidx.appcompat.widget.Toolbar android:id="@+id/editor_toolbar"
             android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
             android:background="@color/surface_dark"
-            app:titleTextColor="@color/accent_green"/>
+            app:titleTextColor="@color/accent_green"
+            app:subtitleTextColor="@color/text_muted"/>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Code area: line numbers + editor -->
+    <!-- Editor + Preview split -->
     <LinearLayout android:layout_width="match_parent" android:layout_height="0dp"
-        android:layout_weight="1" android:orientation="horizontal">
+        android:layout_weight="1" android:orientation="vertical">
 
-        <!-- Line numbers -->
-        <ScrollView android:id="@+id/line_scroll"
-            android:layout_width="40dp" android:layout_height="match_parent"
-            android:background="@color/surface_dark"
-            android:overScrollMode="never"
-            android:scrollbars="none">
-            <TextView android:id="@+id/line_numbers"
+        <!-- Code area: line numbers + editor -->
+        <LinearLayout android:id="@+id/editor_code_container"
+            android:layout_width="match_parent" android:layout_height="0dp"
+            android:layout_weight="1" android:orientation="horizontal">
+
+            <!-- Line numbers -->
+            <ScrollView android:id="@+id/line_scroll"
+                android:layout_width="38dp" android:layout_height="match_parent"
+                android:background="@color/surface_dark"
+                android:overScrollMode="never"
+                android:scrollbars="none">
+                <TextView android:id="@+id/line_numbers"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:textColor="@color/text_muted" android:textSize="14sp"
+                    android:fontFamily="monospace" android:gravity="end"
+                    android:paddingTop="8dp" android:paddingEnd="6dp"
+                    android:paddingStart="4dp" android:lineSpacingMultiplier="1.35"
+                    android:text="1"/>
+            </ScrollView>
+
+            <View android:layout_width="1dp" android:layout_height="match_parent"
+                android:background="@color/border_color"/>
+
+            <!-- Code editor -->
+            <ScrollView android:id="@+id/editor_scroll"
+                android:layout_width="0dp" android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:overScrollMode="never">
+                <com.syrianvcg.editor.VcgCodeEditor android:id="@+id/code_editor"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:padding="8dp"
+                    android:paddingTop="8dp"
+                    android:textSize="14sp"
+                    android:gravity="top|start"
+                    android:inputType="textMultiLine|textNoSuggestions"
+                    android:imeOptions="flagNoEnterAction"
+                    android:scrollbars="none"
+                    android:background="@color/code_bg"/>
+            </ScrollView>
+        </LinearLayout>
+
+        <!-- Live preview pane -->
+        <LinearLayout android:id="@+id/preview_container"
+            android:layout_width="match_parent" android:layout_height="0dp"
+            android:layout_weight="1" android:orientation="vertical"
+            android:visibility="visible">
+
+            <View android:layout_width="match_parent" android:layout_height="2dp"
+                android:background="@color/accent_green"/>
+
+            <TextView
                 android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:textColor="@color/text_muted" android:textSize="14sp"
-                android:fontFamily="monospace" android:gravity="end"
-                android:paddingTop="8dp" android:paddingEnd="6dp"
-                android:paddingStart="4dp" android:lineSpacingMultiplier="1.35"
-                android:text="1"/>
-        </ScrollView>
+                android:text="▦ معاينة مباشرة"
+                android:textColor="@color/accent_green" android:textSize="11sp"
+                android:textStyle="bold"
+                android:background="@color/surface_dark"
+                android:padding="4dp" android:gravity="center"/>
 
-        <View android:layout_width="1dp" android:layout_height="match_parent"
-            android:background="@color/border_color"/>
-
-        <!-- Code editor -->
-        <ScrollView android:id="@+id/editor_scroll"
-            android:layout_width="0dp" android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:overScrollMode="never">
-            <com.syrianvcg.editor.VcgCodeEditor android:id="@+id/code_editor"
-                android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:paddingTop="8dp"
-                android:textSize="14sp"
-                android:gravity="top|start"
-                android:inputType="textMultiLine|textNoSuggestions"
-                android:imeOptions="flagNoEnterAction"
-                android:scrollbars="none"
-                android:background="@color/code_bg"/>
-        </ScrollView>
+            <WebView android:id="@+id/preview_webview"
+                android:layout_width="match_parent" android:layout_height="0dp"
+                android:layout_weight="1"/>
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Quick keyboard -->
@@ -66,13 +95,37 @@
             android:gravity="center_vertical"/>
     </HorizontalScrollView>
 
-    <!-- Run button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_run"
-        android:layout_width="match_parent" android:layout_height="48dp"
-        android:text="▶  تشغيل"
-        android:textSize="16sp" android:textStyle="bold"
-        android:backgroundTint="@color/olive_green"
-        android:textColor="@android:color/white"
-        style="@style/Widget.MaterialComponents.Button"/>
+    <!-- Action row -->
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_insert_asset"
+            android:layout_width="56dp" android:layout_height="48dp"
+            android:text="🖼"
+            android:textSize="16sp"
+            android:backgroundTint="@color/surface_dark_2"
+            android:insetTop="0dp" android:insetBottom="0dp"
+            style="@style/Widget.MaterialComponents.Button"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_toggle_preview"
+            android:layout_width="0dp" android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="▦ إخفاء المعاينة"
+            android:textSize="13sp" android:textAllCaps="false"
+            android:backgroundTint="@color/surface_dark_2"
+            android:textColor="@color/text_primary"
+            style="@style/Widget.MaterialComponents.Button"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_run"
+            android:layout_width="0dp" android:layout_height="48dp"
+            android:layout_weight="1.4"
+            android:text="▶  تشغيل"
+            android:textSize="15sp" android:textStyle="bold" android:textAllCaps="false"
+            android:backgroundTint="@color/olive_green"
+            android:textColor="@android:color/white"
+            style="@style/Widget.MaterialComponents.Button"/>
+    </LinearLayout>
 </LinearLayout>
