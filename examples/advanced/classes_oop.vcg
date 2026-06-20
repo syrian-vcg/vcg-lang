@@ -1,0 +1,100 @@
+# ============================================================
+# Syrian VCG — Classes & Inheritance
+# class, extends, super, self, new
+# ============================================================
+
+show("=== 1. Basic class ===")
+
+class Animal {
+    func init(self, name, sound) {
+        self.name = name
+        self.sound = sound
+    }
+    func speak(self) {
+        return self.name + " says " + self.sound
+    }
+}
+
+let cat = new Animal("Cat", "Meow")
+let dog = new Animal("Dog", "Woof")
+show(cat.speak())
+show(dog.speak())
+
+show("---")
+show("=== 2. Inheritance with extends / super ===")
+
+class Pet extends Animal {
+    func init(self, name, sound, owner) {
+        super.init(self, name, sound)
+        self.owner = owner
+    }
+    func speak(self) {
+        let base = super.speak(self)
+        return base + " (owned by " + self.owner + ")"
+    }
+}
+
+let buddy = new Pet("Buddy", "Bark", "Samer")
+show(buddy.speak())
+
+show("---")
+show("=== 3. Multiple instances + shared behavior ===")
+
+class Counter {
+    func init(self, start) {
+        self.value = start
+    }
+    func inc(self) {
+        self.value = self.value + 1
+        return self.value
+    }
+    func reset(self) {
+        self.value = 0
+    }
+}
+
+let c1 = new Counter(0)
+let c2 = new Counter(100)
+
+repeat 3 { c1.inc(self) }
+repeat 2 { c2.inc(self) }
+
+show("c1 =", c1.value)
+show("c2 =", c2.value)
+c1.reset(self)
+show("c1 after reset =", c1.value)
+
+show("---")
+show("=== 4. A small class hierarchy: Shapes ===")
+
+class Shape {
+    func init(self, name) { self.name = name }
+    func area(self) { return 0 }
+    func describe(self) {
+        return self.name + " has area " + str(self.area(self))
+    }
+}
+
+class Square extends Shape {
+    func init(self, side) {
+        super.init(self, "Square")
+        self.side = side
+    }
+    func area(self) { return self.side * self.side }
+}
+
+class Triangle extends Shape {
+    func init(self, base, height) {
+        super.init(self, "Triangle")
+        self.base = base
+        self.height = height
+    }
+    func area(self) { return 0.5 * self.base * self.height }
+}
+
+let shapes = [new Square(4), new Triangle(6, 3)]
+for s in shapes {
+    show(s.describe(s))
+}
+
+show("=== Done ===")
