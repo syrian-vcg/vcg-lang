@@ -1,0 +1,53 @@
+# ============================================================
+# Syrian VCG — Modules
+# module, export, import, as, from
+# ============================================================
+
+show("=== 1. Defining a module ===")
+
+module math_utils {
+    export func square(x) { return x * x }
+    export func cube(x) { return x * x * x }
+    export const PI_APPROX = 3.14159
+}
+
+show("---")
+show("=== 2. Importing the whole module ===")
+
+import math_utils
+
+show("square(6) =", math_utils.square(6))
+show("cube(3)   =", math_utils.cube(3))
+show("PI approx =", math_utils.PI_APPROX)
+
+show("---")
+show("=== 3. Importing specific names ===")
+
+import { square, cube } from math_utils
+
+show("square(9) =", square(9))
+show("cube(2)   =", cube(2))
+
+show("---")
+show("=== 4. Importing with an alias ===")
+
+import math_utils as mu
+show("mu.square(7) =", mu.square(7))
+
+show("---")
+show("=== 5. A second module that depends on the first ===")
+
+module geometry {
+    export func circle_area(r) {
+        return math_utils.PI_APPROX * math_utils.square(r)
+    }
+    export func sphere_volume(r) {
+        return (4.0 / 3.0) * math_utils.PI_APPROX * math_utils.cube(r)
+    }
+}
+
+import geometry
+show("circle_area(5)    =", geometry.circle_area(5))
+show("sphere_volume(3)  =", geometry.sphere_volume(3))
+
+show("=== Done ===")
