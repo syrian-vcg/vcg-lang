@@ -8,7 +8,7 @@ import android.content.SharedPreferences;
  */
 public class VcgSettings {
 
-    public static final String[] THEMES   = {"olive", "midnight", "amoled", "sand"};
+    public static final String[] THEMES   = {"olive", "white", "midnight", "amoled", "sand"};
     public static final String[] FONTS    = {"monospace", "sans-serif", "JetBrains"};
 
     private final SharedPreferences prefs;
