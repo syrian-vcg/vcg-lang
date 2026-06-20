@@ -46,9 +46,9 @@ public class SplashActivity extends AppCompatActivity {
         version.setAlpha(0f);
         version.animate().alpha(1f).setDuration(600).setStartDelay(800).start();
 
-        // Navigate to main after 2.2s
+        // Navigate to projects list after 2.2s
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            startActivity(new Intent(this, MainActivity.class));
+            startActivity(new Intent(this, ProjectsActivity.class));
             finish();
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         }, 2200);
