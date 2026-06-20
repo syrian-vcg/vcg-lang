@@ -16,11 +16,71 @@
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="vertical" android:padding="16dp">
 
+            <!-- ═══ المظهر ═══ -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="المظهر" android:textColor="@color/gold"
+                android:textSize="13sp" android:textStyle="bold"
+                android:paddingBottom="10dp"/>
+
+            <!-- Theme -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="ثيم العرض" android:textColor="@color/text_primary"
+                android:textSize="14sp" android:paddingBottom="6dp"/>
+            <RadioGroup android:id="@+id/radio_theme"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:paddingBottom="8dp">
+                <RadioButton android:id="@+id/theme_olive"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="زيتوني"
+                    android:textColor="@color/text_primary" android:textSize="12.5sp"
+                    android:buttonTint="@color/accent_green"/>
+                <RadioButton android:id="@+id/theme_midnight"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="ليلي"
+                    android:textColor="@color/text_primary" android:textSize="12.5sp"
+                    android:buttonTint="@color/accent_green"/>
+                <RadioButton android:id="@+id/theme_amoled"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="أسود"
+                    android:textColor="@color/text_primary" android:textSize="12.5sp"
+                    android:buttonTint="@color/accent_green"/>
+                <RadioButton android:id="@+id/theme_sand"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="رملي"
+                    android:textColor="@color/text_primary" android:textSize="12.5sp"
+                    android:buttonTint="@color/accent_green"/>
+            </RadioGroup>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="@color/border_color" android:layout_marginVertical="14dp"/>
+
+            <!-- Font family -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="نوع الخط" android:textColor="@color/text_primary"
+                android:textSize="14sp" android:paddingBottom="6dp"/>
+            <RadioGroup android:id="@+id/radio_font_family"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:paddingBottom="4dp">
+                <RadioButton android:id="@+id/font_mono"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="Monospace"
+                    android:fontFamily="monospace"
+                    android:textColor="@color/text_primary" android:textSize="13sp"
+                    android:buttonTint="@color/accent_green"/>
+                <RadioButton android:id="@+id/font_sans"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="Sans-serif"
+                    android:textColor="@color/text_primary" android:textSize="13sp"
+                    android:buttonTint="@color/accent_green"/>
+            </RadioGroup>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="@color/border_color" android:layout_marginVertical="14dp"/>
+
             <!-- Font Size -->
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:text="حجم الخط" android:textColor="@color/accent_green"
-                android:textSize="13sp" android:textStyle="bold"
-                android:paddingBottom="8dp"/>
+                android:text="حجم الخط" android:textColor="@color/text_primary"
+                android:textSize="14sp" android:paddingBottom="8dp"/>
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:orientation="horizontal" android:gravity="center_vertical">
                 <SeekBar android:id="@+id/seek_font_size"
@@ -35,11 +95,38 @@
             </LinearLayout>
 
             <View android:layout_width="match_parent" android:layout_height="1dp"
-                android:background="@color/border_color" android:layout_marginVertical="16dp"/>
+                android:background="@color/border_color" android:layout_marginVertical="14dp"/>
+
+            <!-- Tab size -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="حجم المسافة البادئة (Tab)" android:textColor="@color/text_primary"
+                android:textSize="14sp" android:paddingBottom="8dp"/>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical">
+                <SeekBar android:id="@+id/seek_tab_size"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:max="6" android:progress="2"
+                    android:progressTint="@color/olive_green"
+                    android:thumbTint="@color/accent_green"/>
+                <TextView android:id="@+id/label_tab_size"
+                    android:layout_width="48dp" android:layout_height="wrap_content"
+                    android:text="4" android:textColor="@color/text_primary"
+                    android:gravity="center" android:fontFamily="monospace"/>
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="@color/border_color" android:layout_marginVertical="18dp"/>
+
+            <!-- ═══ المحرر ═══ -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="المحرر" android:textColor="@color/gold"
+                android:textSize="13sp" android:textStyle="bold"
+                android:paddingBottom="10dp"/>
 
             <!-- Word Wrap -->
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="horizontal" android:gravity="center_vertical">
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:paddingBottom="12dp">
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content"
                     android:layout_weight="1" android:text="التفاف النص"
                     android:textColor="@color/text_primary" android:textSize="15sp"/>
@@ -49,12 +136,10 @@
                     android:trackTint="@color/olive_green"/>
             </LinearLayout>
 
-            <View android:layout_width="match_parent" android:layout_height="1dp"
-                android:background="@color/border_color" android:layout_marginVertical="12dp"/>
-
             <!-- Auto Indent -->
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="horizontal" android:gravity="center_vertical">
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:paddingBottom="12dp">
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content"
                     android:layout_weight="1" android:text="المسافة البادئة التلقائية"
                     android:textColor="@color/text_primary" android:textSize="15sp"/>
@@ -65,12 +150,10 @@
                     android:trackTint="@color/olive_green"/>
             </LinearLayout>
 
-            <View android:layout_width="match_parent" android:layout_height="1dp"
-                android:background="@color/border_color" android:layout_marginVertical="12dp"/>
-
             <!-- Syntax Highlighting -->
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="horizontal" android:gravity="center_vertical">
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:paddingBottom="12dp">
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content"
                     android:layout_weight="1" android:text="تلوين الكود"
                     android:textColor="@color/text_primary" android:textSize="15sp"/>
@@ -80,6 +163,82 @@
                     android:thumbTint="@color/accent_green"
                     android:trackTint="@color/olive_green"/>
             </LinearLayout>
+
+            <!-- Show line numbers -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:paddingBottom="12dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="إظهار أرقام السطور"
+                    android:textColor="@color/text_primary" android:textSize="15sp"/>
+                <Switch android:id="@+id/switch_line_numbers"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:thumbTint="@color/accent_green"
+                    android:trackTint="@color/olive_green"/>
+            </LinearLayout>
+
+            <!-- Auto save -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:paddingBottom="12dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="حفظ تلقائي قبل التشغيل"
+                    android:textColor="@color/text_primary" android:textSize="15sp"/>
+                <Switch android:id="@+id/switch_auto_save"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:thumbTint="@color/accent_green"
+                    android:trackTint="@color/olive_green"/>
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="@color/border_color" android:layout_marginVertical="18dp"/>
+
+            <!-- ═══ التشغيل ═══ -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="التشغيل والمعاينة" android:textColor="@color/gold"
+                android:textSize="13sp" android:textStyle="bold"
+                android:paddingBottom="10dp"/>
+
+            <!-- Live preview -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:paddingBottom="12dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="معاينة مباشرة أثناء الكتابة"
+                    android:textColor="@color/text_primary" android:textSize="15sp"/>
+                <Switch android:id="@+id/switch_live_preview"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:thumbTint="@color/accent_green"
+                    android:trackTint="@color/olive_green"/>
+            </LinearLayout>
+
+            <!-- Vibrate on run -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:paddingBottom="12dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="اهتزاز عند التشغيل"
+                    android:textColor="@color/text_primary" android:textSize="15sp"/>
+                <Switch android:id="@+id/switch_vibrate_run"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:thumbTint="@color/accent_green"
+                    android:trackTint="@color/olive_green"/>
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="@color/border_color" android:layout_marginVertical="18dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_reset_settings"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="↺  استعادة الإعدادات الافتراضية"
+                android:textAllCaps="false"
+                style="@style/VCGButtonOutlined"
+                android:layout_marginBottom="20dp"/>
 
         </LinearLayout>
     </ScrollView>
