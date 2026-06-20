@@ -1,0 +1,410 @@
+# ============================================================
+# Syrian VCG — INDEX
+# فهرس شامل لكل مفاهيم اللغة في ملف واحد
+# A complete tour of every concept in the VCG language.
+# Run section by section, or all at once with:  vcgc -r index.vcg
+# Date: 2026-06-06
+# ============================================================
+
+h(1, "Syrian VCG — Language Index")
+show("نسخة:", VCG_VERSION, "| إصدار:", VCG_EDITION)
+show("================================================")
+
+# ────────────────────────────────────────────────────────────
+# 1) Comments
+# ────────────────────────────────────────────────────────────
+# This is a comment with #
+// This is also a comment with //
+/* and this is a
+   multi-line comment */
+
+show("=== 1. Comments ===")
+show("three comment styles work: #, //, and /* */")
+
+# ────────────────────────────────────────────────────────────
+# 2) Variables & basic types
+# ────────────────────────────────────────────────────────────
+show("---")
+show("=== 2. Variables & Types ===")
+
+let i   = 42
+const PI_LOCAL = 3.14159
+let f   = 3.14
+let s   = "مرحباً"
+let b   = true
+let n   = nil
+let arr = [1, 2, 3, 4, 5]
+let obj = { name: "VCG", version: 2, active: true }
+
+show("int   :", i,   "→", typeof(i))
+show("float :", f,   "→", typeof(f))
+show("string:", s,   "→", typeof(s))
+show("bool  :", b,   "→", typeof(b))
+show("nil   :", n,   "→", typeof(n))
+show("array :", arr, "→", typeof(arr))
+show("object:", obj, "→", typeof(obj))
+show("sizeof(arr) =", sizeof(arr))
+
+# type alias
+type UserId = 0
+show("type alias UserId =", UserId)
+
+func square(x) { return x * x }
+
+# ────────────────────────────────────────────────────────────
+# 3) Operators
+# ────────────────────────────────────────────────────────────
+show("---")
+show("=== 3. Operators ===")
+show("2 + 3   =", 2 + 3)
+show("10 - 4  =", 10 - 4)
+show("6 * 7   =", 6 * 7)
+show("20 / 4  =", 20 / 4)
+show("17 % 5  =", 17 % 5)
+show("2 ** 8  =", 2 ** 8)
+show("5 == 5  =", 5 == 5)
+show("5 != 4  =", 5 != 4)
+show("true and false =", true and false)
+show("true or false  =", true or false)
+show("not true       =", not true)
+show("1..5 (range)   =", 1..5)
+show("ternary: ", (5 > 3) ? "yes" : "no")
+show("pipe |> : ", 4 |> square |> square)
+
+# ────────────────────────────────────────────────────────────
+# 4) Strings & arrays (built-in methods)
+# ────────────────────────────────────────────────────────────
+show("---")
+show("=== 4. Strings & Arrays ===")
+
+let greeting = "السلام عليكم"
+show("len()      :", greeting.len())
+show("upper()    :", greeting.upper())
+show("contains() :", greeting.contains("عليكم"))
+show("startswith:", greeting.startswith("ا"))
+
+let nums = [10, 3, 7, 1, 9, 4, 6, 2, 8, 5]
+show("array      :", nums)
+nums.push(99)
+show("after push :", nums)
+let popped = nums.pop()
+show("after pop  :", nums, "removed:", popped)
+show("slice(2,5) :", nums.slice(2, 5))
+show("join(', ') :", nums.join(", "))
+show("reverse()  :", nums.slice(0).reverse())
+show("contains(7):", nums.contains(7))
+show("sorted     :", [5,3,1,4,2].sort())
+
+# ────────────────────────────────────────────────────────────
+# 5) Control flow
+# ────────────────────────────────────────────────────────────
+show("---")
+show("=== 5. Control Flow: if / else ===")
+
+let score = 82
+if score >= 90 {
+    show("grade: A")
+} else if score >= 80 {
+    show("grade: B")
+} else {
+    show("grade: C or below")
+}
+
+show("--- while ---")
+let w_i = 1
+while w_i <= 3 {
+    show("while i =", w_i)
+    w_i += 1
+}
+
+show("--- repeat ---")
+repeat 3 {
+    show("repeat!")
+}
+
+show("--- for ... in (array / range / string) ---")
+for fruit in ["تفاح", "موز", "عنب"] { show("fruit:", fruit) }
+for x in range(1, 4) { show("range x:", x) }
+for ch in "VCG" { show("char:", ch) }
+
+show("--- break / continue ---")
+let bc = 0
+while bc < 10 {
+    bc += 1
+    if bc % 2 == 0 { continue }
+    if bc > 7 { break }
+    show("odd:", bc)
+}
+
+# ────────────────────────────────────────────────────────────
+# 6) Pattern matching: match / when, guard
+# ────────────────────────────────────────────────────────────
+show("---")
+show("=== 6. match / when ===")
+
+func day_name(d) {
+    match d {
+        when 1 -> show("day 1: Sunday")
+        when 2 -> show("day 2: Monday")
+        when 3 -> show("day 3: Tuesday")
+    }
+}
+day_name(1)
+day_name(3)
+
+show("--- guard ... else ---")
+func safe_divide(a, b) {
+    guard b != 0 else {
+        show("guard failed: cannot divide by zero")
+        return nil
+    }
+    return a / b
+}
+show("safe_divide(10, 2) =", safe_divide(10, 2))
+safe_divide(10, 0)
+
+# ────────────────────────────────────────────────────────────
+# 7) Functions: recursion, higher-order, pipeline
+# ────────────────────────────────────────────────────────────
+show("---")
+show("=== 7. Functions ===")
+
+func factorial_fn(n) {
+    if n <= 1 { return 1 }
+    return n * factorial_fn(n - 1)
+}
+show("5! =", factorial_fn(5))
+
+func apply_twice(f, x) { return f(f(x)) }
+show("apply_twice(square, 3) =", apply_twice(square, 3))
+
+let doubled = map(square, [1, 2, 3, 4])
+show("map(square, [1,2,3,4]) =", doubled)
+show("filter even =", filter(func(x) { return x % 2 == 0 }, range(1, 10)))
+show("reduce sum  =", reduce(func(a, x) { return a + x }, 0, [1,2,3,4,5]))
+
+# ────────────────────────────────────────────────────────────
+# 8) Structs (the idiomatic VCG way to model data)
+# ────────────────────────────────────────────────────────────
+show("---")
+show("=== 8. Structs ===")
+
+struct Point { x, y }
+
+func point_new(px, py) { return { x: px, y: py } }
+func point_dist(a, b) {
+    let dx = b.x - a.x
+    let dy = b.y - a.y
+    return sqrt(dx*dx + dy*dy)
+}
+
+let p1 = point_new(0, 0)
+let p2 = point_new(3, 4)
+show("dist(p1,p2) =", point_dist(p1, p2))
+
+# ────────────────────────────────────────────────────────────
+# 9) Enums
+# ────────────────────────────────────────────────────────────
+show("---")
+show("=== 9. Enums ===")
+
+enum Direction { North, South, East, West }
+show("North =", Direction.North)
+show("West  =", Direction.West)
+
+# ────────────────────────────────────────────────────────────
+# 10) Classes (basic object-oriented syntax)
+# ────────────────────────────────────────────────────────────
+show("---")
+show("=== 10. Classes ===")
+# Note: pass the instance explicitly into its own methods
+# (self, this) — this keeps behavior identical between the
+# live preview interpreter and the native vcgc compiler.
+
+class Animal {
+    func init(self, name, sound) {
+        self.name = name
+        self.sound = sound
+    }
+    func speak(self) {
+        return self.name + " says " + self.sound
+    }
+}
+
+let cat = new Animal("Cat", "Meow")
+show(cat.speak(cat))
+
+# ────────────────────────────────────────────────────────────
+# 11) Error handling: try / catch / throw / assert / safe
+# ────────────────────────────────────────────────────────────
+show("---")
+show("=== 11. Error Handling ===")
+
+func divide_checked(a, b) {
+    if b == 0 { throw "division by zero" }
+    return a / b
+}
+
+try {
+    show("10/2 =", divide_checked(10, 2))
+    show("10/0 =", divide_checked(10, 0))
+} catch err {
+    show("[caught]", err)
+}
+
+try {
+    assert(2 + 2 == 4, "math is broken")
+    show("assert passed")
+} catch err {
+    show("[assert failed]", err)
+}
+
+safe {
+    let bad = 5 / 0
+}
+show("execution continues after safe block")
+
+# ────────────────────────────────────────────────────────────
+# 12) Built-in tests
+# ────────────────────────────────────────────────────────────
+show("---")
+show("=== 12. test blocks ===")
+
+test "addition works" {
+    assert_eq(2 + 2, 4)
+}
+test "this one fails on purpose" {
+    assert_eq(2 + 2, 5)
+}
+
+# ────────────────────────────────────────────────────────────
+# 13) Reactive store: $set / $get / watch / $x
+# ────────────────────────────────────────────────────────────
+show("---")
+show("=== 13. Reactive Store ===")
+
+watch("hp", func(v) { show("[watch] hp changed to", v) })
+$set("hp", 100)
+$set("hp", 75)
+show("current hp =", $get("hp"))
+
+# ────────────────────────────────────────────────────────────
+# 14) Visibility & bindings: public, w (write-only), c (channel)
+# ────────────────────────────────────────────────────────────
+show("---")
+show("=== 14. public / w / c ===")
+
+public let APP_NAME = "VCG App"
+show("APP_NAME =", APP_NAME)
+
+w log1 = "system started"
+w log2 = "user logged in"
+
+c tasks = "init"
+send(tasks, "load config")
+send(tasks, "start service")
+let t1 = recv(tasks)
+let t2 = recv(tasks)
+show("channel tasks:", t1, "|", t2)
+
+# ────────────────────────────────────────────────────────────
+# 15) Modules: module / export
+# ────────────────────────────────────────────────────────────
+show("---")
+show("=== 15. Modules ===")
+
+module math_utils {
+    export func cube(x) { return x * x * x }
+    export const TAU_LOCAL = 6.2832
+}
+show("math_utils.cube(3) =", math_utils.cube(3))
+show("math_utils.TAU_LOCAL =", math_utils.TAU_LOCAL)
+
+# ────────────────────────────────────────────────────────────
+# 16) Resource-style block: with ... as
+# ────────────────────────────────────────────────────────────
+show("---")
+show("=== 16. with ... as ===")
+
+with "pretend-connection" as conn {
+    show("using resource:", conn)
+}
+
+# ────────────────────────────────────────────────────────────
+# 17) defer — run a statement (kept for cleanup-style code)
+# ────────────────────────────────────────────────────────────
+show("---")
+show("=== 17. defer ===")
+
+func with_defer() {
+    defer show("[defer] cleanup ran")
+    show("doing work...")
+}
+with_defer()
+
+# ────────────────────────────────────────────────────────────
+# 18) Math, collections & utility functions
+# ────────────────────────────────────────────────────────────
+show("---")
+show("=== 18. Math & Utility Functions ===")
+
+show("sqrt(2)      =", sqrt(2))
+show("pow(2,10)    =", pow(2, 10))
+show("min/max      =", min(4,9,2), "/", max(4,9,2))
+show("clamp(15,0,10)=", clamp(15, 0, 10))
+show("gcd(12,18)   =", gcd(12, 18))
+show("lcm(4,6)     =", lcm(4, 6))
+show("fib(10)      =", fib(10))
+show("factorial(6) =", factorial(6))
+show("is_prime(17) =", is_prime(17))
+
+let data = [1, 2, 2, 3, 4, 4, 5]
+show("unique(data) =", unique(data))
+show("sum(data)    =", sum(data))
+show("avg(data)    =", avg(data))
+show("first/last   =", first(data), "/", last(data))
+show("chunk(data,2)=", chunk(data, 2))
+show("zip([1,2],[3,4]) =", zip([1,2],[3,4]))
+
+show("keys(obj)    =", keys(obj))
+show("values(obj)  =", values(obj))
+show("has(obj,'name')=", has(obj, "name"))
+
+show("JSON_stringify=", JSON_stringify(obj))
+show("uuid()       =", uuid())
+show("hash('vcg')  =", hash("vcg"))
+
+# ────────────────────────────────────────────────────────────
+# 19) UI / media / social output elements
+# ────────────────────────────────────────────────────────────
+show("---")
+h(2, "19. UI & Media Elements")
+
+l(
+    "h(level, text) — headings",
+    "l(items...) — bullet list",
+    "url(href, text) — link",
+    "btn(label, action) — button",
+    "key(combo) — keyboard hint",
+    "img(src, alt, width) — image",
+    "video(src) — video player",
+    "youtube(id) — embedded video",
+    "facebook / instagram / xsocial — social links"
+)
+
+url("https://github.com/syrian-vcg/vcg-lang", "VCG on GitHub")
+btn("Say Hi", "alert('Hello from VCG!')")
+key("vcgc -r index.vcg")
+
+# ────────────────────────────────────────────────────────────
+# 20) Reserved / forward-looking syntax
+# ────────────────────────────────────────────────────────────
+show("---")
+show("=== 20. Reserved keywords (parsed, reserved for future use) ===")
+show("interface, union, generic, ref, ptr, alloc, free,")
+show("http, socket, mock, async, await, promise, doc")
+show("— these are recognized by the parser today and reserved")
+show("for upcoming language features.")
+
+show("================================================")
+show("=== VCG Index Complete | Syrian VCG v2.0 ===")
