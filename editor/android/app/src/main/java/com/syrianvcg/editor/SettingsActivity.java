@@ -44,8 +44,8 @@ public class SettingsActivity extends AppCompatActivity {
 
         // Theme selector
         RadioGroup themeGroup = findViewById(R.id.radio_theme);
-        int[] themeIds = {R.id.theme_olive, R.id.theme_midnight, R.id.theme_amoled, R.id.theme_sand};
-        String[] themeNames = {"olive", "midnight", "amoled", "sand"};
+        int[] themeIds = {R.id.theme_olive, R.id.theme_white, R.id.theme_midnight, R.id.theme_amoled, R.id.theme_sand};
+        String[] themeNames = {"olive", "white", "midnight", "amoled", "sand"};
         String currentTheme = settings.getTheme();
         for (int i = 0; i < themeNames.length; i++) {
             if (themeNames[i].equals(currentTheme)) themeGroup.check(themeIds[i]);
