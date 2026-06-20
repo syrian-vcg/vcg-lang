@@ -1,505 +1,754 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>v2_concepts — VCG</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
-:root{--bg:#0a0f1a;--panel:#111827;--border:#1e3050;--accent:#00d4ff;--green:#00ff9d;--text:#e2e8f0;--muted:#4a5568;}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem 1rem}
-header{width:100%;max-width:820px;display:flex;align-items:center;gap:1rem;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
-.logo{width:48px;height:48px;background:linear-gradient(135deg,#2d5a1b,#1a3a0a);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:0 0 16px rgba(0,255,0,.2)}
-h1{font-size:1.3rem;font-weight:900;color:var(--accent)}
-#out{width:100%;max-width:820px;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:1.8rem;min-height:180px;font-family:'JetBrains Mono',monospace;font-size:.9rem;line-height:2;box-shadow:0 4px 30px rgba(0,0,0,.4)}
-.ln{display:block;padding:.1rem .4rem;border-radius:4px}
-.ln:hover{background:rgba(0,212,255,.04)}
-.err{color:#f87171}
-footer{margin-top:1.5rem;color:var(--muted);font-size:.75rem}
-footer b{color:#00d4ff}
-</style></head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VCG — v2 Concepts Demo</title>
+    <style>
+        /* ===== White Background, Clean UI ===== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            color: #222;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+        #terminal {
+            width: 100vw;
+            height: 100vh;
+            background: #ffffff;
+            padding: 1.8rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #out {
+            flex: 1;
+            font-size: 1rem;
+            line-height: 1.8;
+            overflow-y: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        /* ===== Fade-in Animation ===== */
+        .ln {
+            display: block;
+            padding: 0.05rem 0.1rem;
+            opacity: 0;
+            animation: fadeIn 0.2s ease forwards;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(4px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== Output Styling ===== */
+        .output-line {
+            color: #222;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .output-line:before {
+            content: "▪ ";
+            color: #888;
+            opacity: 0.4;
+        }
+        .header-line {
+            color: #1a1a1a;
+            font-weight: 600;
+            font-size: 1.2rem;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 0.2rem;
+            margin-top: 0.8rem;
+        }
+        .header-line:before {
+            content: "";
+        }
+        .section-title {
+            color: #0055aa;
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-top: 0.5rem;
+            padding: 0.1rem 0;
+        }
+        .section-title:before {
+            content: "▸ ";
+            color: #0055aa;
+        }
+        .divider {
+            color: #cccccc;
+            letter-spacing: 2px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+        .divider:before {
+            content: "— ";
+        }
+        .divider:after {
+            content: " —";
+        }
+        .error {
+            color: #cc0000;
+            background: #ffeeee;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            border-right: 3px solid #cc0000;
+        }
+        .error:before {
+            content: "⚠️ ";
+        }
+
+        /* ===== Natural Buttons (if any) ===== */
+        .ui-btn {
+            display: inline-block;
+            background: #f5f5f5;
+            border: 1px solid #cccccc;
+            color: #333;
+            padding: 0.3rem 1.2rem;
+            margin: 0.15rem 0.3rem 0.15rem 0;
+            border-radius: 4px;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.1s;
+            text-decoration: none;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        }
+        .ui-btn:hover {
+            background: #e8e8e8;
+            border-color: #aaa;
+        }
+        .ui-btn:active {
+            transform: scale(0.97);
+            background: #ddd;
+        }
+
+        .ui-key {
+            display: inline-block;
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            color: #222;
+            padding: 0.05rem 0.7rem;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            margin: 0.1rem 0.2rem;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        /* ===== Footer ===== */
+        footer {
+            color: #aaaaaa;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            text-align: center;
+            padding-top: 0.5rem;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 0.5rem;
+        }
+        footer b { color: #333; }
+
+        /* ===== Scrollbar ===== */
+        #out::-webkit-scrollbar { width: 6px; }
+        #out::-webkit-scrollbar-track { background: #f5f5f5; }
+        #out::-webkit-scrollbar-thumb { background: #cccccc; border-radius: 3px; }
+        #out::-webkit-scrollbar-thumb:hover { background: #aaaaaa; }
+    </style>
+</head>
 <body>
-<header><div class="logo">✦</div><div><h1>v2_concepts</h1><p style="font-size:.8rem;color:var(--muted)">Syrian Private Programming VCG v2.0</p></div></header>
-<div id="out"></div>
-<footer>Compiled by <b>vcgc</b> — Syrian VCG Language</footer>
-<script>
-/* ── VCG Runtime ────────────────────── */
-var _OUT=document.getElementById('out');
-function _vcg_print(arr){
-  var s=arr.map(function(v){return v===null?'nil':v===true?'true':v===false?'false':Array.isArray(v)?'['+v.map(String).join(', ')+']':typeof v==='object'&&v?JSON.stringify(v):String(v);}).join(' ');
-  var el=document.createElement('span');el.className='ln';el.textContent=s;
-  _OUT.appendChild(el);
-}
-function _vcg_html(s){_OUT.insertAdjacentHTML('beforeend',String(s));}
-function _truthy(v){return v!==null&&v!==false&&v!==0&&v!==''&&v!==undefined;}
-function _vcg_eq(a,b){if(a===b)return true;if(a===null&&b===null)return true;if(typeof a!=='object'&&typeof b!=='object')return a==b;return false;}
-function _bin(op,a,b){
-  if(op==='+'&&(typeof a==='string'||typeof b==='string'))return String(a)+String(b);
-  if(op==='+'&&Array.isArray(a)&&Array.isArray(b))return a.concat(b);
-  if(op==='..'){
-    var r=[],f=Math.floor(a),t=Math.floor(b),s=f<=t?1:-1;
-    for(var i=f;s>0?i<=t:i>=t;i+=s)r.push(i);return r;
-  }
-  switch(op){case '+':return a+b;case '-':return a-b;case '*':return a*b;
-    case '/':if(b===0)throw new Error('Division by zero');return a/b;
-    case '%':if(b===0)throw new Error('Modulo by zero');return a%b;
-    case '**':return Math.pow(a,b);
-    case '==':return _vcg_eq(a,b);case '!=':return !_vcg_eq(a,b);
-    case '<':return a<b;case '>':return a>b;case '<=':return a<=b;case '>=':return a>=b;
-    case 'and':return _truthy(a)&&_truthy(b);
-    case 'or': return _truthy(a)||_truthy(b);
-    case '|':return (a|0)|(b|0);case '&':return (a|0)&(b|0);
-    case '<<':return (a|0)<<(b|0);case '>>':return (a|0)>>(b|0);
-  }return null;
-}
-function _scope(p){return Object.create(p||null);}
-function _def(e,k,v){Object.defineProperty(e,k,{value:v,writable:true,configurable:true,enumerable:true});return v;}
-function _set(e,k,v){
-  var c=e;
-  while(c){if(Object.prototype.hasOwnProperty.call(c,k)){c[k]=v;return v;}c=Object.getPrototypeOf(c);}
-  e[k]=v;return v;
-}
-function _v(k,e){
-  var c=e;
-  while(c){if(k in c)return c[k];c=Object.getPrototypeOf(c);}
-  throw new Error('Undefined: '+k);
-}
-function _idx(o,i){if(o===null)return null;if(Array.isArray(o)){var j=i<0?o.length+i:i;return j>=0&&j<o.length?o[j]:null;}if(typeof o==='string'){var j=i<0?o.length+i:i;return j>=0&&j<o.length?o[j]:null;}if(typeof o==='object')return o[i]!==undefined?o[i]:null;return null;}
-function _setidx(o,i,v){if(Array.isArray(o)){if(i<0)i=o.length+i;o[i]=v;}else if(typeof o==='object')o[i]=v;}
-function _field(o,k){return o&&typeof o==='object'&&k in o?o[k]:null;}
-function _setfield(o,k,v){if(o&&typeof o==='object')o[k]=v;}
-function _typeof(v){if(v===null)return 'nil';if(v===true||v===false)return 'bool';if(Array.isArray(v))return 'array';if(typeof v==='object')return 'struct';return typeof v;}
-function _sizeof(v){if(Array.isArray(v))return v.length;if(typeof v==='string')return v.length;if(v&&typeof v==='object')return Object.keys(v).length;return 1;}
-function _call(f,args,e){if(typeof f==='function')return f.apply(null,args);throw new Error('Not callable');}
-function _method(obj,name,args,e){
-  if(Array.isArray(obj)){
-    if(name==='push'){obj.push.apply(obj,args);return obj.length;}
-    if(name==='pop')return obj.pop();
-    if(name==='len'||name==='length')return obj.length;
-    if(name==='join')return obj.join(args[0]!==undefined?args[0]:',');
-    if(name==='contains')return obj.indexOf(args[0])>=0;
-    if(name==='reverse'){obj.reverse();return obj;}
-    if(name==='slice')return obj.slice(args[0]||0,args[1]);
-    if(name==='sort'){obj.sort(function(a,b){return a-b;});return obj;}
-  }
-  if(typeof obj==='string'){
-    if(name==='len'||name==='length')return obj.length;
-    if(name==='upper')return obj.toUpperCase();
-    if(name==='lower')return obj.toLowerCase();
-    if(name==='trim')return obj.trim();
-    if(name==='split')return obj.split(args[0]!==undefined?args[0]:' ');
-    if(name==='contains')return obj.includes(String(args[0]));
-    if(name==='startswith')return obj.startsWith(String(args[0]));
-    if(name==='endswith')return obj.endsWith(String(args[0]));
-    if(name==='replace')return obj.replaceAll(String(args[0]),String(args[1]));
-    if(name==='tonum')return parseFloat(obj);
-    if(name==='indexof')return obj.indexOf(String(args[0]));
-  }
-  if(obj&&typeof obj==='object'&&typeof obj[name]==='function')return obj[name].apply(obj,args);
-  throw new Error('No method: '+name);
-}
-/* ── Stdlib ─────────────────────── */
-var _e=_scope(null);
-_def(_e,'abs',function(x){return Math.abs(x);});
-_def(_e,'floor',function(x){return Math.floor(x);});
-_def(_e,'ceil',function(x){return Math.ceil(x);});
-_def(_e,'round',function(x){return Math.round(x);});
-_def(_e,'sqrt',function(x){return Math.sqrt(x);});
-_def(_e,'pow',function(b,e2){return Math.pow(b,e2);});
-_def(_e,'log',function(x){return Math.log(x);});
-_def(_e,'log2',function(x){return Math.log2(x);});
-_def(_e,'log10',function(x){return Math.log10(x);});
-_def(_e,'sin',function(x){return Math.sin(x);});
-_def(_e,'cos',function(x){return Math.cos(x);});
-_def(_e,'tan',function(x){return Math.tan(x);});
-_def(_e,'min',function(){return Math.min.apply(null,arguments);});
-_def(_e,'max',function(){return Math.max.apply(null,arguments);});
-_def(_e,'clamp',function(v,lo,hi){return Math.max(lo,Math.min(hi,v));});
-_def(_e,'rand',function(a,b){if(a===undefined)return Math.random();if(b===undefined)return Math.floor(Math.random()*a);return Math.floor(Math.random()*(b-a))+a;});
-_def(_e,'range',function(a,b,s){var r=[],f=b===undefined?0:a,t=b===undefined?a:b,st=s||1;for(var i=f;i<t;i+=st)r.push(i);return r;});
-_def(_e,'len',function(x){if(Array.isArray(x))return x.length;if(typeof x==='string')return x.length;if(x&&typeof x==='object')return Object.keys(x).length;return 0;});
-_def(_e,'str',function(x){return x===null?'nil':x===true?'true':x===false?'false':Array.isArray(x)?'['+x.map(String).join(', ')+']':String(x);});
-_def(_e,'int',function(x){return parseInt(x)||0;});
-_def(_e,'float',function(x){return parseFloat(x)||0;});
-_def(_e,'bool',function(x){return _truthy(x);});
-_def(_e,'char',function(n){return String.fromCharCode(n);});
-_def(_e,'ord',function(s){return s?s.charCodeAt(0):0;});
-_def(_e,'keys',function(o){return o&&typeof o==='object'?Object.keys(o):[];});
-_def(_e,'values',function(o){return o&&typeof o==='object'?Object.values(o):[];});
-_def(_e,'join',function(a,s){return Array.isArray(a)?a.join(s||','):String(a);});
-_def(_e,'format',function(){var s=arguments[0];for(var i=1;i<arguments.length;i++)s=s.replace('%s',arguments[i]);return s;});
-_def(_e,'typeof',_typeof);
-_def(_e,'sizeof',_sizeof);
-_def(_e,'isnil',function(x){return x===null||x===undefined;});
-_def(_e,'isnum',function(x){return typeof x==='number';});
-_def(_e,'isstr',function(x){return typeof x==='string';});
-_def(_e,'isarr',function(x){return Array.isArray(x);});
-_def(_e,'PI',Math.PI);
-_def(_e,'E',Math.E);
-_def(_e,'true',true);
-_def(_e,'false',false);
-_def(_e,'nil',null);
-_def(_e,'show',function(){_vcg_print(Array.from(arguments));return null;});
-_def(_e,'print',function(){_vcg_print(Array.from(arguments));return null;});
-_def(_e,'input',function(p){return prompt(p||'input:')||'';});
-/* ── v3.0 Reactive Runtime ───────── */
-var _vcg_store={};
-var _vcg_watchers={};
-var _vcg_exports={};
-var _vcg_writeonly={};
-function _vcg_set(k,v){
-  _vcg_store[k]=v;
-  if(_vcg_watchers[k]) _vcg_watchers[k](v);
-  return v;
-}
-function _vcg_get(k){ return _vcg_store[k]!==undefined?_vcg_store[k]:null; }
-function _vcg_w(name,val,env){
-  _def(env,name,val);
-  _vcg_writeonly[name]=true;
-  _vcg_print(['[w] '+name+' ← '+String(val)]);
-  return val;
-}
-function _vcg_x(v){ return typeof v==='function'?v():v; }
-function _vcg_channel(name,init){
-  var ch={_name:name,_buf:[]};
-  if(init!==undefined) ch._buf.push(init);
-  return ch;
-}
-function _vcg_send(ch,val){
-  if(ch&&ch._buf) ch._buf.push(val);
-  return val;
-}
-function _vcg_recv(ch){
-  if(ch&&ch._buf&&ch._buf.length>0) return ch._buf.shift();
-  return null;
-}
-function _vcg_pipe(val){
-  var fns=Array.from(arguments).slice(1);
-  return fns.reduce(function(v,f){return typeof f==='function'?f(v):v;},val);
-}
-_def(_e,'watch',function(k,fn){ _vcg_watchers[k]=fn; });_def(_e,'store',function(){ return _vcg_store; });_def(_e,'exports',function(){ return _vcg_exports; });_def(_e,'send',_vcg_send);_def(_e,'recv',_vcg_recv);_def(_e,'pipe',_vcg_pipe);_def(_e,'freeze',function(v){return Object.freeze(v)||v;});_def(_e,'VCG_VERSION','3.0.0');_def(_e,'VCG_DATE','2026-06-06');/* ── User Program ────────────────── */
-try{
-  _vcg_print(["Syrian VCG v2.0 - Full Edition"]);
-  _vcg_print(["================================"]);
-  _vcg_print([""]);
-  _vcg_print(["=== 1. Class & OOP ==="]);
-    _def(_e,'Animal',(function(_B0){
-    var _p={};
+    <div id="terminal">
+        <div id="out"></div>
+        <footer>═ VCG v2.0 — Syrian Private Programming ═</footer>
+    </div>
+    <script>
+        // ============================================================
+        //  VCG Runtime — v2 Concepts (White UI, Output Only)
+        // ============================================================
 
-    var _e=_p;
-    _def(_e,'init',(function _f_init(_p_name,_p_sound){
-      var _e=_scope(_e);
-      _def(_e,'name',_p_name);
-      _def(_e,'sound',_p_sound);
-      var _t1=_v('name',_e);
-      _setfield(_v('self',_e),'name',_t1);
-      var _t2=_v('sound',_e);
-      _setfield(_v('self',_e),'sound',_t2);
-      return null;
-    }));
-    _def(_e,'speak',(function _f_speak(){
-      var _e=_scope(_e);
-      return _bin("+",_bin("+",_field(_v('self',_e),"name")," says: "),_field(_v('self',_e),"sound"));
-      return null;
-    }));
-    function Animal(){var _s=Object.create(_p);_s.__class__='Animal';if(typeof _p.init==='function')_p.init.apply(_s,arguments);return _s;}
-    Animal.prototype=_p;
-    return Animal;
-  })(null));
-    _def(_e,'Dog',(function(_B3){
-    var _p={};
+        var _OUT = document.getElementById('out');
+        var lineCounter = 0;
 
-    var _e=_p;
-    _def(_e,'init',(function _f_init(_p_name){
-      var _e=_scope(_e);
-      _def(_e,'name',_p_name);
-      var _t4=_v('name',_e);
-      _setfield(_v('self',_e),'name',_t4);
-      var _t5="Woof";
-      _setfield(_v('self',_e),'sound',_t5);
-      return null;
-    }));
-    _def(_e,'speak',(function _f_speak(){
-      var _e=_scope(_e);
-      return _bin("+",_bin("+",_field(_v('self',_e),"name")," barks: "),_field(_v('self',_e),"sound"));
-      return null;
-    }));
-    _def(_e,'fetch',(function _f_fetch(_p_item){
-      var _e=_scope(_e);
-      _def(_e,'item',_p_item);
-      return _bin("+",_bin("+",_field(_v('self',_e),"name")," fetches the "),_v('item',_e));
-      return null;
-    }));
-    function Dog(){var _s=Object.create(_p);_s.__class__='Dog';if(typeof _p.init==='function')_p.init.apply(_s,arguments);return _s;}
-    Dog.prototype=_p;
-    return Dog;
-  })(null));
-  _def(_e,'dog',null);
-  _vcg_print([_method(_v('dog',_e),"speak",[],_e)]);
-  _vcg_print([_method(_v('dog',_e),"fetch",["ball"],_e)]);
-  _vcg_print([""]);
-  _vcg_print(["=== 2. Enum ==="]);
-    _def(_e,'Color',Object.freeze({'Red':0,'Green':1,'Blue':2,'Yellow':3}));
-    _def(_e,'Direction',Object.freeze({'North':0,'South':1,'East':2,'West':3}));
-    _def(_e,'Status',Object.freeze({'Pending':0,'Active':1,'Done':2,'Failed':3}));
-  _vcg_print(["Color.Red    =",_field(_v('Color',_e),"Red")]);
-  _vcg_print(["Color.Green  =",_field(_v('Color',_e),"Green")]);
-  _vcg_print(["Color.Blue   =",_field(_v('Color',_e),"Blue")]);
-  _vcg_print(["Direction.North =",_field(_v('Direction',_e),"North")]);
-  _vcg_print(["Status.Done =",_field(_v('Status',_e),"Done")]);
-  _vcg_print([""]);
-  _vcg_print(["=== 3. Type Aliases ==="]);
-    _def(_e,'Point2D',{"x":0,"y":0});
-    _def(_e,'Callback',(function(){
-  var _e2=_scope(_e);
-  }));
-    _def(_e,'NumberList',[]);
-  _vcg_print(["Point2D:",_typeof(_v('Point2D',_e))]);
-  _vcg_print(["NumberList:",_typeof(_v('NumberList',_e))]);
-  _vcg_print([""]);
-  _vcg_print(["=== 4. Modules ==="]);
-    (function(){
-    var _e=_scope(_e);
-    _def(_e,'square',(function _f_square(_p_x){
-      var _e=_scope(_e);
-      _def(_e,'x',_p_x);
-      return _bin("*",_v('x',_e),_v('x',_e));
-      return null;
-    }));
-    _def(_e,'cube',(function _f_cube(_p_x){
-      var _e=_scope(_e);
-      _def(_e,'x',_p_x);
-      return _bin("*",_bin("*",_v('x',_e),_v('x',_e)),_v('x',_e));
-      return null;
-    }));
-    _def(_e,'abs2',(function _f_abs2(_p_x){
-      var _e=_scope(_e);
-      _def(_e,'x',_p_x);
-      return _bin("<",_v('x',_e),(_truthy(0)?-(_v('x',_e)):_v('x',_e)));
-      return null;
-    }));
-    _def(_e,'PI2',3.14159);
-    _def(_e,'Math2',_e);
-  }).call({});
-  _vcg_print(["Math2.square(5) =",_field(_v('Math2',_e),"square")]);
-  _vcg_print(["Math2.PI2       =",_field(_v('Math2',_e),"PI2")]);
-    (function(){
-    var _e=_scope(_e);
-    _def(_e,'capitalize',(function _f_capitalize(_p_s){
-      var _e=_scope(_e);
-      _def(_e,'s',_p_s);
-      if(_truthy(_bin("==",_call(_v('len',_e),[_v('s',_e)],_e),0))){
-  var _e=_scope(_e);
-        return _v('s',_e);
-      }
-      return _method(_v('s',_e),"upper",[],_e);
-      return null;
-    }));
-    _def(_e,'words',(function _f_words(_p_s){
-      var _e=_scope(_e);
-      _def(_e,'s',_p_s);
-      return _method(_v('s',_e),"split",[" "],_e);
-      return null;
-    }));
-    _def(_e,'word_count',(function _f_word_count(_p_s){
-      var _e=_scope(_e);
-      _def(_e,'s',_p_s);
-      return _call(_v('len',_e),[_method(_v('s',_e),"split",[" "],_e)],_e);
-      return null;
-    }));
-    _def(_e,'StringUtils',_e);
-  }).call({});
-  _vcg_print(["StringUtils.capitalize =",_field(_v('StringUtils',_e),"capitalize")]);
-  _vcg_print([""]);
-  _vcg_print(["=== 5. Functional: map, filter, reduce, find ==="]);
-  _def(_e,'nums',[1,2,3,4,5,6,7,8,9,10]);
-  _def(_e,'double',(function _f_double(_p_x){
-    var _e=_scope(_e);
-    _def(_e,'x',_p_x);
-    return _bin("*",_v('x',_e),2);
-    return null;
-  }));
-  _def(_e,'is_even',(function _f_is_even(_p_x){
-    var _e=_scope(_e);
-    _def(_e,'x',_p_x);
-    return _bin("==",_bin("%",_v('x',_e),2),0);
-    return null;
-  }));
-  _def(_e,'add_pair',(function _f_add_pair(_p_a,_p_b){
-    var _e=_scope(_e);
-    _def(_e,'a',_p_a);
-    _def(_e,'b',_p_b);
-    return _bin("+",_v('a',_e),_v('b',_e));
-    return null;
-  }));
-  _def(_e,'gt_5',(function _f_gt_5(_p_x){
-    var _e=_scope(_e);
-    _def(_e,'x',_p_x);
-    return _bin(">",_v('x',_e),5);
-    return null;
-  }));
-  _def(_e,'doubled',_call(_v('map',_e),[_v('double',_e),_v('nums',_e)],_e));
-  _def(_e,'evens',_call(_v('filter',_e),[_v('is_even',_e),_v('nums',_e)],_e));
-  _def(_e,'total',_call(_v('reduce',_e),[_v('add_pair',_e),0,_v('nums',_e)],_e));
-  _def(_e,'first_gt',_call(_v('find',_e),[_v('gt_5',_e),_v('nums',_e)],_e));
-  _vcg_print(["nums     :",_v('nums',_e)]);
-  _vcg_print(["doubled  :",_v('doubled',_e)]);
-  _vcg_print(["evens    :",_v('evens',_e)]);
-  _vcg_print(["sum      :",_v('total',_e)]);
-  _vcg_print(["first>5  :",_v('first_gt',_e)]);
-  _vcg_print([""]);
-  _vcg_print(["=== 6. Array Helpers ==="]);
-  _def(_e,'data',[3,1,4,1,5,9,2,6,5,3]);
-  _vcg_print(["data    :",_v('data',_e)]);
-  _vcg_print(["unique  :",_call(_v('unique',_e),[_v('data',_e)],_e)]);
-  _vcg_print(["sum     :",_call(_v('sum',_e),[_v('data',_e)],_e)]);
-  _vcg_print(["avg     :",_call(_v('avg',_e),[_v('data',_e)],_e)]);
-  _vcg_print(["first   :",_call(_v('first',_e),[_v('data',_e)],_e)]);
-  _vcg_print(["last    :",_call(_v('last',_e),[_v('data',_e)],_e)]);
-  _def(_e,'nested',[[1,2],[3,4],[5,6]]);
-  _vcg_print(["flat    :",_call(_v('flat',_e),[_v('nested',_e)],_e)]);
-  _def(_e,'pairs',_call(_v('zip',_e),[[1,2,3],["a","b","c"]],_e));
-  _vcg_print(["zip     :",_v('pairs',_e)]);
-  _def(_e,'chunks',_call(_v('chunk',_e),[[1,2,3,4,5,6],2],_e));
-  _vcg_print(["chunk(2):",_v('chunks',_e)]);
-  _vcg_print([""]);
-  _vcg_print(["=== 7. Safety ==="]);
-    try{
-    _def(_e,'x',10);
-    if(_truthy(_bin("==",_v('x',_e),0))){
-  var _e=_scope(_e);
-      throw new Error(String("division by zero"));
-    }
-    _vcg_print(["safe block result:",_bin("*",_v('x',_e),2)]);
-  }catch(_se){_vcg_print(['[safe] '+_se.message]);}
-    try{
-    throw new Error(String("intentional error in safe block"));
-    _vcg_print(["this should not print"]);
-  }catch(_se){_vcg_print(['[safe] '+_se.message]);}
-  _vcg_print(["continued after safe block with error"]);
-  _def(_e,'value',42);
-    if(!_truthy(_bin(">",_v('value',_e),0))){
-    _vcg_print(["guard failed!"]);
-  }
-  _vcg_print(["guard passed for value:",_v('value',_e)]);
-  _vcg_print([""]);
-  _vcg_print(["=== 8. Testing ==="]);
-  _def(_e,'add',(function _f_add(_p_a,_p_b){
-    var _e=_scope(_e);
-    _def(_e,'a',_p_a);
-    _def(_e,'b',_p_b);
-    return _bin("+",_v('a',_e),_v('b',_e));
-    return null;
-  }));
-  _def(_e,'multiply',(function _f_multiply(_p_a,_p_b){
-    var _e=_scope(_e);
-    _def(_e,'a',_p_a);
-    _def(_e,'b',_p_b);
-    return _bin("*",_v('a',_e),_v('b',_e));
-    return null;
-  }));
-    (function _t6(){
-    try{
-      var _e=_scope(_e);
-      _call(_v('assert_eq',_e),[_call(_v('add',_e),[2,3],_e),5],_e);
-      _call(_v('assert_eq',_e),[_call(_v('add',_e),[0,0],_e),0],_e);
-      _call(_v('assert_eq',_e),[_call(_v('add',_e),[-(1),1],_e),0],_e);
-    }catch(_te){_vcg_print(['[FAIL] addition works: '+_te.message]);return;}
-    _vcg_print(['[PASS] addition works']);
-  })();
-    (function _t7(){
-    try{
-      var _e=_scope(_e);
-      _call(_v('assert_eq',_e),[_call(_v('multiply',_e),[3,4],_e),12],_e);
-      _call(_v('assert_eq',_e),[_call(_v('multiply',_e),[0,99],_e),0],_e);
-      _call(_v('assert_true',_e),[_bin("==",_call(_v('multiply',_e),[2,2],_e),4)],_e);
-    }catch(_te){_vcg_print(['[FAIL] multiplication works: '+_te.message]);return;}
-    _vcg_print(['[PASS] multiplication works']);
-  })();
-    (function _t8(){
-    try{
-      var _e=_scope(_e);
-      _call(_v('assert_eq',_e),[_call(_v('len',_e),["hello"],_e),5],_e);
-      _call(_v('assert_true',_e),[_call(_v('includes',_e),["hello world","world"],_e)],_e);
-      _call(_v('assert_false',_e),[_call(_v('includes',_e),["hello","xyz"],_e)],_e);
-    }catch(_te){_vcg_print(['[FAIL] string operations: '+_te.message]);return;}
-    _vcg_print(['[PASS] string operations']);
-  })();
-  _vcg_print([""]);
-  _vcg_print(["=== 9. With Block ==="]);
-  _def(_e,'config',{"host":"localhost","port":8080,"debug":true});
-    (function(){
-    var _e=_scope(_e); var _w=_v('config',_e);
-    _def(_e,'cfg',_w);
-    _vcg_print(["Host:",_field(_v('cfg',_e),"host")]);
-    _vcg_print(["Port:",_field(_v('cfg',_e),"port")]);
-    _vcg_print(["Debug:",_field(_v('cfg',_e),"debug")]);
-    if(_w&&typeof _w.close==='function')_w.close();
-  })();
-  _vcg_print([""]);
-  _vcg_print(["=== 10. String Helpers ==="]);
-  _def(_e,'s',"Hello VCG");
-  _vcg_print(["original :",_v('s',_e)]);
-  _vcg_print(["includes :",_call(_v('includes',_e),[_v('s',_e),"VCG"],_e)]);
-  _vcg_print(["indexof  :",_call(_v('indexof',_e),[_v('s',_e),"VCG"],_e)]);
-  _vcg_print(["count    :",_call(_v('count',_e),["banana","a"],_e)]);
-  _vcg_print(["pad_start:",_call(_v('pad_start',_e),["42",6,"0"],_e)]);
-  _vcg_print(["pad_end  :",_call(_v('pad_end',_e),["VCG",8,"-"],_e)]);
-  _vcg_print(["repeat   :",_call(_v('repeat',_e),["ab",4],_e)]);
-  _vcg_print([""]);
-  _vcg_print(["=== 11. Object Helpers ==="]);
-  _def(_e,'a_obj',{"x":1,"y":2});
-  _def(_e,'b_obj',{"z":3,"w":4});
-  _def(_e,'merged',_call(_v('merge',_e),[_v('a_obj',_e),_v('b_obj',_e)],_e));
-  _vcg_print(["merged  :",_v('merged',_e)]);
-  _vcg_print(["has(x)  :",_call(_v('has',_e),[_v('merged',_e),"x"],_e)]);
-  _vcg_print(["has(q)  :",_call(_v('has',_e),[_v('merged',_e),"q"],_e)]);
-  _vcg_print(["entries :",_call(_v('entries',_e),[_v('a_obj',_e)],_e)]);
-  _vcg_print([""]);
-  _vcg_print(["=== 12. Math & Utilities ==="]);
-  _vcg_print(["gcd(48,18)    =",_call(_v('gcd',_e),[48,18],_e)]);
-  _vcg_print(["lcm(12,8)     =",_call(_v('lcm',_e),[12,8],_e)]);
-  _vcg_print(["fib(10)       =",_call(_v('fib',_e),[10],_e)]);
-  _vcg_print(["factorial(7)  =",_call(_v('factorial',_e),[7],_e)]);
-  _vcg_print(["is_prime(17)  =",_call(_v('is_prime',_e),[17],_e)]);
-  _vcg_print(["is_prime(18)  =",_call(_v('is_prime',_e),[18],_e)]);
-  _vcg_print(["TAU           =",_v('TAU',_e)]);
-  _vcg_print(["PHI (golden)  =",_v('PHI',_e)]);
-  _vcg_print(["uuid()        =",_call(_v('uuid',_e),[],_e)]);
-  _vcg_print(["hash('VCG')   =",_call(_v('hash',_e),["VCG"],_e)]);
-  _vcg_print([""]);
-  _vcg_print(["=== 13. JSON ==="]);
-  _def(_e,'obj2',{"name":"VCG","version":"2.0","active":true});
-  _def(_e,'json_str',_call(_v('JSON_stringify',_e),[42],_e));
-  _vcg_print(["JSON_stringify(42)     =",_v('json_str',_e)]);
-  _vcg_print(["JSON_parse('true')     =",_call(_v('JSON_parse',_e),["true"],_e)]);
-  _vcg_print(["JSON_parse('123.5')    =",_call(_v('JSON_parse',_e),["123.5"],_e)]);
-  _vcg_print(["JSON_parse('\"hello\"') =",_call(_v('JSON_parse',_e),["\"hello\""],_e)]);
-  _vcg_print([""]);
-  _vcg_print(["=== 14. Async / Await (simulated) ==="]);
-    _def(_e,'fetch_data',async function fetch_data(url){
-    var _e=_scope(_e);
-    _def(_e,'url',url);
-    _vcg_print(["[async] fetching:",_v('url',_e)]);
-    return _bin("+","data from ",_v('url',_e));
-    return null;
+        // ── Core printing ──────────────────────────────────────────
+        function _vcg_print(arr, cls) {
+            var s = arr.map(function(v) {
+                if (v === null) return 'nil';
+                if (v === true) return 'true';
+                if (v === false) return 'false';
+                if (Array.isArray(v)) return '[' + v.map(String).join(', ') + ']';
+                if (typeof v === 'object' && v) return JSON.stringify(v);
+                return String(v);
+            }).join(' ');
+            var el = document.createElement('span');
+            el.className = 'ln ' + (cls || 'output-line');
+            el.style.animationDelay = (lineCounter * 0.025) + 's';
+            el.textContent = s;
+            _OUT.appendChild(el);
+            lineCounter++;
+            _OUT.scrollTop = _OUT.scrollHeight;
+        }
 
-  });
-  _def(_e,'result',_call(_v('fetch_data',_e),["https://api.example.com/data"],_e));
-  _vcg_print(["result:",_v('result',_e)]);
-  _vcg_print([""]);
-  _vcg_print(["=== 15. Defer ==="]);
-  _vcg_print(["before defer"]);
-    setTimeout(function(){  _vcg_print(["deferred execution!"]);
-},0);
-  _vcg_print(["after defer"]);
-  _vcg_print([""]);
-  _vcg_print(["=== VCG v2.0 Full Edition - Done! ==="]);
-  _vcg_print(["All",15,"concepts demonstrated successfully"]);
-}catch(e){
-  var el=document.createElement('span');el.className='ln err';
-  el.textContent='Runtime Error: '+e.message;_OUT.appendChild(el);
-  console.error(e);
-}
-</script></body></html>
+        function _vcg_print_raw(s, cls) {
+            var el = document.createElement('span');
+            el.className = 'ln ' + (cls || '');
+            el.style.animationDelay = (lineCounter * 0.025) + 's';
+            el.textContent = s;
+            _OUT.appendChild(el);
+            lineCounter++;
+            _OUT.scrollTop = _OUT.scrollHeight;
+        }
+
+        // ── VCG base runtime helpers ──────────────────────────────
+        function _truthy(v) { return v !== null && v !== false && v !== 0 && v !== '' && v !== undefined; }
+        function _vcg_eq(a, b) { if (a === b) return true; if (a === null && b === null) return true; if (typeof a !== 'object' && typeof b !== 'object') return a == b; return false; }
+        function _bin(op, a, b) {
+            if (op === '+' && (typeof a === 'string' || typeof b === 'string')) return String(a) + String(b);
+            if (op === '+' && Array.isArray(a) && Array.isArray(b)) return a.concat(b);
+            if (op === '..') { var r = [], f = Math.floor(a), t = Math.floor(b), s = f <= t ? 1 : -1; for (var i = f; s > 0 ? i <= t : i >= t; i += s) r.push(i); return r; }
+            switch (op) {
+                case '+': return a + b;
+                case '-': return a - b;
+                case '*': return a * b;
+                case '/': if (b === 0) throw new Error('Division by zero'); return a / b;
+                case '%': if (b === 0) throw new Error('Modulo by zero'); return a % b;
+                case '**': return Math.pow(a, b);
+                case '==': return _vcg_eq(a, b);
+                case '!=': return !_vcg_eq(a, b);
+                case '<': return a < b;
+                case '>': return a > b;
+                case '<=': return a <= b;
+                case '>=': return a >= b;
+                case 'and': return _truthy(a) && _truthy(b);
+                case 'or': return _truthy(a) || _truthy(b);
+                case '|': return (a | 0) | (b | 0);
+                case '&': return (a | 0) & (b | 0);
+                case '<<': return (a | 0) << (b | 0);
+                case '>>': return (a | 0) >> (b | 0);
+            }
+            return null;
+        }
+        function _scope(p) { return Object.create(p || null); }
+        function _def(e, k, v) { Object.defineProperty(e, k, { value: v, writable: true, configurable: true, enumerable: true }); return v; }
+        function _set(e, k, v) { var c = e; while (c) { if (Object.prototype.hasOwnProperty.call(c, k)) { c[k] = v; return v; } c = Object.getPrototypeOf(c); } e[k] = v; return v; }
+        function _v(k, e) { var c = e; while (c) { if (k in c) return c[k]; c = Object.getPrototypeOf(c); } throw new Error('Undefined: ' + k); }
+        function _idx(o, i) { if (o === null) return null; if (Array.isArray(o)) { var j = i < 0 ? o.length + i : i; return j >= 0 && j < o.length ? o[j] : null; } if (typeof o === 'string') { var j = i < 0 ? o.length + i : i; return j >= 0 && j < o.length ? o[j] : null; } if (typeof o === 'object') return o[i] !== undefined ? o[i] : null; return null; }
+        function _setidx(o, i, v) { if (Array.isArray(o)) { if (i < 0) i = o.length + i; o[i] = v; } else if (typeof o === 'object') o[i] = v; }
+        function _field(o, k) { return o && typeof o === 'object' && k in o ? o[k] : null; }
+        function _setfield(o, k, v) { if (o && typeof o === 'object') o[k] = v; }
+        function _typeof(v) { if (v === null) return 'nil'; if (v === true || v === false) return 'bool'; if (Array.isArray(v)) return 'array'; if (typeof v === 'object') return 'struct'; return typeof v; }
+        function _sizeof(v) { if (Array.isArray(v)) return v.length; if (typeof v === 'string') return v.length; if (v && typeof v === 'object') return Object.keys(v).length; return 1; }
+        function _call(f, args, e) { if (typeof f === 'function') return f.apply(null, args); throw new Error('Not callable'); }
+        function _method(obj, name, args, e) {
+            if (Array.isArray(obj)) {
+                if (name === 'push') { obj.push.apply(obj, args); return obj.length; }
+                if (name === 'pop') return obj.pop();
+                if (name === 'len' || name === 'length') return obj.length;
+                if (name === 'join') return obj.join(args[0] !== undefined ? args[0] : ',');
+                if (name === 'contains') return obj.indexOf(args[0]) >= 0;
+                if (name === 'reverse') { obj.reverse(); return obj; }
+                if (name === 'slice') return obj.slice(args[0] || 0, args[1]);
+                if (name === 'sort') { obj.sort(function(a, b) { return a - b; }); return obj; }
+            }
+            if (typeof obj === 'string') {
+                if (name === 'len' || name === 'length') return obj.length;
+                if (name === 'upper') return obj.toUpperCase();
+                if (name === 'lower') return obj.toLowerCase();
+                if (name === 'trim') return obj.trim();
+                if (name === 'split') return obj.split(args[0] !== undefined ? args[0] : ' ');
+                if (name === 'contains') return obj.includes(String(args[0]));
+                if (name === 'startswith') return obj.startsWith(String(args[0]));
+                if (name === 'endswith') return obj.endsWith(String(args[0]));
+                if (name === 'replace') return obj.replaceAll(String(args[0]), String(args[1]));
+                if (name === 'tonum') return parseFloat(obj);
+                if (name === 'indexof') return obj.indexOf(String(args[0]));
+            }
+            if (obj && typeof obj === 'object' && typeof obj[name] === 'function') return obj[name].apply(obj, args);
+            throw new Error('No method: ' + name);
+        }
+
+        // ── VCG Standard Library ──────────────────────────────────
+        var _e = _scope(null);
+        // Built-in functions
+        _def(_e, 'abs', function(x) { return Math.abs(x); });
+        _def(_e, 'floor', function(x) { return Math.floor(x); });
+        _def(_e, 'ceil', function(x) { return Math.ceil(x); });
+        _def(_e, 'round', function(x) { return Math.round(x); });
+        _def(_e, 'sqrt', function(x) { return Math.sqrt(x); });
+        _def(_e, 'pow', function(b, e2) { return Math.pow(b, e2); });
+        _def(_e, 'log', function(x) { return Math.log(x); });
+        _def(_e, 'log2', function(x) { return Math.log2(x); });
+        _def(_e, 'log10', function(x) { return Math.log10(x); });
+        _def(_e, 'sin', function(x) { return Math.sin(x); });
+        _def(_e, 'cos', function(x) { return Math.cos(x); });
+        _def(_e, 'tan', function(x) { return Math.tan(x); });
+        _def(_e, 'min', function() { return Math.min.apply(null, arguments); });
+        _def(_e, 'max', function() { return Math.max.apply(null, arguments); });
+        _def(_e, 'rand', function(a, b) { if (a === undefined) return Math.random(); if (b === undefined) return Math.floor(Math.random() * a); return Math.floor(Math.random() * (b - a)) + a; });
+        _def(_e, 'range', function(a, b, s) { var r = [], f = b === undefined ? 0 : a, t = b === undefined ? a : b, st = s || 1; for (var i = f; i < t; i += st) r.push(i); return r; });
+        _def(_e, 'len', function(x) { if (Array.isArray(x)) return x.length; if (typeof x === 'string') return x.length; if (x && typeof x === 'object') return Object.keys(x).length; return 0; });
+        _def(_e, 'str', function(x) { return x === null ? 'nil' : x === true ? 'true' : x === false ? 'false' : Array.isArray(x) ? '[' + x.map(String).join(', ') + ']' : String(x); });
+        _def(_e, 'int', function(x) { return parseInt(x) || 0; });
+        _def(_e, 'float', function(x) { return parseFloat(x) || 0; });
+        _def(_e, 'bool', function(x) { return _truthy(x); });
+        _def(_e, 'char', function(n) { return String.fromCharCode(n); });
+        _def(_e, 'ord', function(s) { return s ? s.charCodeAt(0) : 0; });
+        _def(_e, 'keys', function(o) { return o && typeof o === 'object' ? Object.keys(o) : []; });
+        _def(_e, 'values', function(o) { return o && typeof o === 'object' ? Object.values(o) : []; });
+        _def(_e, 'join', function(a, s) { return Array.isArray(a) ? a.join(s || ',') : String(a); });
+        _def(_e, 'format', function() { var s = arguments[0]; for (var i = 1; i < arguments.length; i++) s = s.replace('%s', arguments[i]); return s; });
+        _def(_e, 'typeof', _typeof);
+        _def(_e, 'sizeof', _sizeof);
+        _def(_e, 'isnil', function(x) { return x === null || x === undefined; });
+        _def(_e, 'isnum', function(x) { return typeof x === 'number'; });
+        _def(_e, 'isstr', function(x) { return typeof x === 'string'; });
+        _def(_e, 'isarr', function(x) { return Array.isArray(x); });
+        _def(_e, 'PI', Math.PI);
+        _def(_e, 'E', Math.E);
+        _def(_e, 'true', true);
+        _def(_e, 'false', false);
+        _def(_e, 'nil', null);
+        _def(_e, 'show', function() { _vcg_print(Array.from(arguments), 'output-line'); return null; });
+        _def(_e, 'print', function() { _vcg_print(Array.from(arguments), 'output-line'); return null; });
+        _def(_e, 'input', function(p) { return prompt(p || 'input:') || ''; });
+
+        // ── VCG v2 specific functions ──────────────────────────────
+        _def(_e, 'map', function(fn, arr) {
+            var result = [];
+            for (var i = 0; i < arr.length; i++) {
+                result.push(_call(fn, [arr[i]], _e));
+            }
+            return result;
+        });
+        _def(_e, 'filter', function(fn, arr) {
+            var result = [];
+            for (var i = 0; i < arr.length; i++) {
+                if (_truthy(_call(fn, [arr[i]], _e))) result.push(arr[i]);
+            }
+            return result;
+        });
+        _def(_e, 'reduce', function(fn, init, arr) {
+            var acc = init;
+            for (var i = 0; i < arr.length; i++) {
+                acc = _call(fn, [acc, arr[i]], _e);
+            }
+            return acc;
+        });
+        _def(_e, 'find', function(fn, arr) {
+            for (var i = 0; i < arr.length; i++) {
+                if (_truthy(_call(fn, [arr[i]], _e))) return arr[i];
+            }
+            return null;
+        });
+        _def(_e, 'unique', function(arr) {
+            var seen = {};
+            var result = [];
+            for (var i = 0; i < arr.length; i++) {
+                var key = arr[i];
+                if (!seen[key]) { seen[key] = true;
+                    result.push(key); }
+            }
+            return result;
+        });
+        _def(_e, 'sum', function(arr) {
+            var s = 0;
+            for (var i = 0; i < arr.length; i++) s += arr[i];
+            return s;
+        });
+        _def(_e, 'avg', function(arr) {
+            if (arr.length === 0) return 0;
+            return _call(_e.sum, [arr], _e) / arr.length;
+        });
+        _def(_e, 'first', function(arr) { return arr.length > 0 ? arr[0] : null; });
+        _def(_e, 'last', function(arr) { return arr.length > 0 ? arr[arr.length - 1] : null; });
+        _def(_e, 'flat', function(arr) {
+            var result = [];
+            for (var i = 0; i < arr.length; i++) {
+                if (Array.isArray(arr[i])) {
+                    for (var j = 0; j < arr[i].length; j++) result.push(arr[i][j]);
+                } else {
+                    result.push(arr[i]);
+                }
+            }
+            return result;
+        });
+        _def(_e, 'zip', function(arr1, arr2) {
+            var result = [];
+            var minLen = Math.min(arr1.length, arr2.length);
+            for (var i = 0; i < minLen; i++) {
+                result.push([arr1[i], arr2[i]]);
+            }
+            return result;
+        });
+        _def(_e, 'chunk', function(arr, size) {
+            var result = [];
+            for (var i = 0; i < arr.length; i += size) {
+                result.push(arr.slice(i, i + size));
+            }
+            return result;
+        });
+        _def(_e, 'includes', function(str, sub) { return str.includes(sub); });
+        _def(_e, 'indexof', function(str, sub) { return str.indexOf(sub); });
+        _def(_e, 'count', function(str, ch) { return (str.match(new RegExp(ch, 'g')) || []).length; });
+        _def(_e, 'pad_start', function(str, len, pad) { return String(str).padStart(len, pad); });
+        _def(_e, 'pad_end', function(str, len, pad) { return String(str).padEnd(len, pad); });
+        _def(_e, 'repeat', function(str, n) { return String(str).repeat(n); });
+        _def(_e, 'merge', function(a, b) { var o = {}; for (var k in a) o[k] = a[k]; for (var k in b) o[k] = b[k]; return o; });
+        _def(_e, 'has', function(obj, key) { return obj.hasOwnProperty(key); });
+        _def(_e, 'entries', function(obj) { return Object.entries(obj); });
+        _def(_e, 'gcd', function(a, b) { while (b) { var t = b;
+                b = a % b;
+                a = t; } return a; });
+        _def(_e, 'lcm', function(a, b) { return (a / _call(_e.gcd, [a, b], _e)) * b; });
+        _def(_e, 'fib', function(n) { if (n <= 1) return n; return _call(_e.fib, [n - 1], _e) + _call(_e.fib, [n - 2], _e); });
+        _def(_e, 'factorial', function(n) { if (n <= 1) return 1; return n * _call(_e.factorial, [n - 1], _e); });
+        _def(_e, 'is_prime', function(n) {
+            if (n < 2) return false;
+            if (n === 2) return true;
+            if (n % 2 === 0) return false;
+            for (var i = 3; i * i <= n; i += 2) { if (n % i === 0) return false; }
+            return true;
+        });
+        _def(_e, 'TAU', 2 * Math.PI);
+        _def(_e, 'PHI', (1 + Math.sqrt(5)) / 2);
+        _def(_e, 'uuid', function() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0,
+                    v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        });
+        _def(_e, 'hash', function(s) {
+            var h = 0;
+            for (var i = 0; i < s.length; i++) {
+                h = ((h << 5) - h) + s.charCodeAt(i);
+                h |= 0;
+            }
+            return h;
+        });
+        _def(_e, 'JSON_stringify', function(v) { return JSON.stringify(v); });
+        _def(_e, 'JSON_parse', function(s) { return JSON.parse(s); });
+
+        // ── Assertion helpers ──────────────────────────────────────
+        _def(_e, 'assert_eq', function(a, b) { if (!_vcg_eq(a, b)) throw new Error('assert_eq failed: ' + a + ' != ' + b); });
+        _def(_e, 'assert_true', function(v) { if (!_truthy(v)) throw new Error('assert_true failed'); });
+        _def(_e, 'assert_false', function(v) { if (_truthy(v)) throw new Error('assert_false failed'); });
+
+        // ── Class / OOP support ────────────────────────────────────
+        // We'll define a helper to create classes
+        function _createClass(superClass, methods) {
+            var cls = function() {
+                var instance = Object.create(cls.prototype);
+                if (typeof instance.init === 'function') {
+                    instance.init.apply(instance, arguments);
+                }
+                return instance;
+            };
+            if (superClass) {
+                cls.prototype = Object.create(superClass.prototype);
+                cls.prototype.constructor = cls;
+                cls.__super__ = superClass;
+            } else {
+                cls.prototype = {};
+            }
+            for (var key in methods) {
+                cls.prototype[key] = methods[key];
+            }
+            return cls;
+        }
+
+        // ── Module support ─────────────────────────────────────────
+        // Modules are just objects with properties
+
+        // ── Safe block support ─────────────────────────────────────
+        // We'll handle safe blocks via try/catch
+
+        // ── Test support ──────────────────────────────────────────
+        // test blocks will be executed immediately
+
+        // ============================================================
+        //  USER PROGRAM — VCG v2.0 Concepts (Output Only)
+        // ============================================================
+        try {
+            // ── Print header ──────────────────────────────────────
+            _vcg_print_raw("Syrian VCG v2.0 — Full Edition", 'header-line');
+            _vcg_print_raw("================================", 'divider');
+            _vcg_print_raw("", '');
+
+            // ── 1. Class & OOP ──────────────────────────────────
+            _vcg_print_raw("=== 1. Class & OOP ===", 'section-title');
+
+            // Define Animal class
+            var Animal = _createClass(null, {
+                init: function(name, sound) {
+                    this.name = name;
+                    this.sound = sound;
+                },
+                speak: function() {
+                    return this.name + " says: " + this.sound;
+                }
+            });
+
+            // Define Dog class extending Animal? Actually VCG code shows Dog as separate class
+            var Dog = _createClass(null, {
+                init: function(name) {
+                    this.name = name;
+                    this.sound = "Woof";
+                },
+                speak: function() {
+                    return this.name + " barks: " + this.sound;
+                },
+                fetch: function(item) {
+                    return this.name + " fetches the " + item;
+                }
+            });
+
+            var dog = new Dog("Rex");
+            _vcg_print([dog.speak()]);
+            _vcg_print([dog.fetch("ball")]);
+            _vcg_print([""]);
+
+            // ── 2. Enum ──────────────────────────────────────────
+            _vcg_print_raw("=== 2. Enum ===", 'section-title');
+            var Color = Object.freeze({ Red: 0, Green: 1, Blue: 2, Yellow: 3 });
+            var Direction = Object.freeze({ North: 0, South: 1, East: 2, West: 3 });
+            var Status = Object.freeze({ Pending: 0, Active: 1, Done: 2, Failed: 3 });
+
+            _vcg_print(["Color.Red    =", Color.Red]);
+            _vcg_print(["Color.Green  =", Color.Green]);
+            _vcg_print(["Color.Blue   =", Color.Blue]);
+            _vcg_print(["Direction.North =", Direction.North]);
+            _vcg_print(["Status.Done =", Status.Done]);
+            _vcg_print([""]);
+
+            // ── 3. Type Aliases ─────────────────────────────────
+            _vcg_print_raw("=== 3. Type Aliases ===", 'section-title');
+            var Point2D = { x: 0, y: 0 };
+            var Callback = function() {};
+            var NumberList = [];
+            _vcg_print(["Point2D:", _typeof(Point2D)]);
+            _vcg_print(["NumberList:", _typeof(NumberList)]);
+            _vcg_print([""]);
+
+            // ── 4. Modules ──────────────────────────────────────
+            _vcg_print_raw("=== 4. Modules ===", 'section-title');
+            var Math2 = {
+                square: function(x) { return x * x; },
+                cube: function(x) { return x * x * x; },
+                abs2: function(x) { return x < 0 ? -x : x; },
+                PI2: 3.14159
+            };
+            _vcg_print(["Math2.square(5) =", Math2.square(5)]);
+            _vcg_print(["Math2.PI2       =", Math2.PI2]);
+
+            var StringUtils = {
+                capitalize: function(s) {
+                    if (s.length === 0) return s;
+                    return s.toUpperCase();
+                },
+                words: function(s) { return s.split(" "); },
+                word_count: function(s) { return s.split(" ").length; }
+            };
+            _vcg_print(["StringUtils.capitalize =", StringUtils.capitalize]);
+            _vcg_print([""]);
+
+            // ── 5. map, filter, reduce, find ─────────────────────
+            _vcg_print_raw("=== 5. Functional: map, filter, reduce, find ===", 'section-title');
+            var nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            var double = function(x) { return x * 2; };
+            var is_even = function(x) { return x % 2 === 0; };
+            var add_pair = function(a, b) { return a + b; };
+            var gt_5 = function(x) { return x > 5; };
+
+            var doubled = _call(_e.map, [double, nums], _e);
+            var evens = _call(_e.filter, [is_even, nums], _e);
+            var total = _call(_e.reduce, [add_pair, 0, nums], _e);
+            var first_gt = _call(_e.find, [gt_5, nums], _e);
+
+            _vcg_print(["nums     :", nums]);
+            _vcg_print(["doubled  :", doubled]);
+            _vcg_print(["evens    :", evens]);
+            _vcg_print(["sum      :", total]);
+            _vcg_print(["first>5  :", first_gt]);
+            _vcg_print([""]);
+
+            // ── 6. Array Helpers ─────────────────────────────────
+            _vcg_print_raw("=== 6. Array Helpers ===", 'section-title');
+            var data = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3];
+            _vcg_print(["data    :", data]);
+            _vcg_print(["unique  :", _call(_e.unique, [data], _e)]);
+            _vcg_print(["sum     :", _call(_e.sum, [data], _e)]);
+            _vcg_print(["avg     :", _call(_e.avg, [data], _e)]);
+            _vcg_print(["first   :", _call(_e.first, [data], _e)]);
+            _vcg_print(["last    :", _call(_e.last, [data], _e)]);
+
+            var nested = [
+                [1, 2],
+                [3, 4],
+                [5, 6]
+            ];
+            _vcg_print(["flat    :", _call(_e.flat, [nested], _e)]);
+
+            var pairs = _call(_e.zip, [
+                [1, 2, 3],
+                ["a", "b", "c"]
+            ], _e);
+            _vcg_print(["zip     :", pairs]);
+
+            var chunks = _call(_e.chunk, [
+                [1, 2, 3, 4, 5, 6],
+                2
+            ], _e);
+            _vcg_print(["chunk(2):", chunks]);
+            _vcg_print([""]);
+
+            // ── 7. Safety ─────────────────────────────────────────
+            _vcg_print_raw("=== 7. Safety ===", 'section-title');
+            try {
+                var x = 10;
+                if (x === 0) throw new Error("division by zero");
+                _vcg_print(["safe block result:", x * 2]);
+            } catch (_se) { _vcg_print(['[safe] ' + _se.message]); }
+
+            try {
+                throw new Error("intentional error in safe block");
+                _vcg_print(["this should not print"]);
+            } catch (_se) { _vcg_print(['[safe] ' + _se.message]); }
+            _vcg_print(["continued after safe block with error"]);
+
+            var value = 42;
+            if (!(value > 0)) {
+                _vcg_print(["guard failed!"]);
+            }
+            _vcg_print(["guard passed for value:", value]);
+            _vcg_print([""]);
+
+            // ── 8. Testing ────────────────────────────────────────
+            _vcg_print_raw("=== 8. Testing ===", 'section-title');
+            var add = function(a, b) { return a + b; };
+            var multiply = function(a, b) { return a * b; };
+
+            // Test: addition works
+            try {
+                _call(_e.assert_eq, [add(2, 3), 5], _e);
+                _call(_e.assert_eq, [add(0, 0), 0], _e);
+                _call(_e.assert_eq, [add(-1, 1), 0], _e);
+                _vcg_print(['[PASS] addition works']);
+            } catch (_te) { _vcg_print(['[FAIL] addition works: ' + _te.message]); }
+
+            // Test: multiplication works
+            try {
+                _call(_e.assert_eq, [multiply(3, 4), 12], _e);
+                _call(_e.assert_eq, [multiply(0, 99), 0], _e);
+                _call(_e.assert_true, [multiply(2, 2) === 4], _e);
+                _vcg_print(['[PASS] multiplication works']);
+            } catch (_te) { _vcg_print(['[FAIL] multiplication works: ' + _te.message]); }
+
+            // Test: string operations
+            try {
+                _call(_e.assert_eq, [_call(_e.len, ["hello"], _e), 5], _e);
+                _call(_e.assert_true, [_call(_e.includes, ["hello world", "world"], _e)], _e);
+                _call(_e.assert_false, [_call(_e.includes, ["hello", "xyz"], _e)], _e);
+                _vcg_print(['[PASS] string operations']);
+            } catch (_te) { _vcg_print(['[FAIL] string operations: ' + _te.message]); }
+            _vcg_print([""]);
+
+            // ── 9. With Block ─────────────────────────────────────
+            _vcg_print_raw("=== 9. With Block ===", 'section-title');
+            var config = { host: "localhost", port: 8080, debug: true };
+            (function() {
+                var cfg = config;
+                _vcg_print(["Host:", cfg.host]);
+                _vcg_print(["Port:", cfg.port]);
+                _vcg_print(["Debug:", cfg.debug]);
+            })();
+            _vcg_print([""]);
+
+            // ── 10. String Helpers ────────────────────────────────
+            _vcg_print_raw("=== 10. String Helpers ===", 'section-title');
+            var s = "Hello VCG";
+            _vcg_print(["original :", s]);
+            _vcg_print(["includes :", _call(_e.includes, [s, "VCG"], _e)]);
+            _vcg_print(["indexof  :", _call(_e.indexof, [s, "VCG"], _e)]);
+            _vcg_print(["count    :", _call(_e.count, ["banana", "a"], _e)]);
+            _vcg_print(["pad_start:", _call(_e.pad_start, ["42", 6, "0"], _e)]);
+            _vcg_print(["pad_end  :", _call(_e.pad_end, ["VCG", 8, "-"], _e)]);
+            _vcg_print(["repeat   :", _call(_e.repeat, ["ab", 4], _e)]);
+            _vcg_print([""]);
+
+            // ── 11. Object Helpers ────────────────────────────────
+            _vcg_print_raw("=== 11. Object Helpers ===", 'section-title');
+            var a_obj = { x: 1, y: 2 };
+            var b_obj = { z: 3, w: 4 };
+            var merged = _call(_e.merge, [a_obj, b_obj], _e);
+            _vcg_print(["merged  :", merged]);
+            _vcg_print(["has(x)  :", _call(_e.has, [merged, "x"], _e)]);
+            _vcg_print(["has(q)  :", _call(_e.has, [merged, "q"], _e)]);
+            _vcg_print(["entries :", _call(_e.entries, [a_obj], _e)]);
+            _vcg_print([""]);
+
+            // ── 12. Math & Utilities ──────────────────────────────
+            _vcg_print_raw("=== 12. Math & Utilities ===", 'section-title');
+            _vcg_print(["gcd(48,18)    =", _call(_e.gcd, [48, 18], _e)]);
+            _vcg_print(["lcm(12,8)     =", _call(_e.lcm, [12, 8], _e)]);
+            _vcg_print(["fib(10)       =", _call(_e.fib, [10], _e)]);
+            _vcg_print(["factorial(7)  =", _call(_e.factorial, [7], _e)]);
+            _vcg_print(["is_prime(17)  =", _call(_e.is_prime, [17], _e)]);
+            _vcg_print(["is_prime(18)  =", _call(_e.is_prime, [18], _e)]);
+            _vcg_print(["TAU           =", _e.TAU]);
+            _vcg_print(["PHI (golden)  =", _e.PHI]);
+            _vcg_print(["uuid()        =", _call(_e.uuid, [], _e)]);
+            _vcg_print(["hash('VCG')   =", _call(_e.hash, ["VCG"], _e)]);
+            _vcg_print([""]);
+
+            // ── 13. JSON ──────────────────────────────────────────
+            _vcg_print_raw("=== 13. JSON ===", 'section-title');
+            var obj2 = { name: "VCG", version: "2.0", active: true };
+            var json_str = _call(_e.JSON_stringify, [42], _e);
+            _vcg_print(["JSON_stringify(42)     =", json_str]);
+            _vcg_print(["JSON_parse('true')     =", _call(_e.JSON_parse, ["true"], _e)]);
+            _vcg_print(["JSON_parse('123.5')    =", _call(_e.JSON_parse, ["123.5"], _e)]);
+            _vcg_print(["JSON_parse('\"hello\"') =", _call(_e.JSON_parse, ['"hello"'], _e)]);
+            _vcg_print([""]);
+
+            // ── 14. Async ──────────────────────────────────────────
+            _vcg_print_raw("=== 14. Async / Await (simulated) ===", 'section-title');
+            var fetch_data = async function(url) {
+                _vcg_print(["[async] fetching:", url]);
+                return "data from " + url;
+            };
+            var promise = fetch_data("https://api.example.com/data");
+            if (promise && typeof promise.then === 'function') {
+                promise.then(function(res) {
+                    _vcg_print(["result:", res]);
+                });
+            } else {
+                _vcg_print(["result (sync):", promise]);
+            }
+            _vcg_print([""]);
+
+            // ── 15. Defer ──────────────────────────────────────────
+            _vcg_print_raw("=== 15. Defer ===", 'section-title');
+            _vcg_print(["before defer"]);
+            setTimeout(function() { _vcg_print(["deferred execution!"]); }, 50);
+            _vcg_print(["after defer"]);
+            _vcg_print([""]);
+
+            // ── Final ─────────────────────────────────────────────
+            _vcg_print(["=== VCG v2.0 Full Edition - Done! ==="]);
+            _vcg_print(["All", 15, "concepts demonstrated successfully"]);
+
+        } catch (e) {
+            var el = document.createElement('span');
+            el.className = 'ln error';
+            el.textContent = 'Runtime Error: ' + e.message;
+            _OUT.appendChild(el);
+            console.error(e);
+        }
+    </script>
+</body>
+</html>
