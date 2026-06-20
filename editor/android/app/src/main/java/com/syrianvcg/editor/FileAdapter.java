@@ -14,6 +14,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder
     public interface FileClickListener {
         void onFileClick(VcgFile file);
         void onFileDelete(VcgFile file);
+        void onFileRename(VcgFile file);
     }
 
     private final List<VcgFile>    files;
@@ -39,6 +40,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.FileViewHolder
         h.meta.setText(f.getLineCount() + " سطر");
         h.itemView.setOnClickListener(v -> listener.onFileClick(f));
         h.btnDelete.setOnClickListener(v -> listener.onFileDelete(f));
+        h.itemView.setOnLongClickListener(v -> { listener.onFileRename(f); return true; });
     }
 
     @Override public int getItemCount() { return files.size(); }
