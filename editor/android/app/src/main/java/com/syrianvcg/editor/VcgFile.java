@@ -1,22 +1,29 @@
 package com.syrianvcg.editor;
 
-import java.util.Date;
-
 public class VcgFile {
+    private String projectId;
     private String name;
     private String content;
     private long lastModified;
 
-    public VcgFile(String name, String content) {
+    public VcgFile(String projectId, String name, String content) {
+        this.projectId = projectId;
         this.name = name;
         this.content = content;
         this.lastModified = System.currentTimeMillis();
     }
 
+    // Backward-compatible constructor (defaults to "default" project)
+    public VcgFile(String name, String content) {
+        this("default", name, content);
+    }
+
+    public String getProjectId()   { return projectId; }
     public String getName()        { return name; }
     public String getContent()     { return content; }
     public long   getLastModified(){ return lastModified; }
     public void   setContent(String c){ this.content = c; this.lastModified = System.currentTimeMillis(); }
+    public void   setLastModified(long t) { this.lastModified = t; }
 
     public String getPreview() {
         if (content == null || content.isEmpty()) return "(فارغ)";
@@ -31,5 +38,10 @@ public class VcgFile {
     public int getLineCount() {
         if (content == null || content.isEmpty()) return 0;
         return content.split("\n", -1).length;
+    }
+
+    /** Unique storage key combining project + filename */
+    public String getStorageKey() {
+        return projectId + "::" + name;
     }
 }
