@@ -1,785 +1,244 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5" />
-    <title>VCG — UI Demo</title>
-    <style>
-        /* ===== RESET & BASE (White Background) ===== */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html,
-        body {
-            width: 100%;
-            min-height: 100vh;
-            background: #ffffff;
-            color: #222222;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            /* allow natural scrolling */
-            overflow-x: hidden;
-            overflow-y: auto;
-        }
-
-        #terminal {
-            width: 100%;
-            min-height: 100vh;
-            background: #ffffff;
-            padding: 1.5rem 1.5rem 1rem;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* ===== responsive padding ===== */
-        @media (min-width: 640px) {
-            #terminal {
-                padding: 2rem 2.5rem 1.5rem;
-            }
-        }
-        @media (min-width: 1024px) {
-            #terminal {
-                padding: 2.5rem 4rem 1.5rem;
-            }
-        }
-        @media (min-width: 1440px) {
-            #terminal {
-                padding: 3rem 6rem 1.5rem;
-            }
-        }
-
-        #out {
-            flex: 1 1 auto;
-            font-size: 1rem;
-            line-height: 1.8;
-            overflow-y: auto;
-            padding-bottom: 0.5rem;
-            /* ensure content doesn't cause horizontal scroll */
-            max-width: 100%;
-            word-wrap: break-word;
-        }
-
-        /* ===== TYPING ANIMATION ===== */
-        .ln {
-            display: block;
-            padding: 0.1rem 0;
-            opacity: 0;
-            animation: fadeIn 0.2s ease forwards;
-            max-width: 100%;
-        }
-        @keyframes fadeIn {
-            0% {
-                opacity: 0;
-                transform: translateY(4px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* ===== UI ELEMENTS ===== */
-        .ui-heading {
-            display: block;
-            padding: 0.4rem 0;
-            font-weight: 600;
-            font-family: 'Segoe UI', sans-serif;
-            border-bottom: 1px solid #e0e0e0;
-            margin-top: 0.5rem;
-            word-break: break-word;
-        }
-        .ui-heading.h1 {
-            font-size: clamp(1.6rem, 4vw, 2.4rem);
-            font-weight: 700;
-            border-bottom-width: 2px;
-        }
-        .ui-heading.h2 {
-            font-size: clamp(1.3rem, 3vw, 1.8rem);
-            font-weight: 600;
-        }
-        .ui-heading.h3 {
-            font-size: clamp(1.1rem, 2.2vw, 1.4rem);
-            font-weight: 500;
-        }
-        .ui-heading.h4 {
-            font-size: clamp(0.95rem, 1.6vw, 1.1rem);
-            font-weight: 500;
-            color: #555;
-        }
-
-        .ui-list {
-            display: block;
-            padding: 0.2rem 0 0.2rem 1.8rem;
-            list-style: none;
-            font-family: 'Segoe UI', sans-serif;
-        }
-        .ui-list li {
-            display: block;
-            padding: 0.1rem 0;
-            color: #222;
-            word-break: break-word;
-        }
-        .ui-list li:before {
-            content: "• ";
-            opacity: 0.6;
-            font-weight: bold;
-        }
-
-        .ui-url {
-            display: inline-block;
-            text-decoration: none;
-            border-bottom: 1px solid #b0b0b0;
-            padding: 0.1rem 0.2rem;
-            transition: all 0.15s;
-            font-family: 'Segoe UI', sans-serif;
-            color: #0066cc;
-            word-break: break-word;
-            max-width: 100%;
-        }
-        .ui-url:hover {
-            background: #f0f0f0;
-            border-bottom-color: #0066cc;
-            cursor: pointer;
-        }
-
-        /* ===== BUTTONS (Touch-friendly) ===== */
-        .ui-btn {
-            display: inline-block;
-            background: #f5f5f5;
-            border: 1px solid #cccccc;
-            color: #333333;
-            padding: 0.4rem 1.4rem;
-            margin: 0.2rem 0.3rem 0.2rem 0;
-            border-radius: 6px;
-            font-family: 'Segoe UI', sans-serif;
-            font-size: clamp(0.9rem, 1.2vw, 1rem);
-            cursor: pointer;
-            transition: all 0.1s;
-            text-decoration: none;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-            touch-action: manipulation;
-            user-select: none;
-            min-height: 2.4rem;
-        }
-        .ui-btn:hover {
-            background: #e8e8e8;
-            border-color: #aaaaaa;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-        }
-        .ui-btn:active {
-            transform: scale(0.97);
-            background: #ddd;
-        }
-        /* button wrap for mobile */
-        .btn-wrap {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.3rem 0.2rem;
-            align-items: center;
-            margin: 0.2rem 0;
-        }
-
-        .ui-key {
-            display: inline-block;
-            background: #f0f0f0;
-            border: 1px solid #cccccc;
-            color: #222;
-            padding: 0.05rem 0.7rem;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: clamp(0.75rem, 1vw, 0.9rem);
-            margin: 0.1rem 0.2rem;
-            letter-spacing: 0.5px;
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
-            word-break: break-word;
-        }
-
-        .ui-img {
-            display: block;
-            margin: 0.4rem 0;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            padding: 0.5rem;
-            background: #fafafa;
-            max-width: 100%;
-            overflow: hidden;
-        }
-        .ui-img img {
-            display: block;
-            max-width: 100%;
-            height: auto;
-            border-radius: 4px;
-        }
-
-        .ui-social {
-            display: inline-block;
-            margin: 0.1rem 0.5rem 0.1rem 0;
-            padding: 0.25rem 0.9rem;
-            border: 1px solid #cccccc;
-            border-radius: 6px;
-            text-decoration: none;
-            transition: all 0.15s;
-            font-family: 'Segoe UI', sans-serif;
-            background: #fafafa;
-            color: #333;
-            font-size: clamp(0.85rem, 1.1vw, 0.95rem);
-            touch-action: manipulation;
-        }
-        .ui-social:hover {
-            background: #f0f0f0;
-            border-color: #aaaaaa;
-        }
-        .ui-social .icon {
-            margin-left: 0.4rem;
-        }
-
-        /* ===== RESPONSIVE YOUTUBE ===== */
-        .ui-youtube {
-            display: block;
-            margin: 0.4rem 0;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            overflow: hidden;
-            background: #fafafa;
-            max-width: 100%;
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            /* fallback */
-            position: relative;
-        }
-        .ui-youtube iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-            display: block;
-        }
-        /* keep a max-width for very large screens */
-        @media (min-width: 1200px) {
-            .ui-youtube {
-                max-width: 720px;
-            }
-        }
-
-        /* ===== SOCIAL WRAP ===== */
-        .social-wrap {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.3rem 0.5rem;
-            align-items: center;
-            margin: 0.2rem 0;
-        }
-
-        /* ===== FOOTER ===== */
-        footer {
-            color: #aaaaaa;
-            font-size: clamp(0.65rem, 0.8vw, 0.8rem);
-            letter-spacing: 1px;
-            text-align: center;
-            padding-top: 0.6rem;
-            border-top: 1px solid #e0e0e0;
-            margin-top: 0.6rem;
-            flex-shrink: 0;
-        }
-        footer b {
-            color: #333;
-        }
-
-        /* ===== SCROLLBAR ===== */
-        #out::-webkit-scrollbar {
-            width: 6px;
-        }
-        #out::-webkit-scrollbar-track {
-            background: #f5f5f5;
-        }
-        #out::-webkit-scrollbar-thumb {
-            background: #cccccc;
-            border-radius: 3px;
-        }
-        #out::-webkit-scrollbar-thumb:hover {
-            background: #aaaaaa;
-        }
-
-        /* ===== UTILITY ===== */
-        .vcg-spacer {
-            height: 0.2rem;
-        }
-
-        /* ===== PRINT ===== */
-        @media print {
-            .ui-btn,
-            .ui-social {
-                display: none;
-            }
-            .ui-youtube iframe {
-                display: none;
-            }
-            .ui-youtube {
-                background: #eee;
-                min-height: 80px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: #666;
-                font-size: 0.8rem;
-            }
-            .ui-youtube::after {
-                content: "🎬 YouTube Video (embed removed for print)";
-                padding: 1rem;
-                text-align: center;
-            }
-            #terminal {
-                padding: 1rem;
-            }
-            footer {
-                border-top-color: #ccc;
-            }
-        }
-    </style>
-</head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ui_media — VCG</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+:root{--bg:#0a0f1a;--panel:#111827;--border:#1e3050;--accent:#00d4ff;--green:#00ff9d;--text:#e2e8f0;--muted:#4a5568;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem 1rem}
+header{width:100%;max-width:820px;display:flex;align-items:center;gap:1rem;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
+.logo{width:48px;height:48px;background:linear-gradient(135deg,#2d5a1b,#1a3a0a);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:0 0 16px rgba(0,255,0,.2)}
+h1{font-size:1.3rem;font-weight:900;color:var(--accent)}
+#out{width:100%;max-width:820px;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:1.8rem;min-height:180px;font-family:'JetBrains Mono',monospace;font-size:.9rem;line-height:2;box-shadow:0 4px 30px rgba(0,0,0,.4)}
+.ln{display:block;padding:.1rem .4rem;border-radius:4px}
+.ln:hover{background:rgba(0,212,255,.04)}
+.err{color:#f87171}
+footer{margin-top:1.5rem;color:var(--muted);font-size:.75rem}
+footer b{color:#00d4ff}
+</style></head>
 <body>
-    <div id="terminal">
-        <div id="out"></div>
-        <footer>═ VCG UI v3.0 — Syrian Private Programming ═</footer>
-    </div>
-
-    <script>
-        // =============================================================
-        //  VCG Runtime — UI Only (White Background, Responsive)
-        // =============================================================
-
-        var _OUT = document.getElementById('out');
-        var lineCounter = 0;
-
-        // ── Helper to append DOM elements with typing delay ──────
-        function _vcg_append_dom(el) {
-            el.style.opacity = '0';
-            el.style.animationDelay = (lineCounter * 0.04) + 's';
-            el.className = (el.className || '') + ' ln';
-            el.style.animation = 'fadeIn 0.2s ease forwards';
-            el.style.animationDelay = (lineCounter * 0.04) + 's';
-            _OUT.appendChild(el);
-            lineCounter++;
-            _OUT.scrollTop = _OUT.scrollHeight;
-        }
-
-        // ── VCG base runtime helpers ──────────────────────────────
-        function _truthy(v) { return v !== null && v !== false && v !== 0 && v !== '' && v !== undefined; }
-
-        function _bin(op, a, b) {
-            if (op === '+' && (typeof a === 'string' || typeof b === 'string')) return String(a) + String(b);
-            if (op === '+' && Array.isArray(a) && Array.isArray(b)) return a.concat(b);
-            if (op === '..') { var r = [],
-                    f = Math.floor(a),
-                    t = Math.floor(b),
-                    s = f <= t ? 1 : -1; for (var i = f; s > 0 ? i <= t : i >= t; i += s) r.push(i); return r; }
-            switch (op) {
-                case '+':
-                    return a + b;
-                case '-':
-                    return a - b;
-                case '*':
-                    return a * b;
-                case '/':
-                    if (b === 0) throw new Error('Division by zero');
-                    return a / b;
-                case '%':
-                    if (b === 0) throw new Error('Modulo by zero');
-                    return a % b;
-                case '**':
-                    return Math.pow(a, b);
-                case '==':
-                    return a == b;
-                case '!=':
-                    return a != b;
-                case '<':
-                    return a < b;
-                case '>':
-                    return a > b;
-                case '<=':
-                    return a <= b;
-                case '>=':
-                    return a >= b;
-                case 'and':
-                    return _truthy(a) && _truthy(b);
-                case 'or':
-                    return _truthy(a) || _truthy(b);
-                case '|':
-                    return (a | 0) | (b | 0);
-                case '&':
-                    return (a | 0) & (b | 0);
-                case '<<':
-                    return (a | 0) << (b | 0);
-                case '>>':
-                    return (a | 0) >> (b | 0);
-            }
-            return null;
-        }
-
-        function _scope(p) { return Object.create(p || null); }
-
-        function _def(e, k, v) { Object.defineProperty(e, k, { value: v, writable: true, configurable: true,
-                enumerable: true }); return v; }
-
-        function _set(e, k, v) { var c = e; while (c) { if (Object.prototype.hasOwnProperty.call(c, k)) { c[k] = v; return v; }
-                c = Object.getPrototypeOf(c); } e[k] = v; return v; }
-
-        function _v(k, e) { var c = e; while (c) { if (k in c) return c[k]; c = Object.getPrototypeOf(c); } throw new Error(
-                'Undefined: ' + k); }
-
-        function _call(f, args, e) { if (typeof f === 'function') return f.apply(null, args); throw new Error(
-            'Not callable'); }
-
-        function _method(obj, name, args, e) {
-            if (Array.isArray(obj)) {
-                if (name === 'push') { obj.push.apply(obj, args); return obj.length; }
-                if (name === 'pop') return obj.pop();
-                if (name === 'len' || name === 'length') return obj.length;
-                if (name === 'join') return obj.join(args[0] !== undefined ? args[0] : ',');
-                if (name === 'contains') return obj.indexOf(args[0]) >= 0;
-                if (name === 'reverse') { obj.reverse(); return obj; }
-                if (name === 'slice') return obj.slice(args[0] || 0, args[1]);
-                if (name === 'sort') { obj.sort(function(a, b) { return a - b; }); return obj; }
-            }
-            if (typeof obj === 'string') {
-                if (name === 'len' || name === 'length') return obj.length;
-                if (name === 'upper') return obj.toUpperCase();
-                if (name === 'lower') return obj.toLowerCase();
-                if (name === 'trim') return obj.trim();
-                if (name === 'split') return obj.split(args[0] !== undefined ? args[0] : ' ');
-                if (name === 'contains') return obj.includes(String(args[0]));
-                if (name === 'startswith') return obj.startsWith(String(args[0]));
-                if (name === 'endswith') return obj.endsWith(String(args[0]));
-                if (name === 'replace') return obj.replaceAll(String(args[0]), String(args[1]));
-                if (name === 'tonum') return parseFloat(obj);
-                if (name === 'indexof') return obj.indexOf(String(args[0]));
-            }
-            if (obj && typeof obj === 'object' && typeof obj[name] === 'function') return obj[name].apply(obj, args);
-            throw new Error('No method: ' + name);
-        }
-
-        // ── VCG Standard Library ──────────────────────────────────
-        var _e = _scope(null);
-        _def(_e, 'abs', function(x) { return Math.abs(x); });
-        _def(_e, 'floor', function(x) { return Math.floor(x); });
-        _def(_e, 'ceil', function(x) { return Math.ceil(x); });
-        _def(_e, 'round', function(x) { return Math.round(x); });
-        _def(_e, 'sqrt', function(x) { return Math.sqrt(x); });
-        _def(_e, 'pow', function(b, e2) { return Math.pow(b, e2); });
-        _def(_e, 'log', function(x) { return Math.log(x); });
-        _def(_e, 'log2', function(x) { return Math.log2(x); });
-        _def(_e, 'log10', function(x) { return Math.log10(x); });
-        _def(_e, 'sin', function(x) { return Math.sin(x); });
-        _def(_e, 'cos', function(x) { return Math.cos(x); });
-        _def(_e, 'tan', function(x) { return Math.tan(x); });
-        _def(_e, 'min', function() { return Math.min.apply(null, arguments); });
-        _def(_e, 'max', function() { return Math.max.apply(null, arguments); });
-        _def(_e, 'rand', function(a, b) { if (a === undefined) return Math.random(); if (b === undefined) return Math.floor(
-                Math.random() * a); return Math.floor(Math.random() * (b - a)) + a; });
-        _def(_e, 'range', function(a, b, s) { var r = [],
-                f = b === undefined ? 0 : a,
-                t = b === undefined ? a : b,
-                st = s || 1; for (var i = f; i < t; i += st) r.push(i); return r; });
-        _def(_e, 'len', function(x) { if (Array.isArray(x)) return x.length; if (typeof x === 'string') return x.length; if (
-                x && typeof x === 'object') return Object.keys(x).length; return 0; });
-        _def(_e, 'str', function(x) { return x === null ? 'nil' : x === true ? 'true' : x === false ? 'false' : Array.isArray(
-                x) ? '[' + x.map(String).join(', ') + ']' : String(x); });
-        _def(_e, 'int', function(x) { return parseInt(x) || 0; });
-        _def(_e, 'float', function(x) { return parseFloat(x) || 0; });
-        _def(_e, 'bool', function(x) { return _truthy(x); });
-        _def(_e, 'char', function(n) { return String.fromCharCode(n); });
-        _def(_e, 'ord', function(s) { return s ? s.charCodeAt(0) : 0; });
-        _def(_e, 'keys', function(o) { return o && typeof o === 'object' ? Object.keys(o) : []; });
-        _def(_e, 'values', function(o) { return o && typeof o === 'object' ? Object.values(o) : []; });
-        _def(_e, 'join', function(a, s) { return Array.isArray(a) ? a.join(s || ',') : String(a); });
-        _def(_e, 'format', function() { var s = arguments[0]; for (var i = 1; i < arguments.length; i++) s = s.replace(
-                '%s', arguments[i]); return s; });
-        _def(_e, 'typeof', function(v) { if (v === null) return 'nil'; if (Array.isArray(v)) return 'array'; return typeof v; });
-        _def(_e, 'sizeof', function(v) { if (Array.isArray(v)) return v.length; if (typeof v === 'string') return v.length; if (
-                v && typeof v === 'object') return Object.keys(v).length; return 1; });
-        _def(_e, 'isnil', function(x) { return x === null || x === undefined; });
-        _def(_e, 'isnum', function(x) { return typeof x === 'number'; });
-        _def(_e, 'isstr', function(x) { return typeof x === 'string'; });
-        _def(_e, 'isarr', function(x) { return Array.isArray(x); });
-        _def(_e, 'PI', Math.PI);
-        _def(_e, 'E', Math.E);
-        _def(_e, 'true', true);
-        _def(_e, 'false', false);
-        _def(_e, 'nil', null);
-
-        // show/print are disabled (no text outputs, only UI)
-        _def(_e, 'show', function() { return null; });
-        _def(_e, 'print', function() { return null; });
-        _def(_e, 'input', function(p) { return prompt(p || 'input:') || ''; });
-
-        // ── Color-Aware UI Functions ──────────────────────────────
-        function _applyColor(el, color, defaultColor) {
-            var c = color || defaultColor || '#222222';
-            el.style.color = c;
-            if (el.tagName === 'BUTTON' || el.classList.contains('ui-btn')) {
-                el.style.color = c;
-                el.style.borderColor = (color) ? c : '#cccccc';
-                el.style.backgroundColor = (color) ? 'rgba(0,0,0,0.04)' : '#f5f5f5';
-                el.onmouseover = function() {
-                    if (color) { this.style.backgroundColor = 'rgba(0,0,0,0.08)'; } else { this.style
-                            .backgroundColor = '#e8e8e8';
-                        this.style.borderColor = '#aaaaaa'; }
-                };
-                el.onmouseout = function() {
-                    if (color) { this.style.backgroundColor = 'rgba(0,0,0,0.04)'; } else { this.style
-                            .backgroundColor = '#f5f5f5';
-                        this.style.borderColor = '#cccccc'; }
-                };
-            }
-            if (el.classList.contains('ui-url')) {
-                el.style.color = c;
-                el.style.borderBottomColor = (color) ? c : '#b0b0b0';
-            }
-            if (el.classList.contains('ui-social')) {
-                el.style.color = c;
-                el.style.borderColor = (color) ? c : '#cccccc';
-                el.onmouseover = function() { this.style.backgroundColor = '#f0f0f0'; };
-                el.onmouseout = function() { this.style.backgroundColor = '#fafafa'; };
-            }
-            if (el.classList.contains('ui-heading')) {
-                el.style.color = c;
-                el.style.borderBottomColor = (color) ? c : '#e0e0e0';
-            }
-            if (el.classList.contains('ui-key')) {
-                el.style.color = c;
-                el.style.borderColor = (color) ? c : '#cccccc';
-                el.style.backgroundColor = (color) ? 'rgba(0,0,0,0.04)' : '#f0f0f0';
-            }
-            if (el.classList.contains('ui-list')) {
-                el.style.color = c;
-                var items = el.querySelectorAll('li');
-                items.forEach(function(li) { li.style.color = c; });
-            }
-        }
-
-        // h(level, text [, color])
-        _def(_e, 'h', function(level, text, color) {
-            var el = document.createElement('div');
-            el.className = 'ui-heading h' + level;
-            el.textContent = text;
-            _applyColor(el, color, '#222222');
-            _vcg_append_dom(el);
-            return null;
-        });
-
-        // l(items..., color)  — last arg can be color
-        _def(_e, 'l', function() {
-            var args = Array.from(arguments);
-            var color = null;
-            if (args.length > 0 && typeof args[args.length - 1] === 'string' && args[args.length - 1].startsWith('#')) {
-                color = args.pop();
-            }
-            var items = args;
-            var ul = document.createElement('ul');
-            ul.className = 'ui-list';
-            items.forEach(function(item) {
-                var li = document.createElement('li');
-                li.textContent = item;
-                ul.appendChild(li);
-            });
-            _applyColor(ul, color, '#222222');
-            _vcg_append_dom(ul);
-            return null;
-        });
-
-        // url(href, text [, color])
-        _def(_e, 'url', function(href, text, color) {
-            var a = document.createElement('a');
-            a.className = 'ui-url';
-            a.href = href;
-            a.target = '_blank';
-            a.textContent = text + ' ↗';
-            _applyColor(a, color, '#0066cc');
-            _vcg_append_dom(a);
-            return null;
-        });
-
-        // btn(label, action [, color])
-        _def(_e, 'btn', function(label, action, color) {
-            var btn = document.createElement('button');
-            btn.className = 'ui-btn';
-            btn.textContent = label;
-            btn.onclick = new Function(action);
-            _applyColor(btn, color, '#333333');
-            _vcg_append_dom(btn);
-            return null;
-        });
-
-        // key(combo [, color])
-        _def(_e, 'key', function(combo, color) {
-            var k = document.createElement('span');
-            k.className = 'ui-key';
-            k.textContent = combo;
-            _applyColor(k, color, '#222222');
-            _vcg_append_dom(k);
-            return null;
-        });
-
-        // img(src, alt, width [, color]) — color applies to border
-        _def(_e, 'img', function(src, alt, width, color) {
-            var div = document.createElement('div');
-            div.className = 'ui-img';
-            var img = document.createElement('img');
-            img.src = src;
-            img.alt = alt || 'image';
-            if (width) img.style.width = width;
-            img.style.maxWidth = '100%';
-            div.appendChild(img);
-            if (color) { div.style.borderColor = color; } else { div.style.borderColor = '#e0e0e0'; }
-            _vcg_append_dom(div);
-            return null;
-        });
-
-        // youtube(id [, color]) — responsive embed
-        _def(_e, 'youtube', function(id, color) {
-            var vid = id;
-            if (id.includes('youtube.com') || id.includes('youtu.be')) {
-                var match = id.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-                if (match) vid = match[1];
-            }
-            var div = document.createElement('div');
-            div.className = 'ui-youtube';
-            var iframe = document.createElement('iframe');
-            iframe.src = 'https://www.youtube.com/embed/' + vid;
-            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-            iframe.allowFullscreen = true;
-            div.appendChild(iframe);
-            if (color) { div.style.borderColor = color; } else { div.style.borderColor = '#e0e0e0'; }
-            _vcg_append_dom(div);
-            return null;
-        });
-
-        // facebook(url, text [, color])
-        _def(_e, 'facebook', function(url, text, color) {
-            var a = document.createElement('a');
-            a.className = 'ui-social';
-            a.href = url;
-            a.target = '_blank';
-            a.innerHTML = '📘 ' + text;
-            _applyColor(a, color, '#222222');
-            _vcg_append_dom(a);
-            return null;
-        });
-
-        // instagram(username, text [, color])
-        _def(_e, 'instagram', function(username, text, color) {
-            var a = document.createElement('a');
-            a.className = 'ui-social';
-            a.href = 'https://instagram.com/' + username.replace(/^@/, '');
-            a.target = '_blank';
-            a.innerHTML = '📷 ' + text;
-            _applyColor(a, color, '#222222');
-            _vcg_append_dom(a);
-            return null;
-        });
-
-        // xsocial(username, text [, color])
-        _def(_e, 'xsocial', function(username, text, color) {
-            var a = document.createElement('a');
-            a.className = 'ui-social';
-            a.href = 'https://x.com/' + username.replace(/^@/, '');
-            a.target = '_blank';
-            a.innerHTML = '🐦 ' + text;
-            _applyColor(a, color, '#222222');
-            _vcg_append_dom(a);
-            return null;
-        });
-
-        // =============================================================
-        //  USER PROGRAM — UI ONLY
-        // =============================================================
-        try {
-
-            _call(_e.h, [1, "Syrian VCG v1.0 — UI Demo"], _e);
-            _call(_e.h, [2, "Media & Social Elements", "#2c3e50"], _e);
-
-            _call(_e.h, [1, "Heading Level 1", "#e74c3c"], _e);
-            _call(_e.h, [2, "Heading Level 2", "#f39c12"], _e);
-            _call(_e.h, [3, "Heading Level 3", "#27ae60"], _e);
-            _call(_e.h, [4, "Heading Level 4", "#2980b9"], _e);
-
-            _call(_e.h, [2, "Language Features", "#e74c3c"], _e);
-            _call(_e.l, [
-                "Full compiler written in C11",
-                "HTML + JavaScript output",
-                "Reactive store with $set / $get",
-                "Channels with send / recv",
-                "Social media integration",
-                "UI elements: btn, img, video, url"
-            ], "#f39c12");
-
-            _call(_e.h, [2, "Useful Links", "#27ae60"], _e);
-            _call(_e.url, ["https://github.com/syrian-vcg/vcg-lang", "VCG on GitHub", "#27ae60"], _e);
-            _call(_e.url, ["https://syrian-vcg.github.io/vcg-lang", "VCG Website", "#27ae60"], _e);
-            _call(_e.url, ["https://github.com/syrian-vcg/vcg-lang/releases", "Download v1.0", "#27ae60"], _e);
-
-            _call(_e.h, [2, "Interactive Buttons", "#2980b9"], _e);
-            _call(_e.btn, ["Run Code", "alert('VCG running!')", "#2980b9"], _e);
-            _call(_e.btn, ["Download", "window.location='https://github.com/syrian-vcg/vcg-lang'", "#2980b9"], _e);
-            _call(_e.btn, ["Star on GitHub", "window.open('https://github.com/syrian-vcg/vcg-lang')", "#2980b9"], _e);
-
-            _call(_e.h, [2, "Keyboard Shortcuts", "#e74c3c"], _e);
-            _call(_e.key, ["vcgc file.vcg", "#e74c3c"], _e);
-            _call(_e.key, ["vcgc -r file.vcg", "#e74c3c"], _e);
-            _call(_e.key, ["vcgc --help", "#e74c3c"], _e);
-            _call(_e.key, ["Ctrl+S", "#f39c12"], _e);
-            _call(_e.key, ["Ctrl+C", "#f39c12"], _e);
-            _call(_e.key, ["Alt+F4", "#f39c12"], _e);
-
-            _call(_e.h, [2, "Image Example", "#27ae60"], _e);
-            _call(_e.img, [
-                "https://raw.githubusercontent.com/syrian-vcg/vcg-lang/main/assets/icon.svg",
-                "VCG Language Logo",
-                "120px",
-                "#27ae60"
-            ], _e);
-
-            _call(_e.h, [2, "Follow VCG on Social Media", "#2980b9"], _e);
-            _call(_e.facebook, ["https://facebook.com/syrianvcg", "VCG on Facebook", "#2980b9"], _e);
-            _call(_e.instagram, ["@syrianvcg", "VCG on Instagram", "#2980b9"], _e);
-            _call(_e.xsocial, ["@syrianvcg", "VCG on X", "#2980b9"], _e);
-
-            _call(_e.h, [2, "Video Tutorial", "#e74c3c"], _e);
-            _call(_e.youtube, ["dQw4w9WgXcQ", "#e74c3c"], _e);
-
-            _call(_e.h, [1, "About Syrian VCG", "#f39c12"], _e);
-            _call(_e.l, [
-                "Version: 1.0.0",
-                "Released: 2026-06-06",
-                "License: MIT",
-                "Language: C11 compiler",
-                "Output: HTML + JavaScript"
-            ], "#f39c12");
-
-            _call(_e.h, [3, "Quick Start", "#27ae60"], _e);
-            _call(_e.key, ["git clone https://github.com/syrian-vcg/vcg-lang", "#27ae60"], _e);
-            _call(_e.key, ["cd vcg-lang && make", "#27ae60"], _e);
-            _call(_e.key, ["./vcgc hello.vcg", "#27ae60"], _e);
-
-            _call(_e.h, [3, "Community", "#2980b9"], _e);
-            _call(_e.facebook, ["https://facebook.com/syrianvcg", "Join Facebook Group", "#2980b9"], _e);
-            _call(_e.instagram, ["syrianvcg", "Follow on Instagram", "#2980b9"], _e);
-            _call(_e.xsocial, ["syrianvcg", "Follow on X", "#2980b9"], _e);
-
-            _call(_e.btn, ["Get Started", "window.location='https://syrian-vcg.github.io/vcg-lang'", "#e74c3c"], _e);
-
-        } catch (e) {
-            var el = document.createElement('div');
-            el.style.color = '#cc0000';
-            el.style.padding = '1rem';
-            el.textContent = '⚠️ ERROR: ' + e.message;
-            _OUT.appendChild(el);
-            console.error(e);
-        }
-    </script>
-</body>
-</html>
+<header><div class="logo">✦</div><div><h1>ui_media</h1><p style="font-size:.8rem;color:var(--muted)">Syrian Private Programming VCG v2.0</p></div></header>
+<div id="out"></div>
+<footer>Compiled by <b>vcgc</b> — Syrian VCG Language</footer>
+<script>
+/* ── VCG Runtime ────────────────────── */
+var _OUT=document.getElementById('out');
+function _vcg_print(arr){
+  var s=arr.map(function(v){return v===null?'nil':v===true?'true':v===false?'false':Array.isArray(v)?'['+v.map(String).join(', ')+']':typeof v==='object'&&v?JSON.stringify(v):String(v);}).join(' ');
+  var el=document.createElement('span');el.className='ln';el.textContent=s;
+  _OUT.appendChild(el);
+}
+function _vcg_html(s){_OUT.insertAdjacentHTML('beforeend',String(s));}
+function _truthy(v){return v!==null&&v!==false&&v!==0&&v!==''&&v!==undefined;}
+function _vcg_eq(a,b){if(a===b)return true;if(a===null&&b===null)return true;if(typeof a!=='object'&&typeof b!=='object')return a==b;return false;}
+function _bin(op,a,b){
+  if(op==='+'&&(typeof a==='string'||typeof b==='string'))return String(a)+String(b);
+  if(op==='+'&&Array.isArray(a)&&Array.isArray(b))return a.concat(b);
+  if(op==='..'){
+    var r=[],f=Math.floor(a),t=Math.floor(b),s=f<=t?1:-1;
+    for(var i=f;s>0?i<=t:i>=t;i+=s)r.push(i);return r;
+  }
+  switch(op){case '+':return a+b;case '-':return a-b;case '*':return a*b;
+    case '/':if(b===0)throw new Error('Division by zero');return a/b;
+    case '%':if(b===0)throw new Error('Modulo by zero');return a%b;
+    case '**':return Math.pow(a,b);
+    case '==':return _vcg_eq(a,b);case '!=':return !_vcg_eq(a,b);
+    case '<':return a<b;case '>':return a>b;case '<=':return a<=b;case '>=':return a>=b;
+    case 'and':return _truthy(a)&&_truthy(b);
+    case 'or': return _truthy(a)||_truthy(b);
+    case '|':return (a|0)|(b|0);case '&':return (a|0)&(b|0);
+    case '<<':return (a|0)<<(b|0);case '>>':return (a|0)>>(b|0);
+  }return null;
+}
+function _scope(p){return Object.create(p||null);}
+function _def(e,k,v){Object.defineProperty(e,k,{value:v,writable:true,configurable:true,enumerable:true});return v;}
+function _set(e,k,v){
+  var c=e;
+  while(c){if(Object.prototype.hasOwnProperty.call(c,k)){c[k]=v;return v;}c=Object.getPrototypeOf(c);}
+  e[k]=v;return v;
+}
+function _v(k,e){
+  var c=e;
+  while(c){if(k in c)return c[k];c=Object.getPrototypeOf(c);}
+  throw new Error('Undefined: '+k);
+}
+function _idx(o,i){if(o===null)return null;if(Array.isArray(o)){var j=i<0?o.length+i:i;return j>=0&&j<o.length?o[j]:null;}if(typeof o==='string'){var j=i<0?o.length+i:i;return j>=0&&j<o.length?o[j]:null;}if(typeof o==='object')return o[i]!==undefined?o[i]:null;return null;}
+function _setidx(o,i,v){if(Array.isArray(o)){if(i<0)i=o.length+i;o[i]=v;}else if(typeof o==='object')o[i]=v;}
+function _field(o,k){return o&&typeof o==='object'&&k in o?o[k]:null;}
+function _setfield(o,k,v){if(o&&typeof o==='object')o[k]=v;}
+function _typeof(v){if(v===null)return 'nil';if(v===true||v===false)return 'bool';if(Array.isArray(v))return 'array';if(typeof v==='object')return 'struct';return typeof v;}
+function _sizeof(v){if(Array.isArray(v))return v.length;if(typeof v==='string')return v.length;if(v&&typeof v==='object')return Object.keys(v).length;return 1;}
+function _call(f,args,e){if(typeof f==='function')return f.apply(null,args);throw new Error('Not callable');}
+function _method(obj,name,args,e){
+  if(Array.isArray(obj)){
+    if(name==='push'){obj.push.apply(obj,args);return obj.length;}
+    if(name==='pop')return obj.pop();
+    if(name==='len'||name==='length')return obj.length;
+    if(name==='join')return obj.join(args[0]!==undefined?args[0]:',');
+    if(name==='contains')return obj.indexOf(args[0])>=0;
+    if(name==='reverse'){obj.reverse();return obj;}
+    if(name==='slice')return obj.slice(args[0]||0,args[1]);
+    if(name==='sort'){obj.sort(function(a,b){return a-b;});return obj;}
+  }
+  if(typeof obj==='string'){
+    if(name==='len'||name==='length')return obj.length;
+    if(name==='upper')return obj.toUpperCase();
+    if(name==='lower')return obj.toLowerCase();
+    if(name==='trim')return obj.trim();
+    if(name==='split')return obj.split(args[0]!==undefined?args[0]:' ');
+    if(name==='contains')return obj.includes(String(args[0]));
+    if(name==='startswith')return obj.startsWith(String(args[0]));
+    if(name==='endswith')return obj.endsWith(String(args[0]));
+    if(name==='replace')return obj.replaceAll(String(args[0]),String(args[1]));
+    if(name==='tonum')return parseFloat(obj);
+    if(name==='indexof')return obj.indexOf(String(args[0]));
+  }
+  if(obj&&typeof obj==='object'&&typeof obj[name]==='function')return obj[name].apply(obj,args);
+  throw new Error('No method: '+name);
+}
+/* ── Stdlib ─────────────────────── */
+var _e=_scope(null);
+_def(_e,'abs',function(x){return Math.abs(x);});
+_def(_e,'floor',function(x){return Math.floor(x);});
+_def(_e,'ceil',function(x){return Math.ceil(x);});
+_def(_e,'round',function(x){return Math.round(x);});
+_def(_e,'sqrt',function(x){return Math.sqrt(x);});
+_def(_e,'pow',function(b,e2){return Math.pow(b,e2);});
+_def(_e,'log',function(x){return Math.log(x);});
+_def(_e,'log2',function(x){return Math.log2(x);});
+_def(_e,'log10',function(x){return Math.log10(x);});
+_def(_e,'sin',function(x){return Math.sin(x);});
+_def(_e,'cos',function(x){return Math.cos(x);});
+_def(_e,'tan',function(x){return Math.tan(x);});
+_def(_e,'min',function(){return Math.min.apply(null,arguments);});
+_def(_e,'max',function(){return Math.max.apply(null,arguments);});
+_def(_e,'clamp',function(v,lo,hi){return Math.max(lo,Math.min(hi,v));});
+_def(_e,'rand',function(a,b){if(a===undefined)return Math.random();if(b===undefined)return Math.floor(Math.random()*a);return Math.floor(Math.random()*(b-a))+a;});
+_def(_e,'range',function(a,b,s){var r=[],f=b===undefined?0:a,t=b===undefined?a:b,st=s||1;for(var i=f;i<t;i+=st)r.push(i);return r;});
+_def(_e,'len',function(x){if(Array.isArray(x))return x.length;if(typeof x==='string')return x.length;if(x&&typeof x==='object')return Object.keys(x).length;return 0;});
+_def(_e,'str',function(x){return x===null?'nil':x===true?'true':x===false?'false':Array.isArray(x)?'['+x.map(String).join(', ')+']':String(x);});
+_def(_e,'int',function(x){return parseInt(x)||0;});
+_def(_e,'float',function(x){return parseFloat(x)||0;});
+_def(_e,'bool',function(x){return _truthy(x);});
+_def(_e,'char',function(n){return String.fromCharCode(n);});
+_def(_e,'ord',function(s){return s?s.charCodeAt(0):0;});
+_def(_e,'keys',function(o){return o&&typeof o==='object'?Object.keys(o):[];});
+_def(_e,'values',function(o){return o&&typeof o==='object'?Object.values(o):[];});
+_def(_e,'join',function(a,s){return Array.isArray(a)?a.join(s||','):String(a);});
+_def(_e,'format',function(){var s=arguments[0];for(var i=1;i<arguments.length;i++)s=s.replace('%s',arguments[i]);return s;});
+_def(_e,'typeof',_typeof);
+_def(_e,'sizeof',_sizeof);
+_def(_e,'isnil',function(x){return x===null||x===undefined;});
+_def(_e,'isnum',function(x){return typeof x==='number';});
+_def(_e,'isstr',function(x){return typeof x==='string';});
+_def(_e,'isarr',function(x){return Array.isArray(x);});
+_def(_e,'PI',Math.PI);
+_def(_e,'E',Math.E);
+_def(_e,'true',true);
+_def(_e,'false',false);
+_def(_e,'nil',null);
+_def(_e,'show',function(){_vcg_print(Array.from(arguments));return null;});
+_def(_e,'print',function(){_vcg_print(Array.from(arguments));return null;});
+_def(_e,'input',function(p){return prompt(p||'input:')||'';});
+/* ── v3.0 Reactive Runtime ───────── */
+var _vcg_store={};
+var _vcg_watchers={};
+var _vcg_exports={};
+var _vcg_writeonly={};
+function _vcg_set(k,v){
+  _vcg_store[k]=v;
+  if(_vcg_watchers[k]) _vcg_watchers[k](v);
+  return v;
+}
+function _vcg_get(k){ return _vcg_store[k]!==undefined?_vcg_store[k]:null; }
+function _vcg_w(name,val,env){
+  _def(env,name,val);
+  _vcg_writeonly[name]=true;
+  _vcg_print(['[w] '+name+' ← '+String(val)]);
+  return val;
+}
+function _vcg_x(v){ return typeof v==='function'?v():v; }
+function _vcg_channel(name,init){
+  var ch={_name:name,_buf:[]};
+  if(init!==undefined) ch._buf.push(init);
+  return ch;
+}
+function _vcg_send(ch,val){
+  if(ch&&ch._buf) ch._buf.push(val);
+  return val;
+}
+function _vcg_recv(ch){
+  if(ch&&ch._buf&&ch._buf.length>0) return ch._buf.shift();
+  return null;
+}
+function _vcg_pipe(val){
+  var fns=Array.from(arguments).slice(1);
+  return fns.reduce(function(v,f){return typeof f==='function'?f(v):v;},val);
+}
+_def(_e,'watch',function(k,fn){ _vcg_watchers[k]=fn; });_def(_e,'store',function(){ return _vcg_store; });_def(_e,'exports',function(){ return _vcg_exports; });_def(_e,'send',_vcg_send);_def(_e,'recv',_vcg_recv);_def(_e,'pipe',_vcg_pipe);_def(_e,'freeze',function(v){return Object.freeze(v)||v;});_def(_e,'VCG_VERSION','3.0.0');_def(_e,'VCG_DATE','2026-06-06');/* ── User Program ────────────────── */
+try{
+  null;
+  null;
+  _vcg_print(["---"]);
+  null;
+  null;
+  null;
+  null;
+  _vcg_print(["---"]);
+  null;
+  null;
+  _vcg_print(["---"]);
+  null;
+  null;
+  null;
+  null;
+  _vcg_print(["---"]);
+  null;
+  null;
+  null;
+  null;
+  _vcg_print(["---"]);
+  null;
+  _vcg_print(["Compile:"]);
+  null;
+  _vcg_print(["Run interpreter:"]);
+  null;
+  _vcg_print(["Show help:"]);
+  null;
+  _vcg_print(["Shortcut combos:"]);
+  null;
+  null;
+  null;
+  _vcg_print(["---"]);
+  null;
+  null;
+  _vcg_print(["---"]);
+  null;
+  null;
+  null;
+  null;
+  _vcg_print(["---"]);
+  null;
+  null;
+  _vcg_print(["---"]);
+  null;
+  null;
+  null;
+  null;
+  null;
+  null;
+  null;
+  null;
+  null;
+  null;
+  null;
+  _vcg_print(["=== VCG v1.0 | 2026-06-06 ==="]);
+}catch(e){
+  var el=document.createElement('span');el.className='ln err';
+  el.textContent='Runtime Error: '+e.message;_OUT.appendChild(el);
+  console.error(e);
+}
+</script></body></html>
