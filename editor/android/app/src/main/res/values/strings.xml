@@ -2,8 +2,9 @@
 <resources>
     <string name="app_name">VCG Editor</string>
     <string name="app_name_full">Syrian VCG Editor</string>
-    <string name="version">2.0.0</string>
+    <string name="version">2.1.0</string>
     <string name="new_file">ملف جديد</string>
+    <string name="new_project">مشروع جديد</string>
     <string name="save">حفظ</string>
     <string name="run">تشغيل</string>
     <string name="settings">الإعدادات</string>
@@ -11,6 +12,8 @@
     <string name="delete">حذف</string>
     <string name="cancel">إلغاء</string>
     <string name="share">مشاركة</string>
-    <string name="undo">تراجع</string>
+    <string name="terminal">Terminal</string>
+    <string name="assets">الوسائط</string>
     <string name="empty_files">لا يوجد ملفات\nاضغط + لإنشاء ملف جديد</string>
+    <string name="empty_projects">لا يوجد مشاريع بعد\nاضغط + لإنشاء أول مشروع</string>
 </resources>
