@@ -22,15 +22,15 @@ import java.util.regex.Pattern;
  */
 public class VcgCodeEditor extends AppCompatEditText {
 
-    // VCG Colors (dark olive theme)
-    private static final int COLOR_KEYWORD   = 0xFFFF9040;  // orange
-    private static final int COLOR_KEYWORD2  = 0xFF6AB0FF;  // blue
-    private static final int COLOR_STRING    = 0xFF7ACC6A;  // green
-    private static final int COLOR_NUMBER    = 0xFFCC99FF;  // purple
-    private static final int COLOR_COMMENT   = 0xFF4A6A4A;  // muted green
-    private static final int COLOR_FUNCTION  = 0xFF4DC95A;  // bright green
-    private static final int COLOR_UI_KW     = 0xFFF5C842;  // gold
-    private static final int COLOR_REACTIVE  = 0xFF00D4FF;  // cyan
+    // VCG Colors (clean light theme — tuned for contrast on white)
+    private static final int COLOR_KEYWORD   = 0xFFB35900;  // amber/orange
+    private static final int COLOR_KEYWORD2  = 0xFF1565C0;  // blue
+    private static final int COLOR_STRING    = 0xFF1E8E3E;  // green
+    private static final int COLOR_NUMBER    = 0xFF8E24AA;  // purple
+    private static final int COLOR_COMMENT   = 0xFF8A9286;  // muted gray-green
+    private static final int COLOR_FUNCTION  = 0xFF1F7A3D;  // primary green
+    private static final int COLOR_UI_KW     = 0xFFB4790C;  // gold/brown
+    private static final int COLOR_REACTIVE  = 0xFF0097A7;  // teal
 
     // Keyword patterns
     private static final Pattern PAT_COMMENT  = Pattern.compile("#.*|//.*");
@@ -74,9 +74,9 @@ public class VcgCodeEditor extends AppCompatEditText {
     private void init() {
         setHorizontalScrollBarEnabled(true);
         setHorizontallyScrolling(false);
-        setBackgroundColor(0xFF081208);
-        setTextColor(0xFFE8F5E0);
-        setHighlightColor(0x334DC95A);
+        setBackgroundColor(0xFFFFFFFF);
+        setTextColor(0xFF1B221C);
+        setHighlightColor(0x331F7A3D);
         setCursorVisible(true);
 
         // Tab stop simulation
