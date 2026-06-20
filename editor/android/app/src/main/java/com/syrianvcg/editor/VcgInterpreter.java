@@ -9,6 +9,16 @@ package com.syrianvcg.editor;
 public class VcgInterpreter {
 
     public static String buildHtml(String vcgCode, String title) {
+        return buildHtml(vcgCode, title, "{}", "olive");
+    }
+
+    /**
+     * @param vcgCode    مصدر VCG
+     * @param title      عنوان الصفحة
+     * @param assetsJson خريطة JSON {"asset:ID":"data:...;base64,..."} لتحويل مراجع الأصول لروابط حقيقية
+     * @param theme      اسم ثيم العرض (olive, midnight, amoled, sand)
+     */
+    public static String buildHtml(String vcgCode, String title, String assetsJson, String theme) {
         String escaped = vcgCode
             .replace("\\", "\\\\")
             .replace("`", "\\`")
@@ -20,7 +30,7 @@ public class VcgInterpreter {
             "<meta charset='UTF-8'>\n" +
             "<meta name='viewport' content='width=device-width,initial-scale=1'>\n" +
             "<title>" + escHtml(title) + " — VCG</title>\n" +
-            "<style>" + getStyles() + "</style>\n" +
+            "<style>" + getStyles(theme) + "</style>\n" +
             "</head>\n" +
             "<body>\n" +
             "<header>\n" +
@@ -30,6 +40,8 @@ public class VcgInterpreter {
             "</header>\n" +
             "<div id='out'></div>\n" +
             "<script>\n" +
+            "var _ASSETS=" + (assetsJson == null || assetsJson.isEmpty() ? "{}" : assetsJson) + ";\n" +
+            "function _resolveAsset(s){return (typeof s==='string'&&_ASSETS[s])?_ASSETS[s]:s;}\n" +
             getRuntime() +
             "\ntry{\n" +
             "  var _toks=tokenize(`" + escaped + "`);\n" +
@@ -51,12 +63,18 @@ public class VcgInterpreter {
             "      }\n" +
             "    });\n" +
             "  }\n" +
+            "  if(window.VcgAndroid&&window.VcgAndroid.onRunSuccess){\n" +
+            "    window.VcgAndroid.onRunSuccess(String(_rt.out.length));\n" +
+            "  }\n" +
             "} catch(e) {\n" +
             "  var el=document.createElement('span');\n" +
             "  el.className='line error';\n" +
             "  el.textContent='خطأ: '+e.message;\n" +
             "  document.getElementById('out').appendChild(el);\n" +
             "  console.error(e);\n" +
+            "  if(window.VcgAndroid&&window.VcgAndroid.onRunError){\n" +
+            "    window.VcgAndroid.onRunError(e.message);\n" +
+            "  }\n" +
             "}\n" +
             "</script>\n" +
             "</body>\n" +
@@ -69,32 +87,49 @@ public class VcgInterpreter {
                 .replace("\"","&quot;").replace("'","&#39;");
     }
 
-    private static String getStyles() {
+    private static String getStyles(String theme) {
+        String[] palette = themePalette(theme);
+        String bg = palette[0], panel = palette[1], border = palette[2],
+               accent = palette[3], text = palette[4], muted = palette[5], olive = palette[6];
         return
             "@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap');" +
-            ":root{--bg:#060c0e;--panel:#0f1e10;--border:#1a3a1a;--accent:#4dc95a;--text:#e8f5e0;--muted:#4a6a4a;--olive:#2d5a1b}" +
+            ":root{--bg:" + bg + ";--panel:" + panel + ";--border:" + border + ";--accent:" + accent + ";--text:" + text + ";--muted:" + muted + ";--olive:" + olive + "}" +
             "*{box-sizing:border-box;margin:0;padding:0}" +
             "body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;padding:0.8rem}" +
             "header{display:flex;align-items:center;gap:0.8rem;margin-bottom:1rem;padding-bottom:0.8rem;border-bottom:1px solid var(--border)}" +
-            ".logo{width:38px;height:38px;background:linear-gradient(135deg,#1a3a0a,#2d5a1b);border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;color:white;flex-shrink:0}" +
+            ".logo{width:38px;height:38px;background:linear-gradient(135deg,"+olive+","+accent+");border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;color:white;flex-shrink:0}" +
             "header h1{font-size:0.95rem;font-weight:700;color:var(--accent)}" +
             "header span{font-size:0.7rem;color:var(--muted)}" +
             "#out{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:1rem;min-height:200px;font-family:'JetBrains Mono',monospace;font-size:0.82rem;line-height:2}" +
-            ".line{display:block;padding:0.12rem 0.4rem;border-radius:4px;color:#a8e080}" +
-            ".line:hover{background:rgba(77,201,90,0.06)}" +
+            ".line{display:block;padding:0.12rem 0.4rem;border-radius:4px;color:var(--text)}" +
+            ".line:hover{background:rgba(127,127,127,0.08)}" +
             ".error{color:#f87171;font-weight:bold}" +
             ".empty{color:var(--muted);font-style:italic;padding:0.5rem}" +
             ".html-block{margin:0.4rem 0}" +
-            "h1,h2,h3,h4,h5,h6{color:#a8e080;font-family:'Cairo',sans-serif;border-bottom:2px solid #1e4020;padding-bottom:0.25rem;margin:0.6rem 0 0.3rem}" +
+            "h1,h2,h3,h4,h5,h6{color:var(--accent);font-family:'Cairo',sans-serif;border-bottom:2px solid var(--border);padding-bottom:0.25rem;margin:0.6rem 0 0.3rem}" +
             "ul{list-style:none;padding:0.4rem 0}" +
-            "li{padding:0.25rem 0.5rem;border-right:3px solid #2d5a1b;margin:0.15rem 0;color:#e8f5e0}" +
-            "button{background:linear-gradient(135deg,#2d5a1b,#4a9020);color:white;border:none;padding:0.55rem 1.2rem;border-radius:8px;font-weight:700;cursor:pointer;margin:0.2rem;font-family:'Cairo',sans-serif;transition:all 0.2s}" +
+            "li{padding:0.25rem 0.5rem;border-right:3px solid "+olive+";margin:0.15rem 0;color:var(--text)}" +
+            "button{background:linear-gradient(135deg,"+olive+","+accent+");color:white;border:none;padding:0.55rem 1.2rem;border-radius:8px;font-weight:700;cursor:pointer;margin:0.2rem;font-family:'Cairo',sans-serif;transition:all 0.2s}" +
             "button:hover{transform:translateY(-1px)}" +
-            "kbd{background:#1a3a0a;color:#a8e080;border:1px solid #2d5a1b;border-radius:5px;padding:0.2rem 0.6rem;font-family:monospace;font-size:0.82rem;box-shadow:0 2px 0 #0a1a05;display:inline-block;margin:0.15rem}" +
-            "a{color:#4dc95a}" +
+            "kbd{background:var(--border);color:var(--accent);border:1px solid "+olive+";border-radius:5px;padding:0.2rem 0.6rem;font-family:monospace;font-size:0.82rem;box-shadow:0 2px 0 rgba(0,0,0,.3);display:inline-block;margin:0.15rem}" +
+            "a{color:var(--accent)}" +
             "img{border-radius:8px;max-width:100%;margin:0.4rem 0;display:block}" +
             "video{border-radius:10px;max-width:100%;margin:0.4rem 0}" +
             "iframe{border-radius:10px;max-width:100%}";
+    }
+
+    private static String[] themePalette(String theme) {
+        if (theme == null) theme = "olive";
+        switch (theme) {
+            case "midnight":
+                return new String[]{"#0a0e1a","#10162a","#1c2542","#5b8cff","#e6ecff","#5a6a8a","#27306b"};
+            case "amoled":
+                return new String[]{"#000000","#0a0a0a","#1a1a1a","#4dc95a","#f0f0f0","#555555","#1f3d12"};
+            case "sand":
+                return new String[]{"#1c1812","#26211a","#3a3226","#e0a84d","#f2e8d8","#7a6f5a","#5a4626"};
+            default: // olive
+                return new String[]{"#060c0e","#0f1e10","#1a3a1a","#4dc95a","#e8f5e0","#4a6a4a","#2d5a1b"};
+        }
     }
 
     private static String getRuntime() {
@@ -304,9 +339,11 @@ public class VcgInterpreter {
             "    self.out.push({t:'html',v:'<kbd>'+k+'</kbd>'});\n" +
             "    return null;};\n" +
             "  e.video=function(src,w,h){\n" +
+            "    src=_resolveAsset(src);\n" +
             "    self.out.push({t:'html',v:'<video controls style=\"width:'+(w||'100%')+';border-radius:10px;max-width:100%;margin:.4rem 0\"><source src=\"'+src+'\"></video>'});\n" +
             "    return null;};\n" +
             "  e.img=function(src,alt,ww){\n" +
+            "    src=_resolveAsset(src);\n" +
             "    self.out.push({t:'html',v:'<img src=\"'+src+'\" alt=\"'+(alt||'')+'\" style=\"width:'+(ww||'auto')+';border-radius:8px;max-width:100%;margin:.4rem 0;display:block\" loading=\"lazy\">'});\n" +
             "    return null;};\n" +
             "  e.h=function(lv,txt){\n" +
