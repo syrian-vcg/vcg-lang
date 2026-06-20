@@ -1,0 +1,74 @@
+# ============================================================
+# Syrian VCG — Pattern Matching
+# match / case / when
+# ============================================================
+
+show("=== 1. match on a value ===")
+
+func describe_number(n) {
+    match n {
+        case 0 { return "zero" }
+        case 1 { return "one" }
+        case 2 { return "two" }
+        default { return "many (" + str(n) + ")" }
+    }
+}
+
+for n in range(0, 5) {
+    show(n, "->", describe_number(n))
+}
+
+show("---")
+show("=== 2. match on a string (HTTP-like status) ===")
+
+func status_text(code) {
+    match code {
+        case "200" { return "OK" }
+        case "404" { return "Not Found" }
+        case "500" { return "Server Error" }
+        default { return "Unknown status" }
+    }
+}
+
+let codes = ["200", "404", "500", "999"]
+for code in codes {
+    show(code, "->", status_text(code))
+}
+
+show("---")
+show("=== 3. when — guarded conditions ===")
+
+func classify_age(age) {
+    when {
+        age < 0     { return "invalid" }
+        age < 13    { return "child" }
+        age < 20    { return "teen" }
+        age < 60    { return "adult" }
+        else        { return "senior" }
+    }
+}
+
+let ages = [-1, 8, 16, 35, 70]
+for a in ages {
+    show("age", a, "->", classify_age(a))
+}
+
+show("---")
+show("=== 4. Combined: grading system ===")
+
+func grade(score) {
+    when {
+        score >= 90 { return "A" }
+        score >= 80 { return "B" }
+        score >= 70 { return "C" }
+        score >= 60 { return "D" }
+        else        { return "F" }
+    }
+}
+
+let scores = [95, 82, 71, 55, 68]
+for s in scores {
+    show("score", s, "-> grade", grade(s))
+}
+
+show("=== Done ===")
