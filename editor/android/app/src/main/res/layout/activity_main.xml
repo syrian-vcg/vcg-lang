@@ -11,13 +11,38 @@
         <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
             android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
             android:background="@color/surface_dark"
-            app:title="VCG Editor" app:titleTextColor="@color/accent_green"/>
+            app:titleTextColor="@color/accent_green"/>
     </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
         android:layout_width="match_parent" android:layout_height="match_parent"
         android:orientation="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <!-- Project quick actions -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:padding="10dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_assets"
+                android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:layout_marginEnd="6dp"
+                android:text="🖼  الوسائط"
+                android:textAllCaps="false" android:textSize="13sp"
+                android:backgroundTint="@color/surface_dark_2"
+                android:textColor="@color/text_primary"
+                style="@style/Widget.MaterialComponents.Button"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_terminal"
+                android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:layout_marginStart="6dp"
+                android:text="⌨  Terminal"
+                android:textAllCaps="false" android:textSize="13sp"
+                android:backgroundTint="@color/surface_dark_2"
+                android:textColor="@color/text_primary"
+                style="@style/Widget.MaterialComponents.Button"/>
+        </LinearLayout>
 
         <TextView android:id="@+id/empty_view"
             android:layout_width="match_parent" android:layout_height="0dp"
@@ -41,5 +66,6 @@
         android:layout_margin="16dp"
         android:contentDescription="New File"
         android:src="@android:drawable/ic_input_add"
-        app:backgroundTint="@color/olive_green"/>
+        app:backgroundTint="@color/olive_green"
+        app:tint="@color/text_primary"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
