@@ -103,7 +103,8 @@ public class VcgInterpreter {
             "#out{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:1rem;min-height:200px;font-family:'JetBrains Mono',monospace;font-size:0.82rem;line-height:2}" +
             ".line{display:block;padding:0.12rem 0.4rem;border-radius:4px;color:var(--text)}" +
             ".line:hover{background:rgba(127,127,127,0.08)}" +
-            ".error{color:#f87171;font-weight:bold}" +
+            ".error{display:flex;align-items:flex-start;gap:0.5rem;color:#7a1f17;background:rgba(214,72,60,0.08);border:1px solid rgba(214,72,60,0.35);border-radius:8px;padding:0.6rem 0.7rem;font-weight:600;margin:0.2rem 0}" +
+            ".error::before{content:'⚠';flex-shrink:0;font-size:1rem}" +
             ".empty{color:var(--muted);font-style:italic;padding:0.5rem}" +
             ".html-block{margin:0.4rem 0}" +
             "h1,h2,h3,h4,h5,h6{color:var(--accent);font-family:'Cairo',sans-serif;border-bottom:2px solid var(--border);padding-bottom:0.25rem;margin:0.6rem 0 0.3rem}" +
@@ -127,6 +128,8 @@ public class VcgInterpreter {
                 return new String[]{"#000000","#0a0a0a","#1a1a1a","#4dc95a","#f0f0f0","#555555","#1f3d12"};
             case "sand":
                 return new String[]{"#1c1812","#26211a","#3a3226","#e0a84d","#f2e8d8","#7a6f5a","#5a4626"};
+            case "white":
+                return new String[]{"#ffffff","#f7f9f6","#e2e6e1","#1f7a3d","#1b221c","#6b7568","#2e9e44"};
             default: // olive
                 return new String[]{"#060c0e","#0f1e10","#1a3a1a","#4dc95a","#e8f5e0","#4a6a4a","#2d5a1b"};
         }
