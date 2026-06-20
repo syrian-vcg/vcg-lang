@@ -1,0 +1,65 @@
+# ============================================================
+# Syrian VCG — Functions
+# func, return, default behavior, recursion
+# ============================================================
+
+show("=== 1. Basic functions ===")
+
+func add(a, b) { return a + b }
+func square(x) { return x * x }
+func greet(name) { return "Hello, " + name + "!" }
+
+show("add(3, 4)   =", add(3, 4))
+show("square(5)   =", square(5))
+show(greet("VCG"))
+
+show("---")
+show("=== 2. Functions calling functions ===")
+
+func sum_of_squares(a, b) {
+    return square(a) + square(b)
+}
+show("sum_of_squares(3, 4) =", sum_of_squares(3, 4))
+
+show("---")
+show("=== 3. Recursion ===")
+
+func factorial(n) {
+    if n <= 1 { return 1 }
+    return n * factorial(n - 1)
+}
+for i in range(1, 7) {
+    show(i, "! =", factorial(i))
+}
+
+func fib(n) {
+    if n < 2 { return n }
+    return fib(n - 1) + fib(n - 2)
+}
+show("fibonacci(10) =", fib(10))
+
+show("---")
+show("=== 4. Functions as values ===")
+
+func apply_twice(f, x) {
+    return f(f(x))
+}
+show("apply_twice(square, 3) =", apply_twice(square, 3))
+
+let ops = { double: func(x) { return x * 2 }, half: func(x) { return x / 2 } }
+show("ops.double(21) =", ops.double(21))
+show("ops.half(21)   =", ops.half(21))
+
+show("---")
+show("=== 5. map / filter / reduce ===")
+
+let nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+let doubled = map(nums, func(x) { return x * 2 })
+let evens   = filter(nums, func(x) { return x % 2 == 0 })
+let total   = reduce(nums, func(a, b) { return a + b }, 0)
+
+show("doubled:", doubled)
+show("evens  :", evens)
+show("sum    :", total)
+
+show("=== Done ===")
