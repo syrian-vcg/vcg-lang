@@ -13,7 +13,6 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class OutputActivity extends AppCompatActivity {
@@ -22,6 +21,9 @@ public class OutputActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private String code;
     private String filename;
+    private String projectId;
+    private String assetsJson;
+    private String theme;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -29,8 +31,12 @@ public class OutputActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_output);
 
-        code     = getIntent().getStringExtra("code");
-        filename = getIntent().getStringExtra("filename");
+        code       = getIntent().getStringExtra("code");
+        filename   = getIntent().getStringExtra("filename");
+        projectId  = getIntent().getStringExtra("projectId");
+        assetsJson = getIntent().getStringExtra("assetsJson");
+        theme      = getIntent().getStringExtra("theme");
+        if (theme == null) theme = "olive";
 
         setSupportActionBar(findViewById(R.id.output_toolbar));
         if (getSupportActionBar() != null) {
@@ -41,7 +47,6 @@ public class OutputActivity extends AppCompatActivity {
         webView     = findViewById(R.id.web_view);
         progressBar = findViewById(R.id.progress_bar);
 
-        // Configure WebView
         WebSettings ws = webView.getSettings();
         ws.setJavaScriptEnabled(true);
         ws.setDomStorageEnabled(true);
@@ -61,7 +66,6 @@ public class OutputActivity extends AppCompatActivity {
             }
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                // Open external links in browser
                 if (!url.startsWith("data:")) {
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
                     return true;
@@ -78,17 +82,39 @@ public class OutputActivity extends AppCompatActivity {
             }
         });
 
-        // Add JS interface for alert dialogs
-        webView.addJavascriptInterface(new VcgJsInterface(this), "VcgAndroid");
+        VcgJsInterface jsInterface = new VcgJsInterface(this, new VcgJsInterface.TerminalListener() {
+            @Override public void onLog(String line) { logToTerminal(true, line); }
+            @Override public void onError(String message) { logToTerminal(false, message); }
+            @Override public void onSuccess(int outputCount) { logToTerminal(true, String.valueOf(outputCount)); }
+        });
+        webView.addJavascriptInterface(jsInterface, "VcgAndroid");
 
         runCode();
     }
 
-    private void runCode() {
-        // Build full HTML with VCG interpreter
-        String html = VcgInterpreter.buildHtml(code, filename);
+    private void logToTerminal(boolean success, String detail) {
+        getSharedPreferences("vcg_terminal", MODE_PRIVATE).edit()
+            .putString("last_run_" + (projectId == null ? "global" : projectId),
+                (success ? "OK:" : "ERR:") + filename + ":" + detail + ":" + System.currentTimeMillis())
+            .apply();
 
-        // Load as data URL
+        // Append directly to the running terminal log buffer for this project, if present.
+        String key = "log_" + (projectId == null ? "global" : projectId);
+        String existing = getSharedPreferences("vcg_terminal", MODE_PRIVATE).getString(key, "");
+        String time = new java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.US).format(new java.util.Date());
+        String color = success ? "#4DC95A" : "#F87171";
+        String line = success
+            ? "[" + time + "] ▶ " + filename + " — تم التشغيل (" + detail + " سطر مخرجات)"
+            : "[" + time + "] ✗ " + filename + " — خطأ: " + detail;
+        String appended = existing + "<font color='" + color + "'>" +
+            android.text.TextUtils.htmlEncode(line) + "</font><br/>";
+        getSharedPreferences("vcg_terminal", MODE_PRIVATE).edit().putString(key, appended).apply();
+    }
+
+    private void runCode() {
+        String html = VcgInterpreter.buildHtml(code, filename,
+            assetsJson == null || assetsJson.isEmpty() ? "{}" : assetsJson, theme);
+
         String encoded = Base64.encodeToString(html.getBytes(), Base64.NO_PADDING);
         webView.loadData(encoded, "text/html", "base64");
     }
