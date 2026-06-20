@@ -1,0 +1,85 @@
+# ============================================================
+# Syrian VCG — Error Handling
+# try / catch, throw, assert, safe
+# ============================================================
+
+show("=== 1. try / catch ===")
+
+func divide(a, b) {
+    if b == 0 { throw "Division by zero is not allowed" }
+    return a / b
+}
+
+try {
+    show("10 / 2 =", divide(10, 2))
+    show("10 / 0 =", divide(10, 0))
+} catch err {
+    show("[caught] ", err)
+}
+
+show("---")
+show("=== 2. assert ===")
+
+func check_age(age) {
+    assert(age >= 0, "age cannot be negative")
+    assert(age < 150, "age looks unrealistic")
+    return age
+}
+
+try {
+    show("age 30 ->", check_age(30))
+    show("age -5 ->", check_age(-5))
+} catch err {
+    show("[assert failed] ", err)
+}
+
+show("---")
+show("=== 3. safe — run without crashing ===")
+
+safe {
+    let x = 10 / 0
+    show("unreachable")
+}
+show("execution continued after a safe block")
+
+show("---")
+show("=== 4. nested try/catch ===")
+
+func parse_score(text) {
+    try {
+        let n = int(text)
+        assert(n >= 0 and n <= 100, "score out of range (0-100)")
+        return n
+    } catch e {
+        throw "invalid score '" + text + "': " + e
+    }
+}
+
+let inputs = ["95", "abc", "150", "60"]
+for raw in inputs {
+    try {
+        show(raw, "->", parse_score(raw))
+    } catch e {
+        show(raw, "-> [error]", e)
+    }
+}
+
+show("---")
+show("=== 5. assert_eq / assert_true family ===")
+
+try {
+    assert_eq(2 + 2, 4)
+    assert_true(5 > 3)
+    assert_false(1 > 2)
+    show("all checks passed")
+} catch e {
+    show("[check failed]", e)
+}
+
+try {
+    assert_eq(2 + 2, 5)
+} catch e {
+    show("[expected failure]", e)
+}
+
+show("=== Done ===")
