@@ -4,10 +4,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent" android:layout_height="wrap_content"
     android:layout_margin="5dp"
-    app:cardBackgroundColor="@color/surface_dark"
+    app:cardBackgroundColor="?attr/colorSurface"
     app:cardCornerRadius="14dp"
     app:cardElevation="3dp"
-    app:rippleColor="@color/accent_green">
+    app:rippleColor="?attr/colorAccentSecondary">
 
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="horizontal" android:gravity="center_vertical"
@@ -24,17 +24,17 @@
             android:paddingStart="14dp">
             <TextView android:id="@+id/project_name"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/text_primary" android:textSize="16sp"
+                android:textColor="?attr/colorTextPrimary" android:textSize="16sp"
                 android:textStyle="bold" android:fontFamily="sans-serif-medium"
                 android:maxLines="1" android:ellipsize="end"/>
             <TextView android:id="@+id/project_desc"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/text_muted" android:textSize="12.5sp"
+                android:textColor="?attr/colorTextMuted" android:textSize="12.5sp"
                 android:maxLines="1" android:ellipsize="end"
                 android:paddingTop="3dp"/>
             <TextView android:id="@+id/project_meta"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/accent_green" android:textSize="11sp"
+                android:textColor="?attr/colorAccentSecondary" android:textSize="11sp"
                 android:fontFamily="monospace" android:paddingTop="4dp"/>
         </LinearLayout>
 
@@ -42,14 +42,14 @@
             android:layout_width="36dp" android:layout_height="36dp"
             android:src="@android:drawable/ic_menu_edit"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:tint="@color/text_muted"
+            android:tint="?attr/colorTextMuted"
             android:contentDescription="Edit"/>
 
         <ImageButton android:id="@+id/btn_delete_project"
             android:layout_width="36dp" android:layout_height="36dp"
             android:src="@android:drawable/ic_menu_delete"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:tint="@color/text_muted"
+            android:tint="?attr/colorTextMuted"
             android:contentDescription="Delete"/>
     </LinearLayout>
 </androidx.cardview.widget.CardView>
