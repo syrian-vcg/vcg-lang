@@ -10,7 +10,10 @@ import org.json.JSONObject;
 import java.io.*;
 import java.util.List;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 
 /**
  * VcgExport — تصدير مشروع واحد (.vcgzip) أو نسخة احتياطية كاملة من كل المشاريع،
@@ -114,5 +117,112 @@ public final class VcgExport {
         zos.putNextEntry(entry);
         zos.write(data);
         zos.closeEntry();
+    }
+
+    /** اسم آمن للملف داخل الـ zip فقط (يمنع Zip Path Traversal مثل ../../etc). */
+    private static String safeEntryFileName(String entryName) {
+        String name = entryName.replace('\\', '/');
+        int slash = name.lastIndexOf('/');
+        if (slash >= 0) name = name.substring(slash + 1);
+        name = name.replace("..", "_").trim();
+        return name.isEmpty() ? "file" : name;
+    }
+
+    private static byte[] readAllBytes(InputStream is) throws IOException {
+        ByteArrayOutputStream buf = new ByteArrayOutputStream();
+        byte[] tmp = new byte[8192];
+        int n;
+        while ((n = is.read(tmp)) != -1) buf.write(tmp, 0, n);
+        return buf.toByteArray();
+    }
+
+    private static String guessMime(String fileName) {
+        String n = fileName.toLowerCase();
+        if (n.endsWith(".png")) return "image/png";
+        if (n.endsWith(".jpg") || n.endsWith(".jpeg")) return "image/jpeg";
+        if (n.endsWith(".gif")) return "image/gif";
+        if (n.endsWith(".webp")) return "image/webp";
+        if (n.endsWith(".mp4")) return "video/mp4";
+        if (n.endsWith(".webm")) return "video/webm";
+        if (n.endsWith(".mov")) return "video/quicktime";
+        return "application/octet-stream";
+    }
+
+    /**
+     * يستردّ (يفك ضغط) مشروعاً من ملف .vcgzip/.zip تم تصديره سابقاً عبر exportProject،
+     * ويعيد إنشاءه كمشروع جديد كامل (ملفاته + وسائطه) داخل التخزين الحالي.
+     * يعمل بشكل متزامن (Blocking) — يجب استدعاؤه من Thread خلفي لا الواجهة الرئيسية.
+     *
+     * @return المشروع الجديد الذي تم إنشاؤه
+     */
+    public static VcgProject importProject(Context ctx, VcgStorage storage, Uri zipUri) throws IOException {
+        String manifestName = null;
+        String manifestDesc = null;
+        List<String[]> pendingFiles = new ArrayList<>();   // [name, content]
+        List<Object[]> pendingAssets = new ArrayList<>();  // [name, mime, bytes]
+
+        try (InputStream rawIn = ctx.getContentResolver().openInputStream(zipUri)) {
+            if (rawIn == null) throw new IOException("تعذّر فتح الملف المحدد");
+            ZipInputStream zis = new ZipInputStream(rawIn);
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                if (entry.isDirectory()) { zis.closeEntry(); continue; }
+                String path = entry.getName().replace('\\', '/');
+                byte[] data = readAllBytes(zis);
+                zis.closeEntry();
+
+                if (path.equals("manifest.json")) {
+                    try {
+                        JSONObject m = new JSONObject(new String(data, StandardCharsets.UTF_8));
+                        manifestName = m.optString("name", null);
+                        manifestDesc = m.optString("description", "");
+                    } catch (Exception ignored) {}
+                } else if (path.startsWith("files/")) {
+                    String fname = safeEntryFileName(path);
+                    pendingFiles.add(new String[]{ fname, new String(data, StandardCharsets.UTF_8) });
+                } else if (path.startsWith("assets/")) {
+                    String aname = safeEntryFileName(path);
+                    pendingAssets.add(new Object[]{ aname, guessMime(aname), data });
+                }
+            }
+        } catch (org.json.JSONException e) {
+            throw new IOException("ملف الأرشيف تالف أو غير متوافق");
+        }
+
+        if (pendingFiles.isEmpty() && pendingAssets.isEmpty() && manifestName == null) {
+            throw new IOException("لم يتم العثور على بيانات مشروع صالحة داخل هذا الأرشيف");
+        }
+
+        String baseName = (manifestName == null || manifestName.trim().isEmpty())
+            ? "مشروع مستورد" : manifestName.trim();
+        // تجنّب تعارض الأسماء مع مشاريع موجودة
+        String finalName = baseName + " (مستورد)";
+        int suffix = 2;
+        for (VcgProject existing : storage.getAllProjects()) {
+            if (existing.getName().equals(finalName)) {
+                finalName = baseName + " (مستورد " + suffix + ")";
+                suffix++;
+            }
+        }
+
+        VcgProject project = new VcgProject(VcgStorage.newId(), finalName,
+            manifestDesc != null ? manifestDesc : "", "#6AB0FF");
+        storage.saveProject(project);
+
+        for (String[] f : pendingFiles) {
+            storage.saveFile(new VcgFile(project.getId(), f[0], f[1]));
+        }
+        for (Object[] a : pendingAssets) {
+            String aname = (String) a[0];
+            String mime = (String) a[1];
+            byte[] bytes = (byte[]) a[2];
+            String base64 = Base64.encodeToString(bytes, Base64.NO_WRAP);
+            storage.saveAsset(project.getId(), aname, mime, base64, bytes.length);
+        }
+        if (pendingFiles.isEmpty()) {
+            storage.saveFile(new VcgFile(project.getId(), "main.vcg",
+                "# " + finalName + "\nshow(\"مرحباً من " + finalName + "\")\n"));
+        }
+        return project;
     }
 }
