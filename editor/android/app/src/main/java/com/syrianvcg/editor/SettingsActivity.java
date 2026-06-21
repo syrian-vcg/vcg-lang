@@ -1,13 +1,19 @@
 package com.syrianvcg.editor;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
+import java.util.List;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -16,6 +22,7 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        VcgThemeHelper.apply(this);
         setContentView(R.layout.activity_settings);
 
         settings = new VcgSettings(this);
@@ -58,10 +65,29 @@ public class SettingsActivity extends AppCompatActivity {
 
         // Font family selector
         RadioGroup fontGroup = findViewById(R.id.radio_font_family);
-        int monoId = R.id.font_mono, sansId = R.id.font_sans;
-        fontGroup.check("sans-serif".equals(settings.getFontFamily()) ? sansId : monoId);
+        int monoId = R.id.font_mono, sansId = R.id.font_sans, serifId = R.id.font_serif;
+        String curFont = settings.getFontFamily();
+        fontGroup.check("sans-serif".equals(curFont) ? sansId : "serif".equals(curFont) ? serifId : monoId);
         fontGroup.setOnCheckedChangeListener((group, checkedId) ->
-            settings.setFontFamily(checkedId == sansId ? "sans-serif" : "monospace"));
+            settings.setFontFamily(checkedId == sansId ? "sans-serif" : checkedId == serifId ? "serif" : "monospace"));
+
+        // App UI theme selector (Black / Dark / White / Blue)
+        RadioGroup appThemeGroup = findViewById(R.id.radio_app_theme);
+        int[] appThemeIds = {R.id.app_theme_white, R.id.app_theme_dark, R.id.app_theme_black, R.id.app_theme_blue};
+        // إعادة ترتيب لتطابق ترتيب الأزرار في الواجهة (أبيض، داكن، أسود، أزرق)
+        String[] appThemeOrder = {VcgThemeHelper.THEME_WHITE, VcgThemeHelper.THEME_DARK, VcgThemeHelper.THEME_BLACK, VcgThemeHelper.THEME_BLUE};
+        String curAppTheme = settings.getAppTheme();
+        for (int i = 0; i < appThemeOrder.length; i++) {
+            if (appThemeOrder[i].equals(curAppTheme)) appThemeGroup.check(appThemeIds[i]);
+        }
+        appThemeGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            for (int i = 0; i < appThemeIds.length; i++) {
+                if (appThemeIds[i] == checkedId && !appThemeOrder[i].equals(settings.getAppTheme())) {
+                    settings.setAppTheme(appThemeOrder[i]);
+                    recreate();
+                }
+            }
+        });
 
         // Word wrap
         Switch wrapSwitch = findViewById(R.id.switch_word_wrap);
@@ -114,6 +140,23 @@ public class SettingsActivity extends AppCompatActivity {
             @Override public void onStopTrackingTouch(SeekBar s)  {}
         });
 
+        // Notifications
+        Switch notifSwitch = findViewById(R.id.switch_notifications);
+        notifSwitch.setChecked(settings.getNotificationsEnabled());
+        notifSwitch.setOnCheckedChangeListener((btn, checked) -> {
+            settings.setNotificationsEnabled(checked);
+            if (checked) VcgNotifications.requestPermissionIfNeeded(this);
+        });
+
+        Switch motivationSwitch = findViewById(R.id.switch_motivation);
+        motivationSwitch.setChecked(settings.getMotivationPromptsEnabled());
+        motivationSwitch.setOnCheckedChangeListener((btn, checked) -> settings.setMotivationPromptsEnabled(checked));
+
+        setupGithubSection();
+        setupIconSection();
+        setupLanguageSection();
+        setupDataSection();
+
         // Reset
         findViewById(R.id.btn_reset_settings).setOnClickListener(v ->
             new AlertDialog.Builder(this, R.style.VCGDialog)
@@ -125,6 +168,128 @@ public class SettingsActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("إلغاء", null)
                 .show());
+    }
+
+    private void setupGithubSection() {
+        TextView statusLabel = findViewById(R.id.label_github_status);
+        TextInputEditText tokenInput = findViewById(R.id.input_github_token);
+        MaterialButton connectBtn = findViewById(R.id.btn_github_connect);
+        MaterialButton disconnectBtn = findViewById(R.id.btn_github_disconnect);
+        MaterialButton reposBtn = findViewById(R.id.btn_github_repos);
+
+        refreshGithubStatus(statusLabel);
+
+        connectBtn.setOnClickListener(v -> {
+            String token = tokenInput.getText() != null ? tokenInput.getText().toString().trim() : "";
+            if (token.isEmpty()) {
+                Toast.makeText(this, "أدخل الرمز (Token) أولاً", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            statusLabel.setText("جاري التحقق...");
+            new Thread(() -> {
+                try {
+                    String username = VcgGitHub.validateTokenAndGetUsername(token);
+                    settings.setGithubToken(token);
+                    settings.setGithubUsername(username);
+                    runOnUiThread(() -> {
+                        refreshGithubStatus(statusLabel);
+                        Toast.makeText(this, "تم الربط بنجاح: " + username, Toast.LENGTH_SHORT).show();
+                    });
+                } catch (Exception e) {
+                    String msg = e.getMessage();
+                    runOnUiThread(() -> {
+                        statusLabel.setText("فشل الربط: " + msg);
+                        Toast.makeText(this, "فشل الربط بـ GitHub: " + msg, Toast.LENGTH_LONG).show();
+                    });
+                }
+            }).start();
+        });
+
+        disconnectBtn.setOnClickListener(v -> {
+            settings.clearGithub();
+            tokenInput.setText("");
+            refreshGithubStatus(statusLabel);
+            Toast.makeText(this, "تم فصل حساب GitHub", Toast.LENGTH_SHORT).show();
+        });
+
+        reposBtn.setOnClickListener(v -> {
+            if (!settings.isGithubConnected()) {
+                Toast.makeText(this, "اربط حسابك أولاً", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            String token = settings.getGithubToken();
+            new Thread(() -> {
+                try {
+                    List<VcgGitHub.Repo> repos = VcgGitHub.listRepos(token);
+                    String[] names = new String[repos.size()];
+                    for (int i = 0; i < repos.size(); i++) names[i] = repos.get(i).toString();
+                    runOnUiThread(() -> {
+                        if (names.length == 0) {
+                            Toast.makeText(this, "لا توجد مستودعات بعد", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        new AlertDialog.Builder(this, R.style.VCGDialog)
+                            .setTitle("مستودعاتك على GitHub")
+                            .setItems(names, null)
+                            .setPositiveButton("إغلاق", null)
+                            .show();
+                    });
+                } catch (Exception e) {
+                    String msg = e.getMessage();
+                    runOnUiThread(() -> Toast.makeText(this, "فشل جلب المستودعات: " + msg, Toast.LENGTH_LONG).show());
+                }
+            }).start();
+        });
+    }
+
+    private void refreshGithubStatus(TextView statusLabel) {
+        if (settings.isGithubConnected()) {
+            statusLabel.setText("متّصل كـ: " + settings.getGithubUsername() + " ✓");
+        } else {
+            statusLabel.setText("غير متصل");
+        }
+    }
+
+    private void setupIconSection() {
+        RadioGroup iconGroup = findViewById(R.id.radio_app_icon);
+        int[] iconIds = {R.id.icon_olive, R.id.icon_black, R.id.icon_blue, R.id.icon_white};
+        String[] iconNames = VcgIconSwitcher.ICONS; // {olive, black, blue, white}
+        String currentIcon = settings.getAppIcon();
+        for (int i = 0; i < iconNames.length; i++) {
+            if (iconNames[i].equals(currentIcon)) iconGroup.check(iconIds[i]);
+        }
+        iconGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            for (int i = 0; i < iconIds.length; i++) {
+                if (iconIds[i] == checkedId) {
+                    settings.setAppIcon(iconNames[i]);
+                    VcgIconSwitcher.applyIcon(this, iconNames[i]);
+                    Toast.makeText(this, "تم تغيير الأيقونة — قد تحتاج للعودة للشاشة الرئيسية لرؤيتها", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+    }
+
+    private void setupLanguageSection() {
+        RadioGroup langGroup = findViewById(R.id.radio_app_language);
+        String currentLang = settings.getAppLanguage();
+        langGroup.check("en".equals(currentLang) ? R.id.lang_en : R.id.lang_ar);
+        langGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            String lang = checkedId == R.id.lang_en ? "en" : "ar";
+            if (lang.equals(settings.getAppLanguage())) return;
+            settings.setAppLanguage(lang);
+            androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(
+                androidx.core.os.LocaleListCompat.forLanguageTags(lang));
+        });
+    }
+
+    private void setupDataSection() {
+        findViewById(R.id.btn_export_backup).setOnClickListener(v -> {
+            try {
+                VcgExport.exportFullBackup(this, new VcgStorage(this));
+            } catch (Exception e) {
+                Toast.makeText(this, "فشل التصدير: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     @Override
