@@ -1,11 +1,15 @@
 package com.syrianvcg.editor;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -22,6 +26,7 @@ public class ProjectsActivity extends AppCompatActivity
     private List<VcgProject> projects = new ArrayList<>();
     private VcgStorage storage;
     private TextView emptyView;
+    private ActivityResultLauncher<String[]> importPicker;
 
     private static final String[] COLOR_TAGS = {
         "#4DC95A", "#6AB0FF", "#F5C842", "#FF7A7A", "#CC99FF", "#00D4FF"
@@ -50,6 +55,11 @@ public class ProjectsActivity extends AppCompatActivity
 
         FloatingActionButton fab = findViewById(R.id.fab_new_project);
         fab.setOnClickListener(v -> showNewProjectDialog());
+
+        importPicker = registerForActivityResult(
+            new ActivityResultContracts.OpenDocument(),
+            uri -> { if (uri != null) importProjectFromZip(uri); }
+        );
 
         loadProjects();
     }
@@ -164,6 +174,43 @@ public class ProjectsActivity extends AppCompatActivity
             .show();
     }
 
+    @Override
+    public void onProjectExport(VcgProject project) {
+        new AlertDialog.Builder(this, R.style.VCGDialog)
+            .setTitle("تصدير \"" + project.getName() + "\"")
+            .setMessage("سيتم إنشاء ملف مضغوط (.vcgzip) يحتوي كل ملفات وصور هذا المشروع، يمكنك مشاركته أو حفظه واستيراده لاحقاً.")
+            .setPositiveButton("تصدير", (d, w) -> exportProjectAsZip(project))
+            .setNegativeButton("إلغاء", null)
+            .show();
+    }
+
+    private void exportProjectAsZip(VcgProject project) {
+        Toast.makeText(this, "جاري تجهيز الملف المضغوط...", Toast.LENGTH_SHORT).show();
+        new Thread(() -> {
+            try {
+                VcgExport.exportProject(this, storage, project);
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(this, "فشل التصدير: " + e.getMessage(), Toast.LENGTH_LONG).show());
+            }
+        }).start();
+    }
+
+    private void importProjectFromZip(Uri uri) {
+        Toast.makeText(this, "جاري استرداد المشروع وفك ضغطه...", Toast.LENGTH_SHORT).show();
+        new Thread(() -> {
+            try {
+                VcgProject imported = VcgExport.importProject(this, storage, uri);
+                runOnUiThread(() -> {
+                    loadProjects();
+                    Toast.makeText(this, "تم استرداد \"" + imported.getName() + "\" بنجاح ✓", Toast.LENGTH_LONG).show();
+                });
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(this,
+                    "فشل الاستيراد: " + e.getMessage(), Toast.LENGTH_LONG).show());
+            }
+        }).start();
+    }
+
     private void openProject(VcgProject project) {
         Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra("projectId", project.getId());
@@ -179,6 +226,10 @@ public class ProjectsActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_import_project) {
+            importPicker.launch(new String[]{"application/zip", "application/octet-stream", "*/*"});
+            return true;
+        }
         if (item.getItemId() == R.id.action_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
