@@ -211,8 +211,8 @@ public class MainActivity extends AppCompatActivity
 
         VcgProject project = storage.getProject(projectId);
         if (project == null) return;
-        String suggested = project.getName().toLowerCase().replaceAll("[^a-z0-9_\\-]+", "-");
-        if (suggested.isEmpty()) suggested = "vcg-project";
+        String suggestedRaw = project.getName().toLowerCase().replaceAll("[^a-z0-9_\\-]+", "-");
+        final String suggested = suggestedRaw.isEmpty() ? "vcg-project" : suggestedRaw;
 
         View view = getLayoutInflater().inflate(R.layout.dialog_github_upload, null);
         TextInputEditText repoInput = view.findViewById(R.id.input_repo_name);
@@ -224,10 +224,10 @@ public class MainActivity extends AppCompatActivity
             .setTitle("رفع \"" + project.getName() + "\" إلى GitHub")
             .setView(view)
             .setPositiveButton("إنشاء ورفع", (d, w) -> {
-    String typedRepoName = repoInput.getText() != null ? repoInput.getText().toString().trim() : "";
-    String finalRepoName = typedRepoName.isEmpty() ? suggested : typedRepoName;
-    uploadProjectToGithub(project, settings, finalRepoName);
-}) 
+                String typedRepoName = repoInput.getText() != null ? repoInput.getText().toString().trim() : "";
+                String finalRepoName = typedRepoName.isEmpty() ? suggested : typedRepoName;
+                uploadProjectToGithub(project, settings, finalRepoName);
+            })
             .setNegativeButton("إلغاء", null)
             .show();
     }
