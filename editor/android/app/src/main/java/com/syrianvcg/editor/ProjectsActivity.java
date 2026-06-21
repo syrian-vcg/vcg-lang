@@ -30,11 +30,16 @@ public class ProjectsActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        VcgThemeHelper.apply(this);
         setContentView(R.layout.activity_projects);
         setSupportActionBar(findViewById(R.id.toolbar));
 
         storage = new VcgStorage(this);
         storage.migrateLegacyIfNeeded();
+
+        VcgNotifications.createChannel(this);
+        VcgNotifications.requestPermissionIfNeeded(this);
+        maybeShowReadyPrompt();
 
         RecyclerView rv = findViewById(R.id.recycler_projects);
         rv.setLayoutManager(new LinearLayoutManager(this));
@@ -53,6 +58,35 @@ public class ProjectsActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         loadProjects();
+    }
+
+    private void maybeShowReadyPrompt() {
+        VcgSettings settings = new VcgSettings(this);
+        if (!settings.getMotivationPromptsEnabled()) return;
+
+        long now = System.currentTimeMillis();
+        long last = settings.getLastPromptShownAt();
+        boolean firstEver = settings.getLastOpenedAt() == 0L;
+        boolean longAway = (now - last) > (6L * 60 * 60 * 1000); // 6 ساعات
+
+        if (firstEver || longAway) {
+            settings.setLastPromptShownAt(now);
+            String msg = VcgNotifications.randomReadyPrompt();
+            new AlertDialog.Builder(this, R.style.VCGDialog)
+                .setTitle(firstEver ? "أهلاً بك في VCG! 👋" : "مرحباً بعودتك")
+                .setMessage(msg)
+                .setPositiveButton("هيا بنا 🚀", null)
+                .setNegativeButton("ليس الآن", null)
+                .show();
+            VcgNotifications.notifyReadyToCode(this);
+        }
+        settings.setLastOpenedAt(now);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        // لا حاجة لأي إجراء إضافي — إن رُفضت الصلاحية ستبقى التذكيرات داخل التطبيق فقط (الحوارات) تعمل بشكل طبيعي.
     }
 
     private void loadProjects() {
@@ -84,6 +118,7 @@ public class ProjectsActivity extends AppCompatActivity
                     "# " + name + "\nshow(\"مرحباً من " + name + "\")\n"));
 
                 openProject(p);
+                VcgNotifications.notifyProjectCreated(this, p.getName());
             })
             .setNegativeButton("إلغاء", null)
             .show();
