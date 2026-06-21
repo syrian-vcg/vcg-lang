@@ -2,14 +2,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent" android:layout_height="match_parent"
-    android:orientation="vertical" android:background="@color/bg_dark">
+    android:orientation="vertical" android:background="?attr/colorBg">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent" android:layout_height="wrap_content">
         <androidx.appcompat.widget.Toolbar android:id="@+id/assets_toolbar"
             android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
-            android:background="@color/surface_dark"
-            app:titleTextColor="@color/accent_green"/>
+            android:background="?attr/colorSurface"
+            app:titleTextColor="?attr/colorAccentSecondary"/>
     </com.google.android.material.appbar.AppBarLayout>
 
     <!-- Quick upload chips -->
@@ -22,8 +22,8 @@
             android:layout_weight="1" android:layout_marginEnd="6dp"
             android:text="🖼  رفع صورة"
             android:textAllCaps="false"
-            android:backgroundTint="@color/olive_green"
-            android:textColor="@color/text_primary"
+            android:backgroundTint="?attr/colorAccentPrimary"
+            android:textColor="?attr/colorTextPrimary"
             style="@style/Widget.MaterialComponents.Button"/>
 
         <com.google.android.material.button.MaterialButton
@@ -32,15 +32,15 @@
             android:layout_weight="1" android:layout_marginStart="6dp"
             android:text="🎬  رفع فيديو"
             android:textAllCaps="false"
-            android:backgroundTint="@color/surface_dark_2"
-            android:textColor="@color/text_primary"
+            android:backgroundTint="?attr/colorSurface2"
+            android:textColor="?attr/colorTextPrimary"
             style="@style/Widget.MaterialComponents.Button"/>
     </LinearLayout>
 
     <TextView
         android:layout_width="match_parent" android:layout_height="wrap_content"
         android:text="اضغط على ملف لنسخ كود الإدراج · اضغط مطولاً للحذف"
-        android:textColor="@color/text_muted" android:textSize="12sp"
+        android:textColor="?attr/colorTextMuted" android:textSize="12sp"
         android:gravity="center" android:paddingBottom="6dp"/>
 
     <FrameLayout android:layout_width="match_parent" android:layout_height="0dp"
@@ -50,7 +50,7 @@
             android:layout_width="match_parent" android:layout_height="match_parent"
             android:gravity="center" android:visibility="gone"
             android:text="لا يوجد وسائط بعد\nاستخدم الأزرار بالأعلى للرفع"
-            android:textColor="@color/text_muted" android:textSize="16sp"
+            android:textColor="?attr/colorTextMuted" android:textSize="16sp"
             android:textAlignment="center"/>
 
         <androidx.recyclerview.widget.RecyclerView android:id="@+id/recycler_assets"
@@ -64,6 +64,6 @@
             android:layout_margin="16dp"
             android:contentDescription="Upload"
             android:src="@android:drawable/ic_input_add"
-            app:backgroundTint="@color/accent_green"/>
+            app:backgroundTint="?attr/colorAccentSecondary"/>
     </FrameLayout>
 </LinearLayout>
