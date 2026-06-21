@@ -23,7 +23,7 @@
             android:layout_width="match_parent" android:layout_height="0dp"
             android:layout_weight="1"
             android:gravity="center" android:visibility="gone"
-            android:text="لا يوجد مشاريع بعد\nاضغط + لإنشاء أول مشروع"
+            android:text="لا يوجد مشاريع بعد\nاضغط + لإنشاء أول مشروع، أو استورد مشروعاً مضغوطاً (ZIP) من القائمة ⋮\nضغطة مطوّلة على أي مشروع لتصديره كـ ZIP"
             android:textColor="?attr/colorTextMuted" android:textSize="16sp"
             android:textAlignment="center"/>
 
