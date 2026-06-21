@@ -19,6 +19,7 @@ public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ProjectV
         void onProjectClick(VcgProject project);
         void onProjectDelete(VcgProject project);
         void onProjectRename(VcgProject project);
+        void onProjectExport(VcgProject project);
     }
 
     private final List<VcgProject> projects;
@@ -60,6 +61,7 @@ public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ProjectV
         } catch (Exception ignored) {}
 
         h.itemView.setOnClickListener(v -> listener.onProjectClick(p));
+        h.itemView.setOnLongClickListener(v -> { listener.onProjectExport(p); return true; });
         h.btnDelete.setOnClickListener(v -> listener.onProjectDelete(p));
         h.btnMore.setOnClickListener(v -> listener.onProjectRename(p));
     }
