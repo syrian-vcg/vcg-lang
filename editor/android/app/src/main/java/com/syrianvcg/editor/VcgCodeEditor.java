@@ -22,15 +22,15 @@ import java.util.regex.Pattern;
  */
 public class VcgCodeEditor extends AppCompatEditText {
 
-    // VCG Colors (clean light theme — tuned for contrast on white)
-    private static final int COLOR_KEYWORD   = 0xFFB35900;  // amber/orange
-    private static final int COLOR_KEYWORD2  = 0xFF1565C0;  // blue
-    private static final int COLOR_STRING    = 0xFF1E8E3E;  // green
-    private static final int COLOR_NUMBER    = 0xFF8E24AA;  // purple
-    private static final int COLOR_COMMENT   = 0xFF8A9286;  // muted gray-green
-    private static final int COLOR_FUNCTION  = 0xFF1F7A3D;  // primary green
-    private static final int COLOR_UI_KW     = 0xFFB4790C;  // gold/brown
-    private static final int COLOR_REACTIVE  = 0xFF0097A7;  // teal
+    // VCG Colors — two palettes, tuned for contrast on light vs dark backgrounds
+    private int COLOR_KEYWORD   = 0xFFB35900;  // amber/orange
+    private int COLOR_KEYWORD2  = 0xFF1565C0;  // blue
+    private int COLOR_STRING    = 0xFF1E8E3E;  // green
+    private int COLOR_NUMBER    = 0xFF8E24AA;  // purple
+    private int COLOR_COMMENT   = 0xFF8A9286;  // muted gray-green
+    private int COLOR_FUNCTION  = 0xFF1F7A3D;  // primary green
+    private int COLOR_UI_KW     = 0xFFB4790C;  // gold/brown
+    private int COLOR_REACTIVE  = 0xFF0097A7;  // teal
 
     // Keyword patterns
     private static final Pattern PAT_COMMENT  = Pattern.compile("#.*|//.*");
@@ -110,6 +110,39 @@ public class VcgCodeEditor extends AppCompatEditText {
             for (int i = 0; i < indent; i++) spaces.append(' ');
             e.insert(pos + 1, spaces.toString());
         }
+    }
+
+    /**
+     * يطبّق لوحة ألوان مناسبة لسمة التطبيق الحالية على خلفية/نص المحرر
+     * وعلى ألوان تلوين الكود، حتى تبقى مقروءة على الخلفيات الداكنة أيضاً.
+     */
+    public void applyTheme(boolean dark) {
+        if (dark) {
+            setBackgroundColor(0xFF1A1D1F);
+            setTextColor(0xFFF1F3F1);
+            setHighlightColor(0x553FBF6B);
+            COLOR_KEYWORD  = 0xFFE6A23C;
+            COLOR_KEYWORD2 = 0xFF5B9CFF;
+            COLOR_STRING   = 0xFF4DD97A;
+            COLOR_NUMBER   = 0xFFC792EA;
+            COLOR_COMMENT  = 0xFF6F7A72;
+            COLOR_FUNCTION = 0xFF4DD97A;
+            COLOR_UI_KW    = 0xFFE0A93D;
+            COLOR_REACTIVE = 0xFF4FD6E6;
+        } else {
+            setBackgroundColor(0xFFFFFFFF);
+            setTextColor(0xFF1B221C);
+            setHighlightColor(0x331F7A3D);
+            COLOR_KEYWORD  = 0xFFB35900;
+            COLOR_KEYWORD2 = 0xFF1565C0;
+            COLOR_STRING   = 0xFF1E8E3E;
+            COLOR_NUMBER   = 0xFF8E24AA;
+            COLOR_COMMENT  = 0xFF8A9286;
+            COLOR_FUNCTION = 0xFF1F7A3D;
+            COLOR_UI_KW    = 0xFFB4790C;
+            COLOR_REACTIVE = 0xFF0097A7;
+        }
+        if (getText() != null) highlight(getEditableText());
     }
 
     private void highlight(Editable s) {
