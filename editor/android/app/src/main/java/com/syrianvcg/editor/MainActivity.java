@@ -224,10 +224,10 @@ public class MainActivity extends AppCompatActivity
             .setTitle("رفع \"" + project.getName() + "\" إلى GitHub")
             .setView(view)
             .setPositiveButton("إنشاء ورفع", (d, w) -> {
-                String repoName = repoInput.getText() != null ? repoInput.getText().toString().trim() : "";
-                if (repoName.isEmpty()) repoName = suggested;
-                uploadProjectToGithub(project, settings, repoName);
-            })
+    String typedRepoName = repoInput.getText() != null ? repoInput.getText().toString().trim() : "";
+    String finalRepoName = typedRepoName.isEmpty() ? suggested : typedRepoName;
+    uploadProjectToGithub(project, settings, finalRepoName);
+}) 
             .setNegativeButton("إلغاء", null)
             .show();
     }
