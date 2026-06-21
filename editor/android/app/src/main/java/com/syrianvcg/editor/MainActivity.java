@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        VcgThemeHelper.apply(this);
         setContentView(R.layout.activity_main);
         setSupportActionBar(findViewById(R.id.toolbar));
 
@@ -157,7 +158,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.menu_project_files, menu);
         return true;
     }
 
@@ -175,7 +176,83 @@ public class MainActivity extends AppCompatActivity
             showAbout();
             return true;
         }
+        if (item.getItemId() == R.id.action_github_upload) {
+            showGithubUploadDialog();
+            return true;
+        }
+        if (item.getItemId() == R.id.action_export_project) {
+            exportProject();
+            return true;
+        }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void exportProject() {
+        VcgProject project = storage.getProject(projectId);
+        if (project == null) return;
+        try {
+            VcgExport.exportProject(this, storage, project);
+        } catch (Exception e) {
+            Toast.makeText(this, "فشل التصدير: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void showGithubUploadDialog() {
+        VcgSettings settings = new VcgSettings(this);
+        if (!settings.isGithubConnected()) {
+            new AlertDialog.Builder(this, R.style.VCGDialog)
+                .setTitle("GitHub غير مرتبط")
+                .setMessage("اربط حسابك في GitHub أولاً من الإعدادات (يحتاج Personal Access Token).")
+                .setPositiveButton("فتح الإعدادات", (d, w) -> startActivity(new Intent(this, SettingsActivity.class)))
+                .setNegativeButton("إلغاء", null)
+                .show();
+            return;
+        }
+
+        VcgProject project = storage.getProject(projectId);
+        if (project == null) return;
+        String suggested = project.getName().toLowerCase().replaceAll("[^a-z0-9_\\-]+", "-");
+        if (suggested.isEmpty()) suggested = "vcg-project";
+
+        View view = getLayoutInflater().inflate(R.layout.dialog_github_upload, null);
+        TextInputEditText repoInput = view.findViewById(R.id.input_repo_name);
+        TextView userLabel = view.findViewById(R.id.label_github_user);
+        repoInput.setText(suggested);
+        userLabel.setText("متّصل كـ: " + settings.getGithubUsername());
+
+        new AlertDialog.Builder(this, R.style.VCGDialog)
+            .setTitle("رفع \"" + project.getName() + "\" إلى GitHub")
+            .setView(view)
+            .setPositiveButton("إنشاء ورفع", (d, w) -> {
+                String repoName = repoInput.getText() != null ? repoInput.getText().toString().trim() : "";
+                if (repoName.isEmpty()) repoName = suggested;
+                uploadProjectToGithub(project, settings, repoName);
+            })
+            .setNegativeButton("إلغاء", null)
+            .show();
+    }
+
+    private void uploadProjectToGithub(VcgProject project, VcgSettings settings, String repoName) {
+        Toast.makeText(this, "جاري الرفع إلى GitHub...", Toast.LENGTH_SHORT).show();
+        String token = settings.getGithubToken();
+        new Thread(() -> {
+            try {
+                String fullRepo = VcgGitHub.createRepo(token, repoName, true);
+                List<VcgFile> filesToUpload = storage.getFilesInProject(projectId);
+                for (VcgFile f : filesToUpload) {
+                    byte[] content = (f.getContent() != null ? f.getContent() : "").getBytes("UTF-8");
+                    VcgGitHub.putFile(token, fullRepo, f.getName(), content, "VCG Editor: " + f.getName());
+                }
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "تم الرفع بنجاح إلى " + fullRepo + " ✓", Toast.LENGTH_LONG).show();
+                    VcgNotifications.notify(this, 4, "تم الرفع إلى GitHub ✓",
+                        project.getName() + " → " + fullRepo);
+                });
+            } catch (Exception e) {
+                String msg = e.getMessage();
+                runOnUiThread(() -> Toast.makeText(this, "فشل الرفع: " + msg, Toast.LENGTH_LONG).show());
+            }
+        }).start();
     }
 
     private void showAbout() {
