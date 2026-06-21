@@ -34,6 +34,7 @@ public class TerminalActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        VcgThemeHelper.apply(this);
         setContentView(R.layout.activity_terminal);
 
         storage = new VcgStorage(this);
