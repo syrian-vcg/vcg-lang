@@ -19,6 +19,7 @@ public class OutputActivity extends AppCompatActivity {
 
     private WebView webView;
     private ProgressBar progressBar;
+    private VcgSkeletonView skeleton;
     private String code;
     private String filename;
     private String projectId;
@@ -29,6 +30,7 @@ public class OutputActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        VcgThemeHelper.apply(this);
         setContentView(R.layout.activity_output);
 
         code       = getIntent().getStringExtra("code");
@@ -46,6 +48,8 @@ public class OutputActivity extends AppCompatActivity {
 
         webView     = findViewById(R.id.web_view);
         progressBar = findViewById(R.id.progress_bar);
+        skeleton    = findViewById(R.id.output_skeleton);
+        skeleton.setDark(VcgThemeHelper.isDark(new VcgSettings(this).getAppTheme()));
 
         WebSettings ws = webView.getSettings();
         ws.setJavaScriptEnabled(true);
@@ -59,10 +63,12 @@ public class OutputActivity extends AppCompatActivity {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 progressBar.setVisibility(View.VISIBLE);
+                skeleton.setVisibility(View.VISIBLE);
             }
             @Override
             public void onPageFinished(WebView view, String url) {
                 progressBar.setVisibility(View.GONE);
+                skeleton.setVisibility(View.GONE);
             }
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -92,7 +98,13 @@ public class OutputActivity extends AppCompatActivity {
         runCode();
     }
 
+    private boolean notifiedThisSession = false;
+
     private void logToTerminal(boolean success, String detail) {
+        if (success && !notifiedThisSession) {
+            notifiedThisSession = true;
+            VcgNotifications.notifyRunSuccess(this, filename);
+        }
         getSharedPreferences("vcg_terminal", MODE_PRIVATE).edit()
             .putString("last_run_" + (projectId == null ? "global" : projectId),
                 (success ? "OK:" : "ERR:") + filename + ":" + detail + ":" + System.currentTimeMillis())
