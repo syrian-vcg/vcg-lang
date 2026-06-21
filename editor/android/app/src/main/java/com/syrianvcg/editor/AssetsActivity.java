@@ -41,6 +41,7 @@ public class AssetsActivity extends AppCompatActivity implements AssetAdapter.As
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        VcgThemeHelper.apply(this);
         setContentView(R.layout.activity_assets);
 
         storage = new VcgStorage(this);
