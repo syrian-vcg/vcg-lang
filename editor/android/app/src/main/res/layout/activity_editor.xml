@@ -2,16 +2,16 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent" android:layout_height="match_parent"
-    android:orientation="vertical" android:background="@color/code_bg">
+    android:orientation="vertical" android:background="?attr/colorCodeBg">
 
     <!-- Toolbar -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent" android:layout_height="wrap_content">
         <androidx.appcompat.widget.Toolbar android:id="@+id/editor_toolbar"
             android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
-            android:background="@color/surface_dark"
-            app:titleTextColor="@color/accent_green"
-            app:subtitleTextColor="@color/text_muted"/>
+            android:background="?attr/colorSurface"
+            app:titleTextColor="?attr/colorAccentSecondary"
+            app:subtitleTextColor="?attr/colorTextMuted"/>
     </com.google.android.material.appbar.AppBarLayout>
 
     <!-- Editor + Preview split -->
@@ -26,12 +26,12 @@
             <!-- Line numbers -->
             <ScrollView android:id="@+id/line_scroll"
                 android:layout_width="38dp" android:layout_height="match_parent"
-                android:background="@color/surface_dark"
+                android:background="?attr/colorSurface"
                 android:overScrollMode="never"
                 android:scrollbars="none">
                 <TextView android:id="@+id/line_numbers"
                     android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:textColor="@color/text_muted" android:textSize="14sp"
+                    android:textColor="?attr/colorTextMuted" android:textSize="14sp"
                     android:fontFamily="monospace" android:gravity="end"
                     android:paddingTop="8dp" android:paddingEnd="6dp"
                     android:paddingStart="4dp" android:lineSpacingMultiplier="1.35"
@@ -39,7 +39,7 @@
             </ScrollView>
 
             <View android:layout_width="1dp" android:layout_height="match_parent"
-                android:background="@color/border_color"/>
+                android:background="?attr/colorBorder"/>
 
             <!-- Code editor -->
             <ScrollView android:id="@+id/editor_scroll"
@@ -55,7 +55,7 @@
                     android:inputType="textMultiLine|textNoSuggestions"
                     android:imeOptions="flagNoEnterAction"
                     android:scrollbars="none"
-                    android:background="@color/code_bg"/>
+                    android:background="?attr/colorCodeBg"/>
             </ScrollView>
         </LinearLayout>
 
@@ -66,26 +66,34 @@
             android:visibility="visible">
 
             <View android:layout_width="match_parent" android:layout_height="2dp"
-                android:background="@color/accent_green"/>
+                android:background="?attr/colorAccentSecondary"/>
 
             <TextView
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:text="▦ معاينة مباشرة"
-                android:textColor="@color/accent_green" android:textSize="11sp"
+                android:textColor="?attr/colorAccentSecondary" android:textSize="11sp"
                 android:textStyle="bold"
-                android:background="@color/surface_dark"
+                android:background="?attr/colorSurface"
                 android:padding="4dp" android:gravity="center"/>
 
-            <WebView android:id="@+id/preview_webview"
+            <FrameLayout
                 android:layout_width="match_parent" android:layout_height="0dp"
-                android:layout_weight="1"/>
+                android:layout_weight="1">
+
+                <WebView android:id="@+id/preview_webview"
+                    android:layout_width="match_parent" android:layout_height="match_parent"/>
+
+                <com.syrianvcg.editor.VcgSkeletonView android:id="@+id/preview_skeleton"
+                    android:layout_width="match_parent" android:layout_height="match_parent"
+                    android:background="?attr/colorBg"/>
+            </FrameLayout>
         </LinearLayout>
     </LinearLayout>
 
     <!-- Quick keyboard -->
     <HorizontalScrollView android:id="@+id/quick_keyboard_scroll"
         android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:background="@color/surface_dark"
+        android:background="?attr/colorSurface"
         android:scrollbars="none"
         android:paddingTop="4dp" android:paddingBottom="4dp">
         <LinearLayout android:id="@+id/quick_keyboard"
@@ -104,7 +112,7 @@
             android:layout_width="56dp" android:layout_height="48dp"
             android:text="🖼"
             android:textSize="16sp"
-            android:backgroundTint="@color/surface_dark_2"
+            android:backgroundTint="?attr/colorSurface2"
             android:insetTop="0dp" android:insetBottom="0dp"
             style="@style/Widget.MaterialComponents.Button"/>
 
@@ -114,8 +122,8 @@
             android:layout_weight="1"
             android:text="▦ إخفاء المعاينة"
             android:textSize="13sp" android:textAllCaps="false"
-            android:backgroundTint="@color/surface_dark_2"
-            android:textColor="@color/text_primary"
+            android:backgroundTint="?attr/colorSurface2"
+            android:textColor="?attr/colorTextPrimary"
             style="@style/Widget.MaterialComponents.Button"/>
 
         <com.google.android.material.button.MaterialButton
@@ -124,7 +132,7 @@
             android:layout_weight="1.4"
             android:text="▶  تشغيل"
             android:textSize="15sp" android:textStyle="bold" android:textAllCaps="false"
-            android:backgroundTint="@color/olive_green"
+            android:backgroundTint="?attr/colorAccentPrimary"
             android:textColor="@android:color/white"
             style="@style/Widget.MaterialComponents.Button"/>
     </LinearLayout>
