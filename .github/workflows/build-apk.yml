@@ -29,18 +29,13 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.4'
-
       - name: Make gradlew executable
         run: chmod +x editor/android/gradlew
 
       - name: Build Debug APK
         working-directory: editor/android
         run: |
-          gradle assembleDebug \
+          ./gradlew assembleDebug \
             --no-daemon \
             --stacktrace \
             -Dorg.gradle.jvmargs=-Xmx2048m
@@ -50,7 +45,7 @@ jobs:
       - name: Build Release APK
         working-directory: editor/android
         run: |
-          gradle assembleRelease \
+          ./gradlew assembleRelease \
             --no-daemon \
             -Dorg.gradle.jvmargs=-Xmx2048m
         env:
