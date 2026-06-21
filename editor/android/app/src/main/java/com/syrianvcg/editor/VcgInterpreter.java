@@ -33,11 +33,6 @@ public class VcgInterpreter {
             "<style>" + getStyles(theme) + "</style>\n" +
             "</head>\n" +
             "<body>\n" +
-            "<header>\n" +
-            "  <div class='logo'>V</div>\n" +
-            "  <div><h1>" + escHtml(title) + "</h1>" +
-            "<span>Syrian VCG v2.0 · 2026-06-06</span></div>\n" +
-            "</header>\n" +
             "<div id='out'></div>\n" +
             "<script>\n" +
             "var _ASSETS=" + (assetsJson == null || assetsJson.isEmpty() ? "{}" : assetsJson) + ";\n" +
@@ -95,12 +90,8 @@ public class VcgInterpreter {
             "@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap');" +
             ":root{--bg:" + bg + ";--panel:" + panel + ";--border:" + border + ";--accent:" + accent + ";--text:" + text + ";--muted:" + muted + ";--olive:" + olive + "}" +
             "*{box-sizing:border-box;margin:0;padding:0}" +
-            "body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;padding:0.8rem}" +
-            "header{display:flex;align-items:center;gap:0.8rem;margin-bottom:1rem;padding-bottom:0.8rem;border-bottom:1px solid var(--border)}" +
-            ".logo{width:38px;height:38px;background:linear-gradient(135deg,"+olive+","+accent+");border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;color:white;flex-shrink:0}" +
-            "header h1{font-size:0.95rem;font-weight:700;color:var(--accent)}" +
-            "header span{font-size:0.7rem;color:var(--muted)}" +
-            "#out{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:1rem;min-height:200px;font-family:'JetBrains Mono',monospace;font-size:0.82rem;line-height:2}" +
+            "body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;padding:0.9rem}" +
+            "#out{font-family:'JetBrains Mono',monospace;font-size:0.82rem;line-height:2}" +
             ".line{display:block;padding:0.12rem 0.4rem;border-radius:4px;color:var(--text)}" +
             ".line:hover{background:rgba(127,127,127,0.08)}" +
             ".error{display:flex;align-items:flex-start;gap:0.5rem;color:#7a1f17;background:rgba(214,72,60,0.08);border:1px solid rgba(214,72,60,0.35);border-radius:8px;padding:0.6rem 0.7rem;font-weight:600;margin:0.2rem 0}" +
