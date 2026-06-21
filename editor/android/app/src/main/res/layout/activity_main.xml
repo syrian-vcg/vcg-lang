@@ -3,15 +3,15 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent" android:layout_height="match_parent"
-    android:background="@color/bg_dark">
+    android:background="?attr/colorBg">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent" android:layout_height="wrap_content"
         android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
         <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
             android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
-            android:background="@color/surface_dark"
-            app:titleTextColor="@color/accent_green"/>
+            android:background="?attr/colorSurface"
+            app:titleTextColor="?attr/colorAccentSecondary"/>
     </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
@@ -29,8 +29,8 @@
                 android:layout_weight="1" android:layout_marginEnd="6dp"
                 android:text="🖼  الوسائط"
                 android:textAllCaps="false" android:textSize="13sp"
-                android:backgroundTint="@color/surface_dark_2"
-                android:textColor="@color/text_primary"
+                android:backgroundTint="?attr/colorSurface2"
+                android:textColor="?attr/colorTextPrimary"
                 style="@style/Widget.MaterialComponents.Button"/>
 
             <com.google.android.material.button.MaterialButton
@@ -39,8 +39,8 @@
                 android:layout_weight="1" android:layout_marginStart="6dp"
                 android:text="⌨  Terminal"
                 android:textAllCaps="false" android:textSize="13sp"
-                android:backgroundTint="@color/surface_dark_2"
-                android:textColor="@color/text_primary"
+                android:backgroundTint="?attr/colorSurface2"
+                android:textColor="?attr/colorTextPrimary"
                 style="@style/Widget.MaterialComponents.Button"/>
         </LinearLayout>
 
@@ -49,7 +49,7 @@
             android:layout_weight="1"
             android:gravity="center" android:visibility="gone"
             android:text="لا يوجد ملفات\nاضغط + لإنشاء ملف جديد"
-            android:textColor="@color/text_muted" android:textSize="16sp"
+            android:textColor="?attr/colorTextMuted" android:textSize="16sp"
             android:textAlignment="center"/>
 
         <androidx.recyclerview.widget.RecyclerView android:id="@+id/recycler_files"
@@ -66,6 +66,6 @@
         android:layout_margin="16dp"
         android:contentDescription="New File"
         android:src="@android:drawable/ic_input_add"
-        app:backgroundTint="@color/olive_green"
-        app:tint="@color/text_primary"/>
+        app:backgroundTint="?attr/colorAccentPrimary"
+        app:tint="?attr/colorTextPrimary"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
