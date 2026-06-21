@@ -38,6 +38,7 @@ public class EditorActivity extends AppCompatActivity {
     private boolean previewVisible = true;
 
     private WebView previewWebView;
+    private VcgSkeletonView previewSkeleton;
     private View previewContainer;
     private View editorContainer;
     private Handler debounceHandler = new Handler(Looper.getMainLooper());
@@ -71,6 +72,7 @@ public class EditorActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        VcgThemeHelper.apply(this);
         setContentView(R.layout.activity_editor);
 
         filename    = getIntent().getStringExtra("filename");
@@ -89,8 +91,10 @@ public class EditorActivity extends AppCompatActivity {
         codeEditor  = findViewById(R.id.code_editor);
         lineNumbers = findViewById(R.id.line_numbers);
         previewWebView   = findViewById(R.id.preview_webview);
+        previewSkeleton  = findViewById(R.id.preview_skeleton);
         previewContainer = findViewById(R.id.preview_container);
         editorContainer  = findViewById(R.id.editor_code_container);
+        previewSkeleton.setDark(VcgThemeHelper.isDark(settings.getAppTheme()));
 
         applySettingsToEditor();
         setupPreviewWebView();
@@ -140,15 +144,25 @@ public class EditorActivity extends AppCompatActivity {
         ws.setDomStorageEnabled(true);
         ws.setLoadWithOverviewMode(true);
         ws.setUseWideViewPort(true);
+        previewWebView.setWebViewClient(new android.webkit.WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                if (previewSkeleton != null) previewSkeleton.setVisibility(View.GONE);
+            }
+        });
     }
 
     private void applySettingsToEditor() {
+        codeEditor.applyTheme(VcgThemeHelper.isDark(settings.getAppTheme()));
+
         int fontSize = settings.getFontSize();
         codeEditor.setTextSize(fontSize);
         lineNumbers.setTextSize(fontSize);
 
         String fontFamily = settings.getFontFamily();
-        Typeface tf = "sans-serif".equals(fontFamily) ? Typeface.SANS_SERIF : Typeface.MONOSPACE;
+        Typeface tf = "sans-serif".equals(fontFamily) ? Typeface.SANS_SERIF
+                    : "serif".equals(fontFamily) ? Typeface.SERIF
+                    : Typeface.MONOSPACE;
         codeEditor.setTypeface(tf);
         lineNumbers.setTypeface(Typeface.MONOSPACE);
 
@@ -164,6 +178,9 @@ public class EditorActivity extends AppCompatActivity {
     }
 
     private void updatePreview() {
+        if (previewSkeleton != null && previewWebView.getVisibility() != View.GONE) {
+            previewSkeleton.setVisibility(View.VISIBLE);
+        }
         String code = codeEditor.getText() != null ? codeEditor.getText().toString() : "";
         String assetsJson = buildAssetsJson();
         String html = VcgInterpreter.buildHtml(code, filename, assetsJson, settings.getTheme());
