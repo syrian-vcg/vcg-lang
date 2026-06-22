@@ -2,6 +2,11 @@ package com.syrianvcg.editor;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
+import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKey;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 
 /**
  * VcgSettings — مركز إدارة إعدادات المحرر والتطبيق
@@ -12,10 +17,64 @@ public class VcgSettings {
     public static final String[] THEMES   = {"olive", "white", "midnight", "amoled", "sand"};
     public static final String[] FONTS    = {"monospace", "sans-serif", "serif"};
 
+    private static final String TAG = "VcgSettings";
+
     private final SharedPreferences prefs;
+    /**
+     * تخزين مشفّر مخصّص للبيانات الحساسة فقط (GitHub Personal Access Token).
+     * الرمز يعطي صلاحية كاملة على مستودعات GitHub الخاصة بالمستخدم، فتخزينه
+     * كنص صريح في SharedPreferences العادية يجعله عُرضة للتسريب (نسخ احتياطي
+     * غير مشفّر، أو أي تطبيق آخر بصلاحيات root). نستخدم Jetpack Security
+     * (EncryptedSharedPreferences) المعتمد على Android Keystore لحماية الرمز
+     * بمفتاح لا يغادر الجهاز أبداً.
+     */
+    private final SharedPreferences securePrefs;
 
     public VcgSettings(Context ctx) {
         prefs = ctx.getSharedPreferences("vcg_settings", Context.MODE_PRIVATE);
+        securePrefs = createSecurePrefs(ctx);
+        migrateLegacyGithubTokenIfNeeded();
+    }
+
+    /**
+     * إصدارات سابقة من التطبيق خزّنت github_token/github_username كنص صريح
+     * داخل vcg_settings العادية. هذا الترحيل لمرة واحدة ينقلها للتخزين
+     * المشفّر الجديد ثم يمحوها من المكان القديم، حتى لا يبقى الرمز الحساس
+     * مكشوفاً على القرص لمن لديه نسخة محدَّثة من التطبيق.
+     */
+    private void migrateLegacyGithubTokenIfNeeded() {
+        if (!prefs.contains("github_token")) return;
+        String legacyToken = prefs.getString("github_token", null);
+        String legacyUser  = prefs.getString("github_username", null);
+        if (legacyToken != null && !legacyToken.trim().isEmpty()
+                && securePrefs.getString("github_token", null) == null) {
+            securePrefs.edit()
+                .putString("github_token", legacyToken)
+                .putString("github_username", legacyUser)
+                .apply();
+        }
+        prefs.edit().remove("github_token").remove("github_username").apply();
+    }
+
+    private static SharedPreferences createSecurePrefs(Context ctx) {
+        try {
+            MasterKey masterKey = new MasterKey.Builder(ctx)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                .build();
+            return EncryptedSharedPreferences.create(
+                ctx,
+                "vcg_settings_secure",
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            );
+        } catch (GeneralSecurityException | IOException e) {
+            // لا يجب أن يحدث هذا عملياً على أجهزة Android سليمة، لكن إن حدث
+            // (مثلاً Keystore تالف)، نعود لتخزين عادي بدل تعطيل ربط GitHub
+            // كلياً. أفضل من تعطّل التطبيق، ونسجل الخطأ للتشخيص.
+            Log.e(TAG, "تعذّر إنشاء تخزين مشفّر، سيتم استخدام تخزين عادي كحل بديل", e);
+            return ctx.getSharedPreferences("vcg_settings_secure_fallback", Context.MODE_PRIVATE);
+        }
     }
 
     // ═══════════════════ المحرر ═══════════════════
@@ -89,13 +148,13 @@ public class VcgSettings {
     public long getLastPromptShownAt() { return prefs.getLong("last_prompt_shown_at", 0L); }
     public void setLastPromptShownAt(long v) { prefs.edit().putLong("last_prompt_shown_at", v).apply(); }
 
-    // ═══════════════════ GitHub ═══════════════════
+    // ═══════════════════ GitHub (مخزّنة مشفّرة — انظر securePrefs أعلاه) ═══════════════════
 
-    public String getGithubToken() { return prefs.getString("github_token", null); }
-    public void setGithubToken(String v) { prefs.edit().putString("github_token", v).apply(); }
+    public String getGithubToken() { return securePrefs.getString("github_token", null); }
+    public void setGithubToken(String v) { securePrefs.edit().putString("github_token", v).apply(); }
 
-    public String getGithubUsername() { return prefs.getString("github_username", null); }
-    public void setGithubUsername(String v) { prefs.edit().putString("github_username", v).apply(); }
+    public String getGithubUsername() { return securePrefs.getString("github_username", null); }
+    public void setGithubUsername(String v) { securePrefs.edit().putString("github_username", v).apply(); }
 
     public boolean isGithubConnected() {
         String t = getGithubToken();
@@ -103,18 +162,15 @@ public class VcgSettings {
     }
 
     public void clearGithub() {
-        prefs.edit().remove("github_token").remove("github_username").apply();
+        securePrefs.edit().remove("github_token").remove("github_username").apply();
     }
 
     // ═══════════════════ إعادة الضبط ═══════════════════
 
     public void resetToDefaults() {
-        // نحافظ على ربط GitHub عند إعادة الضبط، فهو ليس "إعداد عرض"
-        String token = getGithubToken();
-        String user  = getGithubUsername();
+        // ربط GitHub محفوظ في تخزين منفصل (securePrefs) أصلاً ولا يُمسح بهذا
+        // الاستدعاء، فهو ليس "إعداد عرض" بل ربط حساب — لا حاجة لإعادة كتابته
+        // يدوياً بعد المسح كما كان سابقاً.
         prefs.edit().clear().apply();
-        if (token != null) {
-            prefs.edit().putString("github_token", token).putString("github_username", user).apply();
-        }
     }
 }
