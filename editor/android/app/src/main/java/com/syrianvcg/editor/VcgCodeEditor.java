@@ -64,11 +64,28 @@ public class VcgCodeEditor extends AppCompatEditText {
         "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()");
 
     private boolean highlighting = false;
+    private boolean autoIndentEnabled = true;
+    private boolean syntaxHighlightEnabled = true;
 
     public VcgCodeEditor(Context ctx) { super(ctx); init(); }
     public VcgCodeEditor(Context ctx, AttributeSet attrs) { super(ctx, attrs); init(); }
     public VcgCodeEditor(Context ctx, AttributeSet attrs, int defStyle) {
         super(ctx, attrs, defStyle); init();
+    }
+
+    /** يفعّل/يعطّل إدراج المسافات التلقائي بعد سطر جديد، حسب إعدادات المستخدم. */
+    public void setAutoIndentEnabled(boolean enabled) { this.autoIndentEnabled = enabled; }
+
+    /** يفعّل/يعطّل تلوين الصياغة. عند التعطيل تُزال كل الألوان الحالية فوراً. */
+    public void setSyntaxHighlightEnabled(boolean enabled) {
+        this.syntaxHighlightEnabled = enabled;
+        if (!enabled && getText() != null) {
+            Editable s = getEditableText();
+            ForegroundColorSpan[] old = s.getSpans(0, s.length(), ForegroundColorSpan.class);
+            for (ForegroundColorSpan sp : old) s.removeSpan(sp);
+        } else if (enabled && getText() != null) {
+            highlight(getEditableText());
+        }
     }
 
     private void init() {
@@ -83,12 +100,17 @@ public class VcgCodeEditor extends AppCompatEditText {
         addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
             @Override public void afterTextChanged(Editable s) {
-                if (!highlighting) highlight(s);
+                if (!highlighting && syntaxHighlightEnabled) highlight(s);
             }
             @Override public void onTextChanged(CharSequence s, int st, int b, int c) {
-                // Auto-indent on newline
-                if (c == 1 && s.charAt(st) == '\n') {
-                    autoIndent(st);
+                // Auto-indent on newline.
+                // ⚠️ لا نعدّل الـ Editable هنا مباشرة: onTextChanged يُستدعى أثناء
+                // معالجة التغيير الحالي، وأي insert() الآن يشغّل TextWatcher من
+                // جديد بشكل متداخل وقد يسبب تكراراً غير متوقع أو IndexOutOfBounds
+                // إذا كان المؤشر بآخر النص. نؤجل التنفيذ لما بعد انتهاء هذه الدورة.
+                if (autoIndentEnabled && c == 1 && st >= 0 && st < s.length() && s.charAt(st) == '\n') {
+                    final int insertPos = st;
+                    post(() -> autoIndent(insertPos));
                 }
             }
         });
@@ -97,6 +119,10 @@ public class VcgCodeEditor extends AppCompatEditText {
     private void autoIndent(int pos) {
         Editable e = getEditableText();
         if (e == null) return;
+        // النص قد يتغيّر بين جدولة post() وتنفيذها (مثلاً المستخدم حذف حرفاً بسرعة)
+        // لذلك نتحقق من الحدود مرة أخرى قبل أي وصول للنص.
+        if (pos < 0 || pos >= e.length() || e.charAt(pos) != '\n') return;
+
         // Find indentation of previous line
         int lineStart = pos;
         while (lineStart > 0 && e.charAt(lineStart - 1) != '\n') lineStart--;
@@ -106,9 +132,11 @@ public class VcgCodeEditor extends AppCompatEditText {
         if (pos > 0 && e.charAt(pos - 1) == '{') indent += 4;
 
         if (indent > 0) {
+            int insertAt = pos + 1;
+            if (insertAt > e.length()) return; // حماية إضافية ضد تغيّر النص بين الجدولة والتنفيذ
             StringBuilder spaces = new StringBuilder();
             for (int i = 0; i < indent; i++) spaces.append(' ');
-            e.insert(pos + 1, spaces.toString());
+            e.insert(insertAt, spaces.toString());
         }
     }
 
