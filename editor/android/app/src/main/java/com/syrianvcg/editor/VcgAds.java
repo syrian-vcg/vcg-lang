@@ -8,12 +8,21 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.rewarded.RewardedAd;
-import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
+import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd;
+import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAdLoadCallback;
 
 /**
- * VcgAds — غلاف بسيط حول Google Mobile Ads (AdMob) لعرض إعلان مُجزٍ
- * (Rewarded Ad) يمنح المستخدم عملات داخل المحرر عند مشاهدته كاملاً.
+ * VcgAds — غلاف بسيط حول Google Mobile Ads (AdMob) لعرض إعلان "بيني مقابل
+ * مكافأة" (Rewarded Interstitial) يمنح المستخدم عملات داخل المحرر عند
+ * مشاهدته كاملاً.
+ *
+ * ⚠️ هذه الوحدة الإعلانية أُنشئت في AdMob كنوع "Rewarded Interstitial"
+ * تحديداً (هذا ما تؤكده صفحة الإنشاء التي توجّه لدليل "تنفيذ الإعلانات
+ * البينية مقابل مكافأة")، وهو تنسيق مختلف عن "Rewarded" العادي رغم
+ * تشابه الاسم: يُحمَّل ويُعرض عبر فئة RewardedInterstitialAd في الحزمة
+ * com.google.android.gms.ads.rewardedinterstitial، وليس عبر RewardedAd.
+ * استخدام الفئة الخاطئة مع رقم تعريف وحدة من نوع مختلف يؤدي غالباً إلى
+ * فشل تحميل الإعلان (No Fill) لأن خادم AdMob يطابق التنسيق بدقة.
  *
  * رقم تعريف التطبيق (AdMob App ID) موضوع في AndroidManifest.xml كـ meta-data،
  * ورقم تعريف الوحدة الإعلانية هنا أدناه (AD_UNIT_ID).
@@ -33,7 +42,7 @@ public final class VcgAds {
 
     private static boolean initialized = false;
 
-    private RewardedAd rewardedAd;
+    private RewardedInterstitialAd rewardedAd;
     private boolean isLoading = false;
 
     private com.google.android.gms.ads.interstitial.InterstitialAd interstitialAd;
@@ -57,9 +66,9 @@ public final class VcgAds {
         if (rewardedAd != null || isLoading) return;
         isLoading = true;
         AdRequest request = new AdRequest.Builder().build();
-        RewardedAd.load(activity, REWARDED_AD_UNIT_ID, request, new RewardedAdLoadCallback() {
+        RewardedInterstitialAd.load(activity, REWARDED_AD_UNIT_ID, request, new RewardedInterstitialAdLoadCallback() {
             @Override
-            public void onAdLoaded(@NonNull RewardedAd ad) {
+            public void onAdLoaded(@NonNull RewardedInterstitialAd ad) {
                 rewardedAd = ad;
                 isLoading = false;
             }
@@ -68,7 +77,7 @@ public final class VcgAds {
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 rewardedAd = null;
                 isLoading = false;
-                Log.w(TAG, "Rewarded ad failed to load: " + loadAdError.getMessage());
+                Log.w(TAG, "Rewarded interstitial ad failed to load: " + loadAdError.getMessage());
             }
         });
     }
