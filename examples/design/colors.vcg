@@ -1,0 +1,79 @@
+# ============================================================
+#  colors.vcg — ملف الألوان الموحّد لمشاريع VCG
+#  يعتمد على الدالة المدمجة color() الجديدة (v2.1)
+#
+#  استخدمه عبر:
+#     module Colors { ... }   ← معرّف أدناه
+#     from colors import Colors   (إن دعم مُصرّفك مسارات الاستيراد)
+#  أو ببساطة الصق محتواه في بداية ملفك الرئيسي.
+# ============================================================
+
+module Colors {
+
+    # ── لوحة الألوان الأساسية لهوية VCG (الثيم الزيتوني) ──
+    let OLIVE      = color("vcg_olive")    # اللون الزيتوني الأساسي
+    let DARK       = color("vcg_dark")     # خلفية داكنة
+    let ACCENT     = color("vcg_accent")   # لون التمييز (أخضر فاتح)
+
+    # ── ألوان عامة جاهزة بالاسم ──
+    let RED    = color("red")
+    let GREEN  = color("green")
+    let BLUE   = color("blue")
+    let YELLOW = color("yellow")
+    let ORANGE = color("orange")
+    let PURPLE = color("purple")
+    let PINK   = color("pink")
+    let TEAL   = color("teal")
+    let CYAN   = color("cyan")
+    let BLACK  = color("black")
+    let WHITE  = color("white")
+    let GRAY   = color("gray")
+
+    # ── دالة مساعدة: تدرّج بسيط بين لونين عبر نسبة 0..1 ──
+    func mix(c1, c2, t) {
+        let r = round(c1.r + (c2.r - c1.r) * t)
+        let g = round(c1.g + (c2.g - c1.g) * t)
+        let b = round(c1.b + (c2.b - c1.b) * t)
+        return color(r, g, b)
+    }
+
+    # ── تفتيح/تغميق لون بنسبة 0..1 ──
+    func lighten(c, amount) { return mix(c, color("white"), amount) }
+    func darken(c, amount)  { return mix(c, color("black"), amount) }
+
+    # ── حزمة ستايل جاهزة لمشروع جديد، تُستخدم مع $set("style", ...) ──
+    func default_style() {
+        return style({
+            bg:        DARK.hex,
+            surface:   OLIVE.hex,
+            accent:    ACCENT.hex,
+            text:      WHITE.hex,
+            muted:     GRAY.hex,
+            danger:    RED.hex,
+            success:   GREEN.hex,
+            radius:    12,
+            spacing:   8
+        })
+    }
+}
+
+# ============================================================
+#  مثال استخدام مباشر
+# ============================================================
+show("ألوان VCG الأساسية:")
+show("  Olive  → " + Colors.OLIVE.hex)
+show("  Dark   → " + Colors.DARK.hex)
+show("  Accent → " + Colors.ACCENT.hex)
+
+let lighter_accent = Colors.lighten(Colors.ACCENT, 0.3)
+show("  Accent (أفتح 30%) → " + lighter_accent.hex)
+
+# تسجيل الستايل والديزاين الافتراضيين في المتجر التفاعلي
+$set("style",  Colors.default_style())
+$set("design", design({ font: "Cairo, sans-serif", base_size: 16 }))
+
+show("الستايل الحالي:")
+show($get("style"))
+
+show("كل مفاتيح المتجر (key/value) مضغوطة كزوج واحد:")
+show(store_zip())
