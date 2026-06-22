@@ -90,3 +90,24 @@ keytool -genkey -v -keystore vcg-release.keystore \
 base64 vcg-release.keystore | tr -d '\n'
 ```
 
+## مفاتيح AdMob (لا تُرفع على GitHub)
+
+نظام العملات في المحرر يعتمد على إعلان AdMob مُجزٍ (Rewarded) + إعلان بيني
+(Interstitial). أرقام AdMob الحقيقية **لا** توجد في الكود المصدري — تُقرأ
+من `android/local.properties` الذي مذكور في `.gitignore` ولن يُرفع أبداً
+لو كان المستودع عاماً على GitHub.
+
+لتشغيلها على جهازك:
+
+1. انسخ `android/local.properties.example` إلى `android/local.properties`.
+2. ضع أرقامك الحقيقية من لوحة AdMob:
+   ```properties
+   ADMOB_APP_ID=ca-app-pub-xxxxxxxxxxxxxxxx~xxxxxxxxxx
+   ADMOB_REWARDED_UNIT_ID=ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx
+   ADMOB_INTERSTITIAL_UNIT_ID=ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx
+   ```
+3. أعد بناء المشروع (Build → Rebuild Project).
+
+إن لم تضع هذا الملف، يُبنى التطبيق تلقائياً بأرقام AdMob الرسمية
+للاختبار (Test Ads) — يعمل بأمان للتطوير لكن دون أي عائد مادي حقيقي.
+
