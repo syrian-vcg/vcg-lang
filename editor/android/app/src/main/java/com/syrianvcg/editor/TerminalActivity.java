@@ -30,6 +30,14 @@ public class TerminalActivity extends AppCompatActivity {
     private VcgStorage storage;
     private String projectId;
     private static final SimpleDateFormat TIME_FMT = new SimpleDateFormat("HH:mm:ss", Locale.US);
+    /**
+     * ⚠️ كان buffer ينمو بلا أي حدّ مع طول استخدام التيرمينال، ويُكتب بالكامل
+     * في SharedPreferences عند كل سطر جديد. مع الاستخدام الطويل هذا يسبب
+     * بطئاً متزايداً (نسخ نص أكبر فأكبر في كل عملية كتابة)، وقد يقترب من حدّ
+     * SharedPreferences لحجم القيمة الواحدة (~1MB) ويرمي
+     * TransactionTooLargeException. نحافظ على آخر عدد محدود من الأسطر فقط.
+     */
+    private static final int MAX_LOG_LINES = 500;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +99,7 @@ public class TerminalActivity extends AppCompatActivity {
         input.setText("");
 
         // Run via headless mini-eval using the same interpreter runtime, capturing show() output as plain text.
-        String result = VcgHeadlessRunner.run(code);
+        String result = VcgHeadlessRunner.run(code, projectId);
         for (String line : result.split("\n")) {
             if (line.startsWith("ERR:")) {
                 appendLine(line.substring(4), "#F87171");
@@ -116,7 +124,27 @@ public class TerminalActivity extends AppCompatActivity {
         buffer.append("<font color='").append(hexColor).append("'>")
               .append(android.text.TextUtils.htmlEncode(text))
               .append("</font><br/>");
+        trimBufferIfNeeded();
         refresh();
+    }
+
+    /** يحافظ على آخر MAX_LOG_LINES سطر فقط، فيتجنّب نمو buffer بلا حدود. */
+    private void trimBufferIfNeeded() {
+        // عدّ تقريبي عبر "<br/>" بما أن كل سطر يُنهى به دوماً في appendLine.
+        String marker = "<br/>";
+        int count = 0, idx = -1;
+        while ((idx = buffer.indexOf(marker, idx + 1)) != -1) count++;
+        if (count <= MAX_LOG_LINES) return;
+
+        int toRemove = count - MAX_LOG_LINES;
+        int cut = -1;
+        for (int i = 0; i < toRemove; i++) {
+            cut = buffer.indexOf(marker, cut + 1);
+            if (cut == -1) break;
+        }
+        if (cut != -1) {
+            buffer.delete(0, cut + marker.length());
+        }
     }
 
     private void refresh() {
@@ -126,6 +154,7 @@ public class TerminalActivity extends AppCompatActivity {
 
     private void clearLog() {
         buffer = new StringBuilder();
+        VcgHeadlessRunner.resetSession(projectId);
         printWelcome();
         persistLog();
     }
