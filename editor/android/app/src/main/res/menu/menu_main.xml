@@ -5,6 +5,10 @@
         android:title="استيراد مشروع (ZIP)"
         android:icon="@android:drawable/ic_menu_upload"
         app:showAsAction="never"/>
+    <item android:id="@+id/action_suggestion"
+        android:title="إرسال اقتراح ✉️"
+        android:icon="@android:drawable/ic_menu_send"
+        app:showAsAction="never"/>
     <item android:id="@+id/action_settings"
         android:title="الإعدادات"
         android:icon="@android:drawable/ic_menu_preferences"
