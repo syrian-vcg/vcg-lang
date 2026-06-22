@@ -1,0 +1,51 @@
+# ============================================================
+#  setting.app.vcg — إعدادات التطبيق/صفحة الويب الكاملة
+#  مجلد: setting_app/   (هذا الملف + icons/ لوضع أيقونات التطبيق)
+#
+#  يدعم استدعاءً متسلسلاً (chaining) حقيقياً ومُختبَراً:
+#     settings.name("...").package("...").version("...").icon("icons/icon.png")
+#     settings.background.color("#fff")      ← مطابق لطلبك تماماً
+#     settings.background.color("vcg_olive")
+#     settings.background.color(20,200,100,0.8)
+#
+#  كل القيم تُسجَّل تلقائياً في المتجر التفاعلي عبر $set("settings", ...)
+#  ويمكن قراءتها من أي مكان آخر بالمشروع عبر $get("settings")
+# ============================================================
+
+let settings = settings_new()
+
+# ── الاسم / الحزمة / الإصدار / الأيقونة — استدعاء متسلسل واحد ──
+settings.name("محرر VCG").package("com.syrianvcg.editor").version("2.1.0").icon("icons/icon.png")
+
+# ── لون خلفية التطبيق/الصفحة (background namespace خاص) ──
+settings.background.color("#1A1D14")
+# بدائل أخرى تعمل بنفس الطريقة:
+# settings.background.color("vcg_olive")
+# settings.background.color(20, 200, 100, 0.8)
+
+# ── تسجيل لقطة كاملة من الإعدادات بالمتجر التفاعلي العام ──
+$set("settings", settings.snapshot())
+
+# ============================================================
+#  عرض القيم الحالية
+# ============================================================
+show("=== إعدادات التطبيق ===")
+show("الاسم         : " + settings.name())
+show("اسم الحزمة     : " + settings.package())
+show("رقم الإصدار    : " + settings.version())
+show("مسار الأيقونة  : " + settings.icon())
+show("لون الخلفية    : " + settings.background.value.hex)
+show("RGBA الخلفية   : " + settings.background.value.rgba)
+
+show("")
+show("=== اللقطة المخزَّنة عبر $set/$get ===")
+let saved = $get("settings")
+show("name       → " + saved.name)
+show("package    → " + saved.package)
+show("version    → " + saved.version)
+show("icon       → " + saved.icon)
+show("background → " + saved.background)
+
+show("")
+show("=== كل بيانات المتجر التفاعلي ===")
+show(store_zip())
