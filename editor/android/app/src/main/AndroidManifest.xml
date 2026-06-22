@@ -31,6 +31,72 @@
             </intent-filter>
         </activity>
 
+        <!--
+            ════════════ Activity-alias لتبديل أيقونة التطبيق ════════════
+            VcgIconSwitcher يفعّل واحداً من هذه الأربعة ويعطّل البقية حسب اختيار
+            المستخدم في الإعدادات. كلها تشير لنفس SplashActivity كنقطة دخول،
+            وتُفعَّل/تُعطَّل عبر PackageManager.setComponentEnabledSetting، لذا
+            exported="true" + intent-filter LAUNCHER ضروريان لتظهر كأيقونة قابلة
+            للتفعيل على الشاشة الرئيسية متى احتاجها التبديل.
+            "olive" هو الافتراضي (ic_launcher / ic_launcher_round العاديين)
+            ولذلك لا يحتاج alias خاص به — هو نفس <activity> الأساسية أعلاه.
+        -->
+        <activity-alias
+            android:name=".LauncherOlive"
+            android:targetActivity=".SplashActivity"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".LauncherBlack"
+            android:targetActivity=".SplashActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_black"
+            android:roundIcon="@mipmap/ic_launcher_round_black"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".LauncherBlue"
+            android:targetActivity=".SplashActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_blue"
+            android:roundIcon="@mipmap/ic_launcher_round_blue"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".LauncherWhite"
+            android:targetActivity=".SplashActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_white"
+            android:roundIcon="@mipmap/ic_launcher_round_white"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
         <activity
             android:name=".ProjectsActivity"
             android:exported="false"
