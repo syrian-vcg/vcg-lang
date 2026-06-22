@@ -15,11 +15,11 @@
 #include <ctype.h>
 
 /* ── Version ── */
-#define VCG_VERSION_MAJOR 1
-#define VCG_VERSION_MINOR 0
-#define VCG_VERSION_PATCH 0
-#define VCG_VERSION_STR   "2.0.0"
-#define VCG_RELEASE_DATE  "2026-06-06"
+#define VCG_VERSION_MAJOR 0
+#define VCG_VERSION_MINOR 2
+#define VCG_VERSION_PATCH 1
+#define VCG_VERSION_STR   "0.2.1"
+#define VCG_RELEASE_DATE  "2026-06-22"
 #define VCG_EDITION       "Full Edition"
 #define VCG_COPYRIGHT     "Syrian VCG Project 2026"
 
