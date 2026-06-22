@@ -1,0 +1,85 @@
+# ============================================================
+#  ui_demo.vcg — واجهة كاملة باستخدام $set + text/text_s/btn/ui
+#  مبنية على نفس ألوان colors.vcg (مدمجة هنا لتعمل كملف مستقل)
+# ============================================================
+
+func click_color(name) { return color(name).hex }
+
+# ── لوحة الألوان (نفس ألوان colors.vcg) ──
+let OLIVE  = color("vcg_olive")
+let DARK   = color("vcg_dark")
+let ACCENT = color("vcg_accent")
+let WHITE  = color("white")
+
+# ── الستايل العام للصفحة، مسجَّل عبر $set ──
+$set("style", style({
+    bg:      DARK.hex,
+    surface: OLIVE.hex,
+    accent:  ACCENT.hex,
+    text:    WHITE.hex,
+    radius:  12,
+    spacing: 8
+}))
+
+$set("design", design({
+    font:      "Cairo, sans-serif",
+    base_size: 16
+}))
+
+# ── عناصر الواجهة ──
+let header = text_s("VCG — لغة برمجة سورية", style({
+    color: WHITE.hex,
+    size:  22,
+    bold:  true
+}))
+
+let description = text_s(
+    "حرّر، صمّم، وانشر مشاريعك بلغة عربية كاملة.",
+    style({ color: ACCENT.hex, size: 14 })
+)
+
+let plain_note = text("هذا نص بسيط بلا ستايل مخصّص — text() فقط.")
+
+let primary_button = btn("اضغط هنا", "on_get_started", style({
+    bg:     ACCENT.hex,
+    fg:     DARK.hex,
+    radius: 10,
+    padding: 12
+}))
+
+let secondary_button = btn("تعرّف أكثر", "on_learn_more", style({
+    bg:     "transparent",
+    fg:     ACCENT.hex,
+    radius: 10
+}))
+
+# ── تجميع الواجهة كاملة عبر ui() وتسجيلها في المتجر التفاعلي ──
+$set("ui", ui(header, description, plain_note, primary_button, secondary_button))
+
+# ============================================================
+#  قراءة وعرض الواجهة (مثال على كيفية استهلاكها لاحقاً)
+# ============================================================
+let page = $get("ui")
+
+show("عدد عناصر الواجهة: " + str(len(page.children)))
+
+func render() {
+    for el in page.children {
+        if kind(el) == "Button" {
+            show("[زر]  " + el.label + "   (onclick=" + str(el.onclick) + ", bg=" + el.style.bg + ")")
+        } else {
+            show("[نص]  " + el.content)
+        }
+    }
+}
+
+show("—— عرض الواجهة عبر render() ——")
+render()
+
+show("—— محتوى الواجهة الخام ——")
+for el in page.children {
+    show(el)
+}
+
+show("—— كل بيانات المتجر التفاعلي (ui + style + design) ——")
+show(store_zip())
