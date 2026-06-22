@@ -417,7 +417,7 @@ public class VcgInterpreter {
             "    if(this.cur().v==='('){\n" +
             "      this.eat();var args=[];\n" +
             "      while(this.cur().v!==')'&&this.cur().t!=='EOF'){args.push(this.parseExpr(e));this.eatIf(',');}\n" +
-            "      this.eat();\n" +
+            "      this.eat(')');\n" +
             "      if(typeof val==='function')val=val.apply(null,args);\n" +
             "      else throw new Error('Not callable: '+nm);\n" +
             "    }else if(this.cur().v==='['){\n" +
@@ -428,7 +428,7 @@ public class VcgInterpreter {
             "      if(this.cur().v==='('){\n" +
             "        this.eat();var args=[];\n" +
             "        while(this.cur().v!==')'&&this.cur().t!=='EOF'){args.push(this.parseExpr(e));this.eatIf(',');}\n" +
-            "        this.eat();\n" +
+            "        this.eat(')');\n" +
             "        val=this._method(val,f,args);\n" +
             "      }else val=val&&typeof val==='object'?val[f]:null;\n" +
             "    }else break;\n" +
@@ -473,7 +473,7 @@ public class VcgInterpreter {
             "  if(UI.indexOf(t.v)>=0){var nm=t.v;this.eat();\n" +
             "    if(this.cur().v==='('){this.eat();var args=[];\n" +
             "      while(this.cur().v!==')'&&this.cur().t!=='EOF'){args.push(this.parseExpr(e));this.eatIf(',');}\n" +
-            "      this.eat();if(typeof this.env[nm]==='function')this.env[nm].apply(null,args);}return;}\n" +
+            "      this.eat(')');if(typeof this.env[nm]==='function')this.env[nm].apply(null,args);}return;}\n" +
             "  if(t.v==='$set'){this.eat();this.eat('(');var k=this.parseExpr(e);this.eat(',');var v=this.parseExpr(e);this.eat(')');this._store[k]=v;if(this._watchers[k])this._watchers[k](v);return;}\n" +
             "  if(t.v==='watch'){this.eat();this.eat('(');var k=this.parseExpr(e);this.eat(',');var fn=this.parseExpr(e);this.eat(')');this._watchers[k]=fn;return;}\n" +
             "  if(t.v==='public'||t.v==='export'||t.v==='async'||t.v==='doc'){this.eat();if(this.cur().t!=='EOF'&&this.cur().v!=='}')this.parseStmt(e);return;}\n" +
