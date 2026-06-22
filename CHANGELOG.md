@@ -1,3 +1,26 @@
+### Added (cont.)
+- New core concepts/builtins: `music`, `loading`, `bar`, `edges`, `impact`.
+- `music(src)` with `.play()`/`.pause()`/`.stop()`.
+- `loading(progress)` with `.start()`/`.stop()`/`.set(percent)`.
+- `bar(value, max)` progress/measure object with computed `.percent`.
+- `edges(top, right, bottom, left)` for margin/padding/border-style values.
+- `impact(level)` for haptic/feedback-style triggers.
+
+## [0.2.1] - New Builtin Concepts — 2026-06-22
+
+### Added
+- New core concepts/builtins: `transmission`, `time` (existing, documented),
+  `admob`, `firebase`, `container`, `number`, `pdf`, `link`, `link_to`, `day`,
+  `name`, `age`.
+- New layout/position constants: `middle`, `right`, `left`, `above`, `below`,
+  `topbar`, `head`.
+- `pdf(path, title)` now writes a real minimal valid PDF file to disk.
+- `firebase(config)` provides in-memory `get(key)`/`set(key, value)` storage.
+- `admob(unitId)` provides `init()`/`show()` stub methods for ad integration.
+
+### Changed
+- Compiler version renamed/bumped to **0.2.1** (`VCG_VERSION_STR`).
+
 ## [2.0.0] - Android Editor Sync — 2026-06-06
 
 ### Changed
