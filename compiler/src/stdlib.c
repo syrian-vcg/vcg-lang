@@ -189,6 +189,239 @@ BUILTIN(isarr)   { (void)line; return n?VCG_BOOL(a[0].type==VT_ARRAY):VCG_FALSE;
 BUILTIN(isfunc)  { (void)line; return n?VCG_BOOL(a[0].type==VT_FUNC||a[0].type==VT_BUILTIN):VCG_FALSE; }
 BUILTIN(isstruct){ (void)line; return n?VCG_BOOL(a[0].type==VT_STRUCT):VCG_FALSE; }
 
+/* ── v0.2.1 NEW concepts: transmission, time(extended), admob, firebase,
+       container, number, pdf, link, link_to, day, name, age,
+       middle, right, left, above, below, topbar, head ── */
+
+/* number(x) – عام: يحوّل أي قيمة إلى نوع رقمي (int إن كانت صحيحة وإلا float) */
+BUILTIN(number_fn){
+    (void)line;
+    if(!n) return VCG_INT(0);
+    return num_val(as_num(a[0]));
+}
+
+/* day() – اسم اليوم الحالي، أو day(timestamp) لاسم يوم زمن معيّن */
+BUILTIN(day_fn){
+    (void)line;
+    time_t t = n>0 ? (time_t)as_num(a[0]) : time(NULL);
+    struct tm *lt = localtime(&t);
+    static const char *days[]={"Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"};
+    if(!lt) return vcg_str("");
+    return vcg_str(days[lt->tm_wday]);
+}
+
+/* age(birthYear) – العمر الحالي بدلالة سنة الميلاد */
+BUILTIN(age_fn){
+    (void)line;
+    if(!n) return VCG_INT(0);
+    time_t t=time(NULL); struct tm *lt=localtime(&t);
+    int curYear = lt ? (lt->tm_year+1900) : 2026;
+    int by = (int)as_num(a[0]);
+    int age = curYear - by;
+    return VCG_INT(age<0?0:age);
+}
+
+/* name(obj) – يقرأ حقل name من أي object/struct، أو يرجّع نفس القيمة كنص إن لم توجد */
+BUILTIN(name_fn){
+    (void)line;
+    if(!n) return vcg_str("");
+    if(a[0].type==VT_STRUCT){
+        VCGVal *p = struct_get(a[0].obj,"name");
+        if(p) return *p;
+        return vcg_str(a[0].obj->type_name?a[0].obj->type_name:"");
+    }
+    char *s=vcg_tostr(a[0]); VCGVal r=vcg_str(s); free(s); return r;
+}
+
+/* link(url) – يبني كائن رابط بسيط { url, type:"link" } */
+BUILTIN(link_fn){
+    (void)line;
+    VCGVal s = vcg_struct_new("Link");
+    struct_set(s.obj,"url", n>0?a[0]:vcg_str(""));
+    struct_set(s.obj,"type", vcg_str("link"));
+    return s;
+}
+
+/* link_to(url) – كائن انتقال/تنقّل إلى رابط أو صفحة { url, action:"navigate" } */
+BUILTIN(link_to_fn){
+    (void)line;
+    VCGVal s = vcg_struct_new("LinkTo");
+    struct_set(s.obj,"url", n>0?a[0]:vcg_str(""));
+    struct_set(s.obj,"action", vcg_str("navigate"));
+    return s;
+}
+
+/* transmission(data) – يمثّل عملية بث/إرسال بيانات (شبكة، إشعار، بث مباشر...) */
+BUILTIN(transmission_fn){
+    (void)line;
+    VCGVal s = vcg_struct_new("Transmission");
+    struct_set(s.obj,"payload", n>0?a[0]:VCG_NIL);
+    struct_set(s.obj,"status",  vcg_str("sent"));
+    struct_set(s.obj,"time",    VCG_INT((int)time(NULL)));
+    return s;
+}
+
+/* admob(unitId) – كائن إعلانات AdMob: { unitId, status } مع طرق init()/show() */
+BUILTIN(admob_show_m){ (void)a;(void)n;(void)line; VCGVal s=vcg_struct_new("AdMob"); struct_set(s.obj,"status",vcg_str("shown")); return s; }
+BUILTIN(admob_init_m){ (void)a;(void)n;(void)line; VCGVal s=vcg_struct_new("AdMob"); struct_set(s.obj,"status",vcg_str("initialized")); return s; }
+BUILTIN(admob_fn){
+    (void)line;
+    VCGVal s = vcg_struct_new("AdMob");
+    struct_set(s.obj,"unitId", n>0?a[0]:vcg_str(""));
+    struct_set(s.obj,"status", vcg_str("ready"));
+    VCGVal m;
+    m.type=VT_BUILTIN; m.builtin=bi_admob_init_m; struct_set(s.obj,"init", m);
+    m.type=VT_BUILTIN; m.builtin=bi_admob_show_m; struct_set(s.obj,"show", m);
+    return s;
+}
+
+/* firebase(config) – كائن مشروع Firebase مع get(key)/set(key,value) بسيطة (تخزين ذاكرة) */
+BUILTIN(firebase_get_m){
+    (void)line;
+    if(n<2||a[0].type!=VT_STRUCT) return VCG_NIL;
+    VCGVal *store = struct_get(a[0].obj,"_store");
+    if(!store||store->type!=VT_STRUCT) return VCG_NIL;
+    char *k=vcg_tostr(a[1]); VCGVal *v=struct_get(store->obj,k); free(k);
+    return v?*v:VCG_NIL;
+}
+BUILTIN(firebase_set_m){
+    (void)line;
+    if(n<3||a[0].type!=VT_STRUCT) return a[0];
+    VCGVal *store = struct_get(a[0].obj,"_store");
+    if(!store||store->type!=VT_STRUCT) return a[0];
+    char *k=vcg_tostr(a[1]); struct_set(store->obj,k,a[2]); free(k);
+    return a[0];
+}
+BUILTIN(firebase_fn){
+    (void)line;
+    VCGVal s = vcg_struct_new("Firebase");
+    struct_set(s.obj,"config", n>0?a[0]:VCG_NIL);
+    struct_set(s.obj,"status", vcg_str("connected"));
+    struct_set(s.obj,"_store", vcg_struct_new("object"));
+    VCGVal m;
+    m.type=VT_BUILTIN; m.builtin=bi_firebase_get_m; struct_set(s.obj,"get", m);
+    m.type=VT_BUILTIN; m.builtin=bi_firebase_set_m; struct_set(s.obj,"set", m);
+    return s;
+}
+
+/* pdf(path) – ينشئ ملف PDF فعليّ صالح (صفحة واحدة فارغة) في المسار المحدد */
+BUILTIN(pdf_fn){
+    (void)line;
+    const char *path = (n>0&&a[0].type==VT_STRING)?a[0].sval:"output.pdf";
+    const char *title = (n>1&&a[1].type==VT_STRING)?a[1].sval:"VCG PDF";
+    FILE *f=fopen(path,"wb");
+    VCGVal s = vcg_struct_new("Pdf");
+    struct_set(s.obj,"path", vcg_str(path));
+    if(!f){ struct_set(s.obj,"status",vcg_str("error")); return s; }
+    fprintf(f,
+        "%%PDF-1.4\n"
+        "1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n"
+        "2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n"
+        "3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Resources<</Font<</F1 4 0 R>>>>/Contents 5 0 R>>endobj\n"
+        "4 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj\n"
+        "5 0 obj<</Length 64>>stream\n"
+        "BT /F1 18 Tf 50 720 Td (%s) Tj ET\n"
+        "endstream\nendobj\n"
+        "trailer<</Root 1 0 R>>\n", title);
+    fclose(f);
+    struct_set(s.obj,"status", vcg_str("created"));
+    return s;
+}
+
+/* container(...) – صانع وعاء/حاوية عامة لعناصر الواجهة، يقبل أبناء متعددين */
+BUILTIN(container_fn){
+    (void)line;
+    VCGVal s = vcg_struct_new("Container");
+    VCGVal children = vcg_arr_new();
+    for(int i=0;i<n;i++){
+        if(children.arr->len>=children.arr->cap){children.arr->cap=children.arr->cap?children.arr->cap*2:8;children.arr->items=realloc(children.arr->items,children.arr->cap*sizeof(VCGVal));}
+        children.arr->items[children.arr->len++]=a[i];
+    }
+    struct_set(s.obj,"children", children);
+    return s;
+}
+
+/* music(src) – عنصر صوت/موسيقى { src, status } مع play()/pause()/stop() */
+BUILTIN(music_play_m) { (void)a;(void)n;(void)line; VCGVal s=vcg_struct_new("Music"); struct_set(s.obj,"status",vcg_str("playing")); return s; }
+BUILTIN(music_pause_m){ (void)a;(void)n;(void)line; VCGVal s=vcg_struct_new("Music"); struct_set(s.obj,"status",vcg_str("paused"));  return s; }
+BUILTIN(music_stop_m) { (void)a;(void)n;(void)line; VCGVal s=vcg_struct_new("Music"); struct_set(s.obj,"status",vcg_str("stopped")); return s; }
+BUILTIN(music_fn){
+    (void)line;
+    VCGVal s = vcg_struct_new("Music");
+    struct_set(s.obj,"src", n>0?a[0]:vcg_str(""));
+    struct_set(s.obj,"status", vcg_str("ready"));
+    VCGVal m;
+    m.type=VT_BUILTIN; m.builtin=bi_music_play_m;  struct_set(s.obj,"play",  m);
+    m.type=VT_BUILTIN; m.builtin=bi_music_pause_m; struct_set(s.obj,"pause", m);
+    m.type=VT_BUILTIN; m.builtin=bi_music_stop_m;  struct_set(s.obj,"stop",  m);
+    return s;
+}
+
+/* loading(...) – مؤشّر تحميل { progress, status } مع start()/stop()/set(percent) */
+BUILTIN(loading_start_m){ (void)a;(void)n;(void)line; VCGVal s=vcg_struct_new("Loading"); struct_set(s.obj,"status",vcg_str("loading")); return s; }
+BUILTIN(loading_stop_m) { (void)a;(void)n;(void)line; VCGVal s=vcg_struct_new("Loading"); struct_set(s.obj,"status",vcg_str("done"));    return s; }
+BUILTIN(loading_set_m)  {
+    (void)line;
+    VCGVal s=vcg_struct_new("Loading");
+    if(n>=2 && a[0].type==VT_STRUCT){
+        double pct = n>=2?as_num(a[1]):0;
+        struct_set(a[0].obj,"progress", num_val(pct));
+        struct_set(a[0].obj,"status", vcg_str(pct>=100?"done":"loading"));
+        return a[0];
+    }
+    struct_set(s.obj,"status",vcg_str("loading")); return s;
+}
+BUILTIN(loading_fn){
+    (void)line;
+    VCGVal s = vcg_struct_new("Loading");
+    struct_set(s.obj,"progress", n>0?num_val(as_num(a[0])):VCG_INT(0));
+    struct_set(s.obj,"status", vcg_str("idle"));
+    VCGVal m;
+    m.type=VT_BUILTIN; m.builtin=bi_loading_start_m; struct_set(s.obj,"start", m);
+    m.type=VT_BUILTIN; m.builtin=bi_loading_stop_m;  struct_set(s.obj,"stop",  m);
+    m.type=VT_BUILTIN; m.builtin=bi_loading_set_m;   struct_set(s.obj,"set",   m);
+    return s;
+}
+
+/* bar(value, max) – شريط تقدّم/قياس عام (progress/volume/health...) { value, max, percent } */
+BUILTIN(bar_fn){
+    (void)line;
+    VCGVal s = vcg_struct_new("Bar");
+    double val = n>0?as_num(a[0]):0;
+    double mx  = n>1?as_num(a[1]):100;
+    if(mx==0) mx=100;
+    struct_set(s.obj,"value", num_val(val));
+    struct_set(s.obj,"max",   num_val(mx));
+    struct_set(s.obj,"percent", num_val((val/mx)*100.0));
+    return s;
+}
+
+/* edges(top,right,bottom,left) – قيم حواف/تباعد (margin/padding/border) للواجهة */
+BUILTIN(edges_fn){
+    (void)line;
+    VCGVal s = vcg_struct_new("Edges");
+    double top=n>0?as_num(a[0]):0;
+    double right=n>1?as_num(a[1]):top;
+    double bottom=n>2?as_num(a[2]):top;
+    double left=n>3?as_num(a[3]):right;
+    struct_set(s.obj,"top",    num_val(top));
+    struct_set(s.obj,"right",  num_val(right));
+    struct_set(s.obj,"bottom", num_val(bottom));
+    struct_set(s.obj,"left",   num_val(left));
+    return s;
+}
+
+/* impact(level) – نبضة/تأثير لمسي أو حركي (haptic/feedback) { level, status } */
+BUILTIN(impact_fn){
+    (void)line;
+    VCGVal s = vcg_struct_new("Impact");
+    const char *lvl = (n>0&&a[0].type==VT_STRING)?a[0].sval:"medium";
+    struct_set(s.obj,"level",  vcg_str(lvl));
+    struct_set(s.obj,"status", vcg_str("triggered"));
+    struct_set(s.obj,"time",   VCG_INT((int)time(NULL)));
+    return s;
+}
+
 /* ── v3.0 NEW built-ins ── */
 
 /* watch(key, fn) – register reactive watcher for $set/$get */
@@ -1253,6 +1486,33 @@ void stdlib_register(VCGEnv *env) {
 
     /* Time */
     REG(env,"time",time_fn);
+
+    /* ── v0.2.1: new concepts ── */
+    REG(env,"number",     number_fn);
+    REG(env,"day",         day_fn);
+    REG(env,"age",         age_fn);
+    REG(env,"name",        name_fn);
+    REG(env,"link",        link_fn);
+    REG(env,"link_to",     link_to_fn);
+    REG(env,"transmission",transmission_fn);
+    REG(env,"admob",       admob_fn);
+    REG(env,"firebase",    firebase_fn);
+    REG(env,"pdf",         pdf_fn);
+    REG(env,"container",   container_fn);
+    REG(env,"music",        music_fn);
+    REG(env,"loading",      loading_fn);
+    REG(env,"bar",          bar_fn);
+    REG(env,"edges",        edges_fn);
+    REG(env,"impact",       impact_fn);
+
+    /* Layout / position constants */
+    env_set(env,"left",   vcg_str("left"),   1);
+    env_set(env,"right",  vcg_str("right"),  1);
+    env_set(env,"middle", vcg_str("middle"), 1);
+    env_set(env,"above",  vcg_str("above"),  1);
+    env_set(env,"below",  vcg_str("below"),  1);
+    env_set(env,"topbar", vcg_str("topbar"), 1);
+    env_set(env,"head",   vcg_str("head"),   1);
 
     /* Type checks */
     REG(env,"isnil",isnil);   REG(env,"isnum",isnum);
