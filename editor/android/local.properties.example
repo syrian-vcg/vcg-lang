@@ -16,7 +16,6 @@
 ADMOB_APP_ID=ca-app-pub-1525040025806904~6185155034
 
 # رقم تعريف الوحدة الإعلانية المُجزية (Rewarded) — تُستخدم لمنح العملات
-ADMOB_REWARDED_UNIT_ID=ca-app-pub-1525040025806904/5259086172
-
+ADMOB_REWARDED_UNIT_ID=appca-app-pub-1525040025806904/3150465990
 # رقم تعريف الوحدة الإعلانية البينية (Interstitial) — الوحدة الثانية
-ADMOB_INTERSTITIAL_UNIT_ID=ca-app-pub-1525040025806904/4305097153
+ADMOB_INTERSTITIAL_UNIT_ID=ca-app-pub-1525040025806904/5325469129
