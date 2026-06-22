@@ -1,0 +1,23 @@
+# ════════════════════════════════════════════════════════════════
+# أسرار ومفاتيح — لا تُرفع على GitHub أبداً
+# ════════════════════════════════════════════════════════════════
+local.properties
+*.keystore
+*.jks
+key.properties
+google-services.json
+
+# Android / Gradle build output
+android/.gradle/
+android/build/
+android/app/build/
+android/.idea/
+android/*.iml
+android/captures/
+android/.cxx/
+android/local.properties
+
+# OS / Editor junk
+.DS_Store
+Thumbs.db
+*.swp
