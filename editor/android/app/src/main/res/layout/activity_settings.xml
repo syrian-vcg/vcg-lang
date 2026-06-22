@@ -16,6 +16,47 @@
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="vertical" android:padding="16dp">
 
+            <!-- ═══ العملات والمكافآت ═══ -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="العملات والمكافآت" android:textColor="?attr/colorGold"
+                android:textSize="13sp" android:textStyle="bold"
+                android:paddingBottom="10dp"/>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="16dp"
+                android:background="@drawable/bg_card_surface"
+                android:layout_marginBottom="20dp">
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:paddingBottom="10dp">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="رصيدك الحالي"
+                        android:textColor="?attr/colorTextMuted" android:textSize="12sp"/>
+                    <TextView android:id="@+id/label_coin_balance"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="🪙 0"
+                        android:textColor="?attr/colorGold" android:textSize="20sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_watch_ad"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="📺  شاهد إعلاناً واكسب 10 عملات"
+                    android:textAllCaps="false"
+                    style="@style/VCGButton"/>
+
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="تُمنح العملات فقط بعد مشاهدة الإعلان كاملاً، ويمكنك تكرار ذلك عدة مرات في اليوم."
+                    android:textColor="?attr/colorTextMuted" android:textSize="11sp"
+                    android:paddingTop="8dp"/>
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="?attr/colorBorder" android:layout_marginBottom="18dp"/>
+
             <!-- ═══ المظهر ═══ -->
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:text="المظهر" android:textColor="?attr/colorGold"
@@ -423,6 +464,30 @@
                     android:textColor="?attr/colorTextPrimary" android:textSize="13sp"
                     android:buttonTint="?attr/colorAccentPrimary"/>
             </RadioGroup>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="?attr/colorBorder" android:layout_marginVertical="18dp"/>
+
+            <!-- ═══ اقتراحاتك وآراؤك ═══ -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="اقتراحاتك وآراؤك" android:textColor="?attr/colorGold"
+                android:textSize="13sp" android:textStyle="bold"
+                android:paddingBottom="10dp"/>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="16dp"
+                android:background="@drawable/bg_card_surface"
+                android:layout_marginBottom="20dp">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="رأيك يساعدنا على تطوير المحرر. اقترح ميزة جديدة، أو أخبرنا عن مشكلة واجهتك."
+                    android:textColor="?attr/colorTextMuted" android:textSize="12sp"
+                    android:paddingBottom="12dp"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_send_suggestion"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="✉️  أرسل اقتراحاً للمطوّر"
+                    android:textAllCaps="false"
+                    style="@style/VCGButtonOutlined"/>
+            </LinearLayout>
 
             <View android:layout_width="match_parent" android:layout_height="1dp"
                 android:background="?attr/colorBorder" android:layout_marginVertical="18dp"/>
