@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Base64;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebChromeClient;
@@ -100,6 +99,9 @@ public class OutputActivity extends AppCompatActivity {
 
     private boolean notifiedThisSession = false;
 
+    /** نفس حد السطور المستخدَم في TerminalActivity، لتجنّب نمو سجل التيرمينال بلا حدود. */
+    private static final int MAX_LOG_LINES = 500;
+
     private void logToTerminal(boolean success, String detail) {
         if (success && !notifiedThisSession) {
             notifiedThisSession = true;
@@ -120,15 +122,33 @@ public class OutputActivity extends AppCompatActivity {
             : "[" + time + "] ✗ " + filename + " — خطأ: " + detail;
         String appended = existing + "<font color='" + color + "'>" +
             android.text.TextUtils.htmlEncode(line) + "</font><br/>";
+        appended = trimLogLines(appended);
         getSharedPreferences("vcg_terminal", MODE_PRIVATE).edit().putString(key, appended).apply();
+    }
+
+    /** يحافظ على آخر MAX_LOG_LINES سطر فقط من سجل النصوص المُنسَّق بـ HTML. */
+    private static String trimLogLines(String log) {
+        String marker = "<br/>";
+        int count = 0, idx = -1;
+        while ((idx = log.indexOf(marker, idx + 1)) != -1) count++;
+        if (count <= MAX_LOG_LINES) return log;
+
+        int toRemove = count - MAX_LOG_LINES;
+        int cut = -1;
+        for (int i = 0; i < toRemove; i++) {
+            cut = log.indexOf(marker, cut + 1);
+            if (cut == -1) break;
+        }
+        return cut != -1 ? log.substring(cut + marker.length()) : log;
     }
 
     private void runCode() {
         String html = VcgInterpreter.buildHtml(code, filename,
             assetsJson == null || assetsJson.isEmpty() ? "{}" : assetsJson, theme);
 
-        String encoded = Base64.encodeToString(html.getBytes(), Base64.NO_PADDING);
-        webView.loadData(encoded, "text/html", "base64");
+        // انظر التعليق المماثل في EditorActivity.updatePreview(): loadDataWithBaseURL
+        // مع UTF-8 صريح أكثر استقراراً من base64 بلا padding لمحتوى عربي/يونيكود.
+        webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null);
     }
 
     @Override
