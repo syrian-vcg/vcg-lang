@@ -27,6 +27,51 @@ public class SettingsActivity extends AppCompatActivity {
 
         settings = new VcgSettings(this);
 
+        VcgCoins coins = new VcgCoins(this);
+        VcgAds ads = new VcgAds();
+        VcgAds.init(this);
+        ads.preload(this);
+        TextView coinLabel = findViewById(R.id.label_coin_balance);
+        coinLabel.setText("🪙 " + coins.getBalance());
+        findViewById(R.id.btn_watch_ad).setOnClickListener(v -> {
+            if (!ads.isReady()) {
+                Toast.makeText(this, "الإعلان غير جاهز بعد، حاول بعد لحظات", Toast.LENGTH_SHORT).show();
+                ads.preload(this);
+                return;
+            }
+            ads.show(this, new VcgAds.RewardListener() {
+                @Override
+                public void onRewardEarned() {
+                    runOnUiThread(() -> {
+                        coins.grantCoinsForAd();
+                        coinLabel.setText("🪙 " + coins.getBalance());
+                        Toast.makeText(SettingsActivity.this,
+                            "🎉 حصلت على " + VcgCoins.COINS_PER_AD + " عملة!", Toast.LENGTH_LONG).show();
+                    });
+                }
+
+                @Override
+                public void onAdUnavailable(String reason) {
+                    runOnUiThread(() ->
+                        Toast.makeText(SettingsActivity.this, "تعذّر عرض الإعلان", Toast.LENGTH_SHORT).show());
+                }
+            });
+        });
+
+        findViewById(R.id.btn_send_suggestion).setOnClickListener(v -> {
+            View view = getLayoutInflater().inflate(R.layout.dialog_suggestion, null);
+            com.google.android.material.textfield.TextInputEditText input = view.findViewById(R.id.input_suggestion);
+            new AlertDialog.Builder(this, R.style.VCGDialog)
+                .setTitle("اقتراح جديد 💡")
+                .setView(view)
+                .setPositiveButton("إرسال", (d, w) -> {
+                    String text = input.getText() != null ? input.getText().toString() : "";
+                    VcgFeedback.openSuggestionEmail(this, text);
+                })
+                .setNegativeButton("إلغاء", null)
+                .show();
+        });
+
         setSupportActionBar(findViewById(R.id.settings_toolbar));
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
