@@ -9,7 +9,7 @@
 [![Build](https://github.com/syrian-vcg/vcg-lang/actions/workflows/ci.yml/badge.svg)](https://github.com/syrian-vcg/vcg-lang/actions/workflows/ci.yml)
 [![Pages](https://github.com/syrian-vcg/vcg-lang/actions/workflows/pages.yml/badge.svg)](https://github.com/syrian-vcg/vcg-lang/actions/workflows/pages.yml)
 [![APK](https://github.com/syrian-vcg/vcg-lang/actions/workflows/build-apk.yml/badge.svg)](https://github.com/syrian-vcg/vcg-lang/actions/workflows/build-apk.yml)
-[![Version](https://img.shields.io/badge/version-2.0.0-brightgreen)](https://github.com/syrian-vcg/vcg-lang/releases)
+[![Version](https://img.shields.io/badge/version-0.2.1-brightgreen)](https://github.com/syrian-vcg/vcg-lang/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 [🌐 الموقع](https://syrian-vcg.github.io/vcg-lang) · [📦 تحميل](https://github.com/syrian-vcg/vcg-lang/releases) · [📱 APK](https://github.com/syrian-vcg/vcg-lang/actions/workflows/build-apk.yml) · [📖 التوثيق](#documentation)
@@ -76,7 +76,7 @@ cd vcg-lang
 make
 
 # التحقق من الإصدار
-./vcgc --version    # vcgc 2.0.0
+./vcgc --version    # vcgc 0.2.1
 
 # تشغيل مثال
 ./vcgc -r examples/basic/hello.vcg
@@ -282,7 +282,7 @@ MIT License — حرية الاستخدام والتعديل والتوزيع.
 
 <div align="center">
 
-**Syrian Private Programming VCG v2.0.0**  
+**Syrian Private Programming VCG v0.2.1**  
 Made with ❤️ in Syria · 2026-06-06
 
 [⭐ Star on GitHub](https://github.com/syrian-vcg/vcg-lang)
