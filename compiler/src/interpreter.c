@@ -603,6 +603,13 @@ static VCGVal eval(Interpreter *I, Node *n, VCGEnv *env) {
             if(method&&method->type==VT_FUNC){
                 return call_func_self(I,*method,&obj,args,nargs,n->line);
             }
+            if(method&&method->type==VT_BUILTIN){
+                /* بناة الـ builtin methods (مثل .color() على Button/Text) تستقبل self كأول معامل */
+                VCGVal full[VCG_MAX_PARAMS]; int fn2=0;
+                full[fn2++]=obj;
+                for(int i=0;i<nargs&&fn2<VCG_MAX_PARAMS;i++) full[fn2++]=args[i];
+                return method->builtin(full, fn2, n->line);
+            }
         }
         ERR(I,n->line,"No method '%s'", m);
     }
@@ -1286,6 +1293,12 @@ Interpreter *g_vcg_interp = NULL;
 VCGVal vcg_call_value(VCGVal fn, VCGVal *args, int nargs) {
     if(!g_vcg_interp) return VCG_NIL;
     return call_func(g_vcg_interp, fn, args, nargs, 0);
+}
+
+/* exposes globals env to stdlib.c builtins (e.g. store_zip) that need
+   read access to reactive infrastructure (__store__, __watchers__...) */
+VCGEnv *vcg_globals_for_stdlib(void) {
+    return g_vcg_interp ? g_vcg_interp->globals : NULL;
 }
 
 VCGVal interp_run(Interpreter *I, Node *program, FILE *html_out) {
