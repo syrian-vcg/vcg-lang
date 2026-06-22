@@ -15,6 +15,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class SplashActivity extends AppCompatActivity {
 
+    private final Handler splashHandler = new Handler(Looper.getMainLooper());
+    private Runnable navigateRunnable;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,10 +51,24 @@ public class SplashActivity extends AppCompatActivity {
         version.animate().alpha(1f).setDuration(600).setStartDelay(800).start();
 
         // Navigate to projects list after 2.2s
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+        // ⚠️ إن أغلق المستخدم الشاشة (مثلاً بالضغط على رجوع) خلال هذه الفترة،
+        // كان الـ Handler يبقى مجدولاً ويستدعي startActivity على Activity
+        // انتهت فعلياً، مما قد يسبب استثناءً أو تسريب سياق. نحفظ الآن مرجع
+        // الـ Runnable لإلغائه في onDestroy، ونتحقق من حالة النشاط مرة أخرى
+        // كحماية إضافية وقت التنفيذ الفعلي (isDestroyed متوفرة من Activity
+        // مباشرة لأن minSdk لهذا المشروع هو 24).
+        navigateRunnable = () -> {
+            if (isFinishing() || isDestroyed()) return;
             startActivity(new Intent(this, ProjectsActivity.class));
             finish();
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-        }, 2200);
+        };
+        splashHandler.postDelayed(navigateRunnable, 2200);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (navigateRunnable != null) splashHandler.removeCallbacks(navigateRunnable);
+        super.onDestroy();
     }
 }
