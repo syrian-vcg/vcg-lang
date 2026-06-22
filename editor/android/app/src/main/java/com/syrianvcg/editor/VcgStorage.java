@@ -33,6 +33,20 @@ public class VcgStorage {
         assetsPrefs   = ctx.getSharedPreferences(PREFS_ASSETS, Context.MODE_PRIVATE);
     }
 
+    /**
+     * الفهارس هنا (project index، file index، asset index) مُخزَّنة كنص واحد
+     * مفصول بـ "|||". معرّفات المشاريع/الأصول من توليدنا الخاص (UUID مقتطع)
+     * فلا خطر منها، لكن أسماء الملفات وأسماء الوسائط تأتي من إدخال المستخدم
+     * مباشرة (حقل نص، أو اسم ملف مرفوع من النظام)، وقد تحتوي حرفياً على
+     * تسلسل "|||" فتُخرّب تحليل الفهرس (سجل يندمج مع آخر، أو ينقسم خطأً).
+     * هذه الدالة تستبدل أي تسلسل من الأنابيب بفاصلة سفلية قبل التخزين،
+     * فتُغلق هذا الثغرة دون تغيير صيغة التخزين القائمة بالكامل.
+     */
+    private static String sanitizeForIndex(String raw) {
+        if (raw == null) return "";
+        return raw.replace("|||", "___");
+    }
+
     // ═══════════════════ PROJECTS ═══════════════════
 
     public void saveProject(VcgProject p) {
@@ -133,16 +147,20 @@ public class VcgStorage {
     // ═══════════════════ FILES ═══════════════════
 
     public void saveFile(VcgFile file) {
-        filesPrefs.edit().putString(file.getStorageKey(), file.getContent()).apply();
-        addFileToIndex(file.getProjectId(), file.getName());
-        VcgProject p = getProject(file.getProjectId());
+        String safeName = sanitizeForIndex(file.getName());
+        VcgFile toSave = safeName.equals(file.getName()) ? file
+            : new VcgFile(file.getProjectId(), safeName, file.getContent());
+        filesPrefs.edit().putString(toSave.getStorageKey(), toSave.getContent()).apply();
+        addFileToIndex(toSave.getProjectId(), toSave.getName());
+        VcgProject p = getProject(toSave.getProjectId());
         if (p != null) { p.touch(); saveProject(p); }
     }
 
     public VcgFile getFile(String projectId, String name) {
-        String content = filesPrefs.getString(projectId + "::" + name, null);
+        String safeName = sanitizeForIndex(name);
+        String content = filesPrefs.getString(projectId + "::" + safeName, null);
         if (content == null) return null;
-        return new VcgFile(projectId, name, content);
+        return new VcgFile(projectId, safeName, content);
     }
 
     public List<VcgFile> getFilesInProject(String projectId) {
@@ -159,12 +177,13 @@ public class VcgStorage {
     }
 
     public void deleteFile(String projectId, String name) {
-        filesPrefs.edit().remove(projectId + "::" + name).apply();
-        removeFileFromIndex(projectId, name);
+        String safeName = sanitizeForIndex(name);
+        filesPrefs.edit().remove(projectId + "::" + safeName).apply();
+        removeFileFromIndex(projectId, safeName);
     }
 
     public boolean fileExists(String projectId, String name) {
-        return filesPrefs.contains(projectId + "::" + name);
+        return filesPrefs.contains(projectId + "::" + sanitizeForIndex(name));
     }
 
     public void renameFile(String projectId, String oldName, String newName) {
@@ -175,22 +194,24 @@ public class VcgStorage {
     }
 
     private void addFileToIndex(String projectId, String name) {
+        String safeName = sanitizeForIndex(name);
         String key = "index::" + projectId;
         String index = filesPrefs.getString(key, "");
         if (!index.isEmpty()) {
-            for (String n : index.split("\\|\\|\\|")) if (n.equals(name)) return;
+            for (String n : index.split("\\|\\|\\|")) if (n.equals(safeName)) return;
         }
-        String newIndex = index.isEmpty() ? name : index + "|||" + name;
+        String newIndex = index.isEmpty() ? safeName : index + "|||" + safeName;
         filesPrefs.edit().putString(key, newIndex).apply();
     }
 
     private void removeFileFromIndex(String projectId, String name) {
+        String safeName = sanitizeForIndex(name);
         String key = "index::" + projectId;
         String index = filesPrefs.getString(key, "");
         if (index.isEmpty()) return;
         StringBuilder sb = new StringBuilder();
         for (String n : index.split("\\|\\|\\|")) {
-            if (!n.equals(name)) {
+            if (!n.equals(safeName)) {
                 if (sb.length() > 0) sb.append("|||");
                 sb.append(n);
             }
