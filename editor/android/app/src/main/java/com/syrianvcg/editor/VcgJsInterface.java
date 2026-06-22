@@ -2,10 +2,21 @@ package com.syrianvcg.editor;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.webkit.JavascriptInterface;
 
+/**
+ * VcgJsInterface — جسر بين WebView (JavaScript) والتطبيق (Java).
+ *
+ * ⚠️ تنبيه مهم: Android يستدعي كل دوال @JavascriptInterface من JS thread
+ * الخاص بالـ WebView، وليس من UI thread الرئيسي. أي عملية تلمس الواجهة
+ * (إنشاء Dialog، تحديث Views..) يجب تمريرها أولاً لـ UI thread عبر Handler،
+ * وإلا يرمي Android استثناء CalledFromWrongThreadException ويُسقط التطبيق.
+ */
 public class VcgJsInterface {
     private final Context ctx;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private TerminalListener listener;
 
     public interface TerminalListener {
@@ -24,27 +35,30 @@ public class VcgJsInterface {
 
     @JavascriptInterface
     public void showAlert(String msg) {
-        new AlertDialog.Builder(ctx)
-            .setMessage(msg)
-            .setPositiveButton("موافق", null)
-            .show();
+        mainHandler.post(() -> {
+            new AlertDialog.Builder(ctx)
+                .setMessage(msg)
+                .setPositiveButton("موافق", null)
+                .show();
+        });
     }
 
     @JavascriptInterface
     public void log(String line) {
-        if (listener != null) listener.onLog(line);
+        mainHandler.post(() -> { if (listener != null) listener.onLog(line); });
     }
 
     @JavascriptInterface
     public void onRunError(String message) {
-        if (listener != null) listener.onError(message);
+        mainHandler.post(() -> { if (listener != null) listener.onError(message); });
     }
 
     @JavascriptInterface
     public void onRunSuccess(String countStr) {
         int count = 0;
         try { count = Integer.parseInt(countStr); } catch (Exception ignored) {}
-        if (listener != null) listener.onSuccess(count);
+        final int finalCount = count;
+        mainHandler.post(() -> { if (listener != null) listener.onSuccess(finalCount); });
     }
 
     @JavascriptInterface
