@@ -2,6 +2,23 @@ plugins {
     id 'com.android.application'
 }
 
+// ════════════════════════════════════════════════════════════════
+// أسرار AdMob — تُقرأ من local.properties (هذا الملف غير مرفوع على
+// GitHub بسبب .gitignore) فلا تُكتب أي مفاتيح إعلانية حقيقية مباشرة
+// في الكود المصدري العام. إن لم يوجد الملف أو المفتاح، نستخدم أرقام
+// AdMob الرسمية للاختبار (Test IDs) ليبقى المشروع قابلاً للبناء فوراً
+// لأي شخص يستنسخه من GitHub دون أن يعرض حساب AdMob الحقيقي للخطر.
+// ════════════════════════════════════════════════════════════════
+def localProps = new Properties()
+def localPropsFile = rootProject.file('local.properties')
+if (localPropsFile.exists()) {
+    localPropsFile.withInputStream { localProps.load(it) }
+}
+
+def admobAppId = localProps.getProperty('ADMOB_APP_ID', 'ca-app-pub-3940256099942544~3347511713')
+def admobRewardedUnitId = localProps.getProperty('ADMOB_REWARDED_UNIT_ID', 'ca-app-pub-3940256099942544/5224354917')
+def admobInterstitialUnitId = localProps.getProperty('ADMOB_INTERSTITIAL_UNIT_ID', 'ca-app-pub-3940256099942544/1033173712')
+
 android {
     namespace 'com.syrianvcg.editor'
     compileSdk 34
@@ -13,6 +30,11 @@ android {
         versionCode 2
         versionName "2.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        manifestPlaceholders += [admobAppId: admobAppId]
+        buildConfigField "String", "ADMOB_APP_ID", "\"${admobAppId}\""
+        buildConfigField "String", "ADMOB_REWARDED_UNIT_ID", "\"${admobRewardedUnitId}\""
+        buildConfigField "String", "ADMOB_INTERSTITIAL_UNIT_ID", "\"${admobInterstitialUnitId}\""
     }
 
     buildTypes {
@@ -34,6 +56,7 @@ android {
 
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 }
 
@@ -45,6 +68,7 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.core:core:1.13.1'
     implementation 'androidx.security:security-crypto:1.1.0-alpha06'
+    implementation 'com.google.android.gms:play-services-ads:23.3.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
