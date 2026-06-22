@@ -418,6 +418,7 @@ void   interp_init(Interpreter *I);
 VCGVal interp_run(Interpreter *I, Node *program, FILE *html_out);
 /* exported for stdlib higher-order functions (map/filter/reduce/find) */
 VCGVal vcg_call_value(VCGVal fn, VCGVal *args, int nargs);
+VCGEnv *vcg_globals_for_stdlib(void);
 void   interp_free(Interpreter *I);
 
 /* ================================================================
