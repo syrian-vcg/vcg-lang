@@ -14,15 +14,28 @@ import java.util.regex.Pattern;
  */
 public class VcgHeadlessRunner {
 
-    private static final Map<String, Double> session = new HashMap<>();
+    /**
+     * ⚠️ كانت session خريطة واحدة مشتركة بين كل التيرمينالات بلا تمييز
+     * بين المشاريع. فتح تيرمينال لمشروع، تعريف متغيّرات فيه، ثم فتح
+     * تيرمينال لمشروع آخر، كان يُبقي متغيّرات المشروع الأول مرئية ومتاحة
+     * في الثاني (تسرّب حالة). الآن كل مشروع له خريطة متغيّرات مستقلة،
+     * مفتاحها projectId (أو "global" إن لم يكن هناك مشروع محدَّد).
+     */
+    private static final Map<String, Map<String, Double>> sessionsByProject = new HashMap<>();
 
-    public static String run(String code) {
+    private static Map<String, Double> sessionFor(String projectId) {
+        String key = projectId == null ? "global" : projectId;
+        return sessionsByProject.computeIfAbsent(key, k -> new HashMap<>());
+    }
+
+    public static String run(String code, String projectId) {
+        Map<String, Double> session = sessionFor(projectId);
         StringBuilder out = new StringBuilder();
         try {
             for (String rawLine : code.split("\n")) {
                 String line = rawLine.trim();
                 if (line.isEmpty() || line.startsWith("#")) continue;
-                String result = execLine(line);
+                String result = execLine(line, session);
                 if (result != null) out.append(result).append("\n");
             }
         } catch (Exception e) {
@@ -32,11 +45,11 @@ public class VcgHeadlessRunner {
         return out.toString();
     }
 
-    private static String execLine(String line) {
+    private static String execLine(String line, Map<String, Double> session) {
         // let/const x = expr
         Matcher letM = Pattern.compile("^(let|const)\\s+([a-zA-Z_]\\w*)\\s*=\\s*(.+)$").matcher(line);
         if (letM.matches()) {
-            double v = evalExpr(letM.group(3));
+            double v = evalExpr(letM.group(3), session);
             session.put(letM.group(2), v);
             return letM.group(2) + " = " + fmt(v);
         }
@@ -49,27 +62,27 @@ public class VcgHeadlessRunner {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < parts.size(); i++) {
                 if (i > 0) sb.append(' ');
-                sb.append(evalToken(parts.get(i).trim()));
+                sb.append(evalToken(parts.get(i).trim(), session));
             }
             return sb.toString();
         }
 
         // bare expression
         try {
-            double v = evalExpr(line);
+            double v = evalExpr(line, session);
             return fmt(v);
         } catch (Exception e) {
             return "ERR:" + (e.getMessage() == null ? ("تعبير غير مفهوم: " + line) : e.getMessage());
         }
     }
 
-    private static String evalToken(String tok) {
+    private static String evalToken(String tok, Map<String, Double> session) {
         if (tok.length() >= 2 && (tok.charAt(0) == '"' || tok.charAt(0) == '\'')
                 && tok.charAt(tok.length() - 1) == tok.charAt(0)) {
             return tok.substring(1, tok.length() - 1);
         }
         try {
-            return fmt(evalExpr(tok));
+            return fmt(evalExpr(tok, session));
         } catch (Exception e) {
             return tok;
         }
@@ -97,8 +110,8 @@ public class VcgHeadlessRunner {
     }
 
     /** Simple recursive-descent arithmetic evaluator supporting +,-,*,/,%,**, parens, vars, sqrt/abs/etc */
-    private static double evalExpr(String expr) {
-        ExprParser p = new ExprParser(expr.trim());
+    private static double evalExpr(String expr, Map<String, Double> session) {
+        ExprParser p = new ExprParser(expr.trim(), session);
         double v = p.parseExpr();
         p.skipSpaces();
         if (p.pos < p.s.length()) throw new RuntimeException("رمز غير متوقع: " + p.s.substring(p.pos));
@@ -112,11 +125,15 @@ public class VcgHeadlessRunner {
         return String.valueOf(v);
     }
 
-    public static void resetSession() { session.clear(); }
+    /** يصفّر متغيّرات تيرمينال مشروع معيّن (أو العالمي إن لم يُحدَّد مشروع). */
+    public static void resetSession(String projectId) {
+        sessionFor(projectId).clear();
+    }
 
     private static class ExprParser {
         final String s; int pos = 0;
-        ExprParser(String s) { this.s = s; }
+        final Map<String, Double> session;
+        ExprParser(String s, Map<String, Double> session) { this.s = s; this.session = session; }
 
         void skipSpaces() { while (pos < s.length() && s.charAt(pos) == ' ') pos++; }
         char peek() { skipSpaces(); return pos < s.length() ? s.charAt(pos) : '\0'; }
