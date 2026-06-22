@@ -15,10 +15,6 @@ import java.util.zip.ZipOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
-/**
- * VcgExport — تصدير مشروع واحد (.vcgzip) أو نسخة احتياطية كاملة من كل المشاريع،
- * كملف يمكن مشاركته أو حفظه عبر مشغّل المشاركة في أندرويد.
- */
 public final class VcgExport {
 
     private VcgExport() {}
@@ -41,7 +37,6 @@ public final class VcgExport {
         ctx.startActivity(Intent.createChooser(send, chooserTitle).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
     }
 
-    /** يصدّر مشروعاً واحداً (ملفاته + أصوله) كملف ZIP، ويفتح مشغّل المشاركة. */
     public static void exportProject(Context ctx, VcgStorage storage, VcgProject project) throws IOException {
         String safeName = project.getName().replaceAll("[^\\p{L}\\p{N}_\\-]+", "_");
         File zipFile = new File(exportsDir(ctx), safeName + ".vcgzip");
@@ -74,7 +69,6 @@ public final class VcgExport {
             "تصدير مشروع \"" + project.getName() + "\"");
     }
 
-    /** نسخة احتياطية كاملة: كل المشاريع + ملفاتها (بدون الوسائط الثقيلة) كملف JSON واحد. */
     public static void exportFullBackup(Context ctx, VcgStorage storage) throws IOException {
         JSONObject root = new JSONObject();
         try {
@@ -102,11 +96,17 @@ public final class VcgExport {
             throw new IOException("فشل بناء النسخة الاحتياطية: " + e.getMessage());
         }
 
-        File jsonFile = new File(exportsDir(ctx), "vcg_backup.json");
-        try (FileOutputStream fos = new FileOutputStream(jsonFile)) {
-            fos.write(root.toString(2).getBytes("UTF-8"));
+        // ✅ الإصلاح الأول: فصل toString(2) في try/catch منفصل
+        String jsonContent;
+        try {
+            jsonContent = root.toString(2);
         } catch (org.json.JSONException e) {
             throw new IOException(e.getMessage());
+        }
+
+        File jsonFile = new File(exportsDir(ctx), "vcg_backup.json");
+        try (FileOutputStream fos = new FileOutputStream(jsonFile)) {
+            fos.write(jsonContent.getBytes("UTF-8"));
         }
 
         startShare(ctx, shareUri(ctx, jsonFile), "application/json", "نسخة احتياطية كاملة من VCG Editor");
@@ -119,7 +119,6 @@ public final class VcgExport {
         zos.closeEntry();
     }
 
-    /** اسم آمن للملف داخل الـ zip فقط (يمنع Zip Path Traversal مثل ../../etc). */
     private static String safeEntryFileName(String entryName) {
         String name = entryName.replace('\\', '/');
         int slash = name.lastIndexOf('/');
@@ -148,19 +147,13 @@ public final class VcgExport {
         return "application/octet-stream";
     }
 
-    /**
-     * يستردّ (يفك ضغط) مشروعاً من ملف .vcgzip/.zip تم تصديره سابقاً عبر exportProject،
-     * ويعيد إنشاءه كمشروع جديد كامل (ملفاته + وسائطه) داخل التخزين الحالي.
-     * يعمل بشكل متزامن (Blocking) — يجب استدعاؤه من Thread خلفي لا الواجهة الرئيسية.
-     *
-     * @return المشروع الجديد الذي تم إنشاؤه
-     */
     public static VcgProject importProject(Context ctx, VcgStorage storage, Uri zipUri) throws IOException {
         String manifestName = null;
         String manifestDesc = null;
-        List<String[]> pendingFiles = new ArrayList<>();   // [name, content]
-        List<Object[]> pendingAssets = new ArrayList<>();  // [name, mime, bytes]
+        List<String[]> pendingFiles = new ArrayList<>();
+        List<Object[]> pendingAssets = new ArrayList<>();
 
+        // ✅ الإصلاح الثاني: catch (IOException) بدلاً من catch (JSONException)
         try (InputStream rawIn = ctx.getContentResolver().openInputStream(zipUri)) {
             if (rawIn == null) throw new IOException("تعذّر فتح الملف المحدد");
             ZipInputStream zis = new ZipInputStream(rawIn);
@@ -185,8 +178,8 @@ public final class VcgExport {
                     pendingAssets.add(new Object[]{ aname, guessMime(aname), data });
                 }
             }
-        } catch (org.json.JSONException e) {
-            throw new IOException("ملف الأرشيف تالف أو غير متوافق");
+        } catch (IOException e) {
+            throw new IOException("ملف الأرشيف تالف أو غير متوافق: " + e.getMessage());
         }
 
         if (pendingFiles.isEmpty() && pendingAssets.isEmpty() && manifestName == null) {
@@ -195,7 +188,6 @@ public final class VcgExport {
 
         String baseName = (manifestName == null || manifestName.trim().isEmpty())
             ? "مشروع مستورد" : manifestName.trim();
-        // تجنّب تعارض الأسماء مع مشاريع موجودة
         String finalName = baseName + " (مستورد)";
         int suffix = 2;
         for (VcgProject existing : storage.getAllProjects()) {
