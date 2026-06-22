@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <ctype.h>
+#include <strings.h>
 #include <time.h>
 #include "../include/vcg.h"
 
@@ -624,6 +626,14 @@ BUILTIN(type_of){
     const char *names[]={"nil","bool","int","float","string","array","func","struct","builtin"};
     return vcg_str(names[a[0].type<9?a[0].type:0]);
 }
+/* kind(x) — مثل type_of لكن للـ struct يرجع اسمه الموسوم (Text/Button/UI/Style/Design/Color/...) */
+BUILTIN(kind_fn){
+    (void)line;
+    if(!n) return vcg_str("nil");
+    if(a[0].type==VT_STRUCT) return vcg_str(a[0].obj->type_name ? a[0].obj->type_name : "object");
+    const char *names[]={"nil","bool","int","float","string","array","func","struct","builtin"};
+    return vcg_str(names[a[0].type<9?a[0].type:0]);
+}
 BUILTIN(copy_fn){
     (void)line;
     if(!n) return VCG_NIL;
@@ -688,6 +698,526 @@ BUILTIN(find_fn){
         if(vcg_truthy(ok)) return a[1].arr->items[i];
     }
     return VCG_NIL;
+}
+
+/* ── v2.1 NEW: String manipulation ── */
+BUILTIN(str_split){
+    (void)line;
+    if(!n||a[0].type!=VT_STRING) return vcg_arr_new();
+    const char *sep = (n>1 && a[1].type==VT_STRING && a[1].sval[0]) ? a[1].sval : NULL;
+    VCGVal res = vcg_arr_new();
+    const char *s = a[0].sval;
+    if(!sep){
+        /* split into individual chars when no separator given */
+        for(size_t i=0; s[i]; i++){
+            char buf[2]={s[i],'\0'};
+            arr_push(res.arr, vcg_str(buf));
+        }
+        return res;
+    }
+    size_t seplen = strlen(sep);
+    const char *start = s;
+    const char *p;
+    while((p = strstr(start, sep)) != NULL){
+        size_t partlen = (size_t)(p - start);
+        char *part = malloc(partlen + 1);
+        memcpy(part, start, partlen); part[partlen]='\0';
+        VCGVal v = vcg_str(part); free(part);
+        arr_push(res.arr, v);
+        start = p + seplen;
+    }
+    arr_push(res.arr, vcg_str(start));
+    return res;
+}
+BUILTIN(str_replace){
+    (void)line;
+    if(n<3||a[0].type!=VT_STRING||a[1].type!=VT_STRING||a[2].type!=VT_STRING) return n?a[0]:vcg_str("");
+    const char *src=a[0].sval, *from=a[1].sval, *to=a[2].sval;
+    size_t fromlen=strlen(from), tolen=strlen(to);
+    if(fromlen==0) return vcg_str(src);
+    char *out=strdup(""); size_t ol=0; const char *p=src;
+    const char *hit;
+    while((hit=strstr(p,from))!=NULL){
+        size_t prelen=(size_t)(hit-p);
+        out=realloc(out, ol+prelen+tolen+1);
+        memcpy(out+ol,p,prelen); ol+=prelen;
+        memcpy(out+ol,to,tolen); ol+=tolen;
+        out[ol]='\0';
+        p = hit + fromlen;
+    }
+    size_t restlen=strlen(p);
+    out=realloc(out, ol+restlen+1);
+    memcpy(out+ol,p,restlen+1);
+    VCGVal r=vcg_str(out); free(out); return r;
+}
+BUILTIN(str_trim){
+    (void)line;
+    if(!n||a[0].type!=VT_STRING) return n?a[0]:vcg_str("");
+    const char *s=a[0].sval; size_t len=strlen(s);
+    size_t start=0, end=len;
+    while(start<end && isspace((unsigned char)s[start])) start++;
+    while(end>start && isspace((unsigned char)s[end-1])) end--;
+    char *out=malloc(end-start+1);
+    memcpy(out,s+start,end-start); out[end-start]='\0';
+    VCGVal r=vcg_str(out); free(out); return r;
+}
+BUILTIN(str_upper){
+    (void)line;
+    if(!n||a[0].type!=VT_STRING) return n?a[0]:vcg_str("");
+    char *out=strdup(a[0].sval);
+    for(char *p=out; *p; p++) *p=(char)toupper((unsigned char)*p);
+    VCGVal r=vcg_str(out); free(out); return r;
+}
+BUILTIN(str_lower){
+    (void)line;
+    if(!n||a[0].type!=VT_STRING) return n?a[0]:vcg_str("");
+    char *out=strdup(a[0].sval);
+    for(char *p=out; *p; p++) *p=(char)tolower((unsigned char)*p);
+    VCGVal r=vcg_str(out); free(out); return r;
+}
+BUILTIN(str_starts_with){
+    (void)line;
+    if(n<2||a[0].type!=VT_STRING||a[1].type!=VT_STRING) return VCG_FALSE;
+    size_t pl=strlen(a[1].sval);
+    return VCG_BOOL(strncmp(a[0].sval, a[1].sval, pl)==0);
+}
+BUILTIN(str_ends_with){
+    (void)line;
+    if(n<2||a[0].type!=VT_STRING||a[1].type!=VT_STRING) return VCG_FALSE;
+    size_t sl=strlen(a[0].sval), pl=strlen(a[1].sval);
+    if(pl>sl) return VCG_FALSE;
+    return VCG_BOOL(strcmp(a[0].sval+sl-pl, a[1].sval)==0);
+}
+
+/* ── v2.1 NEW: Array mutation/slicing ── */
+BUILTIN(arr_push_fn){
+    (void)line;
+    if(n<2||a[0].type!=VT_ARRAY) return n?a[0]:VCG_NIL;
+    arr_push(a[0].arr, a[1]);
+    return a[0];
+}
+BUILTIN(arr_pop_fn){
+    (void)line;
+    if(!n||a[0].type!=VT_ARRAY||a[0].arr->len==0) return VCG_NIL;
+    VCGVal v=a[0].arr->items[a[0].arr->len-1];
+    a[0].arr->len--;
+    return v;
+}
+BUILTIN(arr_shift_fn){
+    (void)line;
+    if(!n||a[0].type!=VT_ARRAY||a[0].arr->len==0) return VCG_NIL;
+    VCGVal v=a[0].arr->items[0];
+    memmove(a[0].arr->items, a[0].arr->items+1, (a[0].arr->len-1)*sizeof(VCGVal));
+    a[0].arr->len--;
+    return v;
+}
+BUILTIN(arr_unshift_fn){
+    (void)line;
+    if(n<2||a[0].type!=VT_ARRAY) return n?a[0]:VCG_NIL;
+    VCGArray *ar=a[0].arr;
+    if(ar->len>=ar->cap){ar->cap=ar->cap?ar->cap*2:8; ar->items=realloc(ar->items, ar->cap*sizeof(VCGVal));}
+    memmove(ar->items+1, ar->items, ar->len*sizeof(VCGVal));
+    ar->items[0]=a[1];
+    ar->len++;
+    return a[0];
+}
+BUILTIN(arr_reverse_fn){
+    (void)line;
+    if(!n) return VCG_NIL;
+    if(a[0].type==VT_STRING){
+        char *s=strdup(a[0].sval); size_t l=strlen(s);
+        for(size_t i=0;i<l/2;i++){ char t=s[i]; s[i]=s[l-1-i]; s[l-1-i]=t; }
+        VCGVal r=vcg_str(s); free(s); return r;
+    }
+    if(a[0].type!=VT_ARRAY) return a[0];
+    VCGVal res=vcg_arr_new();
+    for(int i=a[0].arr->len-1;i>=0;i--) arr_push(res.arr, a[0].arr->items[i]);
+    return res;
+}
+static int vcg_compare_default(const void *pa, const void *pb){
+    VCGVal a=*(const VCGVal*)pa, b=*(const VCGVal*)pb;
+    if((a.type==VT_INT||a.type==VT_FLOAT)&&(b.type==VT_INT||b.type==VT_FLOAT)){
+        double da=a.type==VT_INT?a.ival:a.fval, db=b.type==VT_INT?b.ival:b.fval;
+        return da<db?-1:(da>db?1:0);
+    }
+    if(a.type==VT_STRING&&b.type==VT_STRING) return strcmp(a.sval,b.sval);
+    return 0;
+}
+BUILTIN(arr_sort_fn){
+    (void)line;
+    if(!n||a[0].type!=VT_ARRAY) return n?a[0]:vcg_arr_new();
+    VCGVal res=vcg_arr_new();
+    for(int i=0;i<a[0].arr->len;i++) arr_push(res.arr, a[0].arr->items[i]);
+    if(n>=2 && (a[1].type==VT_FUNC || a[1].type==VT_BUILTIN)){
+        /* simple insertion sort using a comparator function(a,b) -> negative/0/positive or bool */
+        for(int i=1;i<res.arr->len;i++){
+            VCGVal key=res.arr->items[i];
+            int j=i-1;
+            while(j>=0){
+                VCGVal args2[2]={res.arr->items[j], key};
+                VCGVal cmp=vcg_call_value(a[1], args2, 2);
+                double c = (cmp.type==VT_INT)?cmp.ival : (cmp.type==VT_FLOAT?cmp.fval : (vcg_truthy(cmp)?1:-1));
+                if(c<=0) break;
+                res.arr->items[j+1]=res.arr->items[j];
+                j--;
+            }
+            res.arr->items[j+1]=key;
+        }
+    } else {
+        qsort(res.arr->items, res.arr->len, sizeof(VCGVal), vcg_compare_default);
+    }
+    return res;
+}
+BUILTIN(arr_str_slice){
+    (void)line;
+    if(!n) return VCG_NIL;
+    int len = a[0].type==VT_ARRAY ? a[0].arr->len : (a[0].type==VT_STRING ? (int)strlen(a[0].sval) : 0);
+    int start = n>1 ? (int)as_num(a[1]) : 0;
+    int end   = n>2 ? (int)as_num(a[2]) : len;
+    if(start<0) start += len; if(end<0) end += len;
+    if(start<0) start=0; if(end>len) end=len;
+    if(start>end) start=end;
+    if(a[0].type==VT_STRING){
+        int sl=end-start;
+        char *out=malloc(sl+1);
+        memcpy(out, a[0].sval+start, sl); out[sl]='\0';
+        VCGVal r=vcg_str(out); free(out); return r;
+    }
+    if(a[0].type==VT_ARRAY){
+        VCGVal res=vcg_arr_new();
+        for(int i=start;i<end;i++) arr_push(res.arr, a[0].arr->items[i]);
+        return res;
+    }
+    return VCG_NIL;
+}
+
+/* ── v2.1 NEW: Base64 ── */
+static const char B64_CHARS[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+BUILTIN(base64_encode_fn){
+    (void)line;
+    if(!n||a[0].type!=VT_STRING) return vcg_str("");
+    const unsigned char *s=(const unsigned char*)a[0].sval; size_t len=strlen(a[0].sval);
+    size_t outlen = ((len+2)/3)*4;
+    char *out=malloc(outlen+1); size_t oi=0;
+    size_t i=0;
+    for(; i+2<len; i+=3){
+        unsigned v = (s[i]<<16)|(s[i+1]<<8)|s[i+2];
+        out[oi++]=B64_CHARS[(v>>18)&0x3F]; out[oi++]=B64_CHARS[(v>>12)&0x3F];
+        out[oi++]=B64_CHARS[(v>>6)&0x3F];  out[oi++]=B64_CHARS[v&0x3F];
+    }
+    if(len-i==1){
+        unsigned v = s[i]<<16;
+        out[oi++]=B64_CHARS[(v>>18)&0x3F]; out[oi++]=B64_CHARS[(v>>12)&0x3F];
+        out[oi++]='='; out[oi++]='=';
+    } else if(len-i==2){
+        unsigned v = (s[i]<<16)|(s[i+1]<<8);
+        out[oi++]=B64_CHARS[(v>>18)&0x3F]; out[oi++]=B64_CHARS[(v>>12)&0x3F];
+        out[oi++]=B64_CHARS[(v>>6)&0x3F];  out[oi++]='=';
+    }
+    out[oi]='\0';
+    VCGVal r=vcg_str(out); free(out); return r;
+}
+static int b64_val(char c){
+    if(c>='A'&&c<='Z') return c-'A';
+    if(c>='a'&&c<='z') return c-'a'+26;
+    if(c>='0'&&c<='9') return c-'0'+52;
+    if(c=='+') return 62;
+    if(c=='/') return 63;
+    return -1;
+}
+BUILTIN(base64_decode_fn){
+    (void)line;
+    if(!n||a[0].type!=VT_STRING) return vcg_str("");
+    const char *s=a[0].sval; size_t len=strlen(s);
+    char *out=malloc(len+1); size_t oi=0;
+    int vals[4]; int vc=0;
+    for(size_t i=0;i<len;i++){
+        if(s[i]=='='||s[i]=='\n'||s[i]=='\r') continue;
+        int v=b64_val(s[i]);
+        if(v<0) continue;
+        vals[vc++]=v;
+        if(vc==4){
+            out[oi++]=(char)((vals[0]<<2)|(vals[1]>>4));
+            out[oi++]=(char)((vals[1]<<4)|(vals[2]>>2));
+            out[oi++]=(char)((vals[2]<<6)|vals[3]);
+            vc=0;
+        }
+    }
+    if(vc==2){ out[oi++]=(char)((vals[0]<<2)|(vals[1]>>4)); }
+    else if(vc==3){ out[oi++]=(char)((vals[0]<<2)|(vals[1]>>4)); out[oi++]=(char)((vals[1]<<4)|(vals[2]>>2)); }
+    out[oi]='\0';
+    VCGVal r=vcg_str(out); free(out); return r;
+}
+
+/* ── v2.1 NEW: Color / Style / Design ── */
+typedef struct { const char *name; int r,g,b; } NamedColor;
+static const NamedColor VCG_NAMED_COLORS[] = {
+    {"red",       220, 53,  69 },
+    {"green",     40,  167, 69 },
+    {"blue",      13,  110, 253},
+    {"yellow",    255, 193, 7  },
+    {"orange",    253, 126, 20 },
+    {"purple",    111, 66,  193},
+    {"pink",      214, 51,  132},
+    {"teal",      32,  201, 151},
+    {"cyan",      13,  202, 240},
+    {"black",     0,   0,   0  },
+    {"white",     255, 255, 255},
+    {"gray",      108, 117, 125},
+    {"olive",     61,  74,  47 },   /* الثيم الزيتوني الأساسي لـ VCG */
+    {"vcg_olive", 61,  74,  47 },
+    {"vcg_dark",  26,  29,  20 },
+    {"vcg_accent",77,  166, 90 },
+    {NULL,0,0,0}
+};
+static int hexval(char c){
+    if(c>='0'&&c<='9') return c-'0';
+    if(c>='a'&&c<='f') return c-'a'+10;
+    if(c>='A'&&c<='F') return c-'A'+10;
+    return -1;
+}
+static VCGVal vcg_make_color_struct(int r,int g,int b,double alpha){
+    VCGVal s = vcg_struct_new("Color");
+    struct_set(s.obj,"r",VCG_INT(r));
+    struct_set(s.obj,"g",VCG_INT(g));
+    struct_set(s.obj,"b",VCG_INT(b));
+    struct_set(s.obj,"a",VCG_FLOAT(alpha));
+    char hex[8]; snprintf(hex,sizeof(hex),"#%02X%02X%02X",
+        r<0?0:(r>255?255:r), g<0?0:(g>255?255:g), b<0?0:(b>255?255:b));
+    struct_set(s.obj,"hex",vcg_str(hex));
+    char rgb[40]; snprintf(rgb,sizeof(rgb),"rgb(%d,%d,%d)",r,g,b);
+    struct_set(s.obj,"rgb",vcg_str(rgb));
+    char rgba[60]; snprintf(rgba,sizeof(rgba),"rgba(%d,%d,%d,%.2f)",r,g,b,alpha);
+    struct_set(s.obj,"rgba",vcg_str(rgba));
+    return s;
+}
+/* color("#RRGGBB") | color("red") | color(r,g,b) | color(r,g,b,a) → struct{r,g,b,a,hex,rgb,rgba} */
+static VCGVal color_logic(VCGVal *a, int n){
+    if(!n) return vcg_make_color_struct(0,0,0,1.0);
+    if(n>=3){
+        int r=(int)as_num(a[0]), g=(int)as_num(a[1]), b=(int)as_num(a[2]);
+        double al = n>=4 ? as_num(a[3]) : 1.0;
+        return vcg_make_color_struct(r,g,b,al);
+    }
+    if(a[0].type==VT_STRING){
+        const char *s=a[0].sval;
+        if(s[0]=='#'){
+            size_t len=strlen(s);
+            int r=0,g=0,b=0;
+            if(len==7){ r=hexval(s[1])*16+hexval(s[2]); g=hexval(s[3])*16+hexval(s[4]); b=hexval(s[5])*16+hexval(s[6]); }
+            else if(len==4){ r=hexval(s[1])*17; g=hexval(s[2])*17; b=hexval(s[3])*17; }
+            return vcg_make_color_struct(r,g,b,1.0);
+        }
+        for(int i=0; VCG_NAMED_COLORS[i].name; i++){
+            if(strcasecmp(s, VCG_NAMED_COLORS[i].name)==0){
+                const NamedColor *c=&VCG_NAMED_COLORS[i];
+                return vcg_make_color_struct(c->r,c->g,c->b,1.0);
+            }
+        }
+    }
+    return vcg_make_color_struct(0,0,0,1.0);
+}
+BUILTIN(color_fn){ (void)line; return color_logic(a,n); }
+/* color_argv(arr) — نفس منطق color() لكن مدخلاته مصفوفة واحدة (تُستخدم لدعم
+   btn.color(...) / text.color(...) عبر تمرير معاملات متغيّرة args.. كمصفوفة) */
+BUILTIN(color_argv_fn){
+    (void)line;
+    if(!n || a[0].type!=VT_ARRAY) return vcg_make_color_struct(0,0,0,1.0);
+    VCGArray *ar=a[0].arr;
+    VCGVal tmp[8]; int tn = ar->len>8?8:ar->len;
+    for(int i=0;i<tn;i++) tmp[i]=ar->items[i];
+    return color_logic(tmp, tn);
+}
+
+/* style({...}) / design({...}) — wraps/tags a struct so it can be passed to
+   $set("style", style({...})) or $set("design", design({...})).
+   Non-struct values pass through untouched but are still returned. */
+BUILTIN(style_fn){
+    (void)line;
+    if(!n) return vcg_struct_new("Style");
+    if(a[0].type==VT_STRUCT){ free(a[0].obj->type_name); a[0].obj->type_name=strdup("Style"); return a[0]; }
+    VCGVal s=vcg_struct_new("Style"); struct_set(s.obj,"value",a[0]); return s;
+}
+BUILTIN(design_fn){
+    (void)line;
+    if(!n) return vcg_struct_new("Design");
+    if(a[0].type==VT_STRUCT){ free(a[0].obj->type_name); a[0].obj->type_name=strdup("Design"); return a[0]; }
+    VCGVal s=vcg_struct_new("Design"); struct_set(s.obj,"value",a[0]); return s;
+}
+
+/* store_zip() — returns the whole reactive ($set/$get) store zipped into
+   an array of [key, value] pairs. Equivalent idea to "$get.zip()". */
+extern VCGEnv *vcg_globals_for_stdlib(void);
+BUILTIN(store_zip_fn){
+    (void)a;(void)n;(void)line;
+    VCGVal res = vcg_arr_new();
+    VCGEnv *globals = vcg_globals_for_stdlib();
+    if(!globals) return res;
+    VCGVal *store = env_get(globals, "__store__");
+    if(!store || store->type!=VT_STRUCT) return res;
+    for(int i=0;i<store->obj->len;i++){
+        VCGVal pair = vcg_arr_new();
+        arr_push(pair.arr, vcg_str(store->obj->keys[i]));
+        arr_push(pair.arr, store->obj->vals[i]);
+        arr_push(res.arr, pair);
+    }
+    return res;
+}
+
+/* ── v2.1 NEW: UI components (text / text_s / btn / ui) ──
+   هذه struct خفيفة لتمثيل عناصر واجهة بسيطة، يمكن دمجها مع $set("ui", ...)
+   ثم قراءتها لاحقاً بمحرر/مولّد HTML خارجي عبر type_of(el) == "Text"/"Button"/"UI". */
+
+/* el.color("#fff") / el.color("vcg_olive") / el.color(r,g,b[,a])
+   تُستدعى كـ method على struct ناتج عن text()/text_s()/btn():
+       btn("اضغط هنا").color("#FF6B6B")
+       text("...").color("vcg_olive")
+       btn("...").color(20,200,100,0.8)
+   تُحدّث الحقل المناسب داخل style (bg لو Button، color لو Text) وترجع self لإتاحة chaining. */
+BUILTIN(el_color_method){
+    (void)line;
+    if(!n || a[0].type!=VT_STRUCT) return n?a[0]:VCG_NIL;
+    VCGVal self = a[0];
+    VCGVal c = color_logic(a+1, n-1);
+    VCGVal *styleField = struct_get(self.obj, "style");
+    if(!styleField || styleField->type!=VT_STRUCT){
+        VCGVal newStyle = vcg_struct_new("Style");
+        struct_set(self.obj, "style", newStyle);
+        styleField = struct_get(self.obj, "style");
+    }
+    if(self.obj->type_name && strcmp(self.obj->type_name,"Button")==0)
+        struct_set(styleField->obj, "bg", *struct_get(c.obj,"hex"));
+    else
+        struct_set(styleField->obj, "color", *struct_get(c.obj,"hex"));
+    struct_set(styleField->obj, "_color_obj", c); /* الكائن الكامل {r,g,b,a,hex,rgb,rgba} */
+    return self;
+}
+
+/* text(content) → {type:"text", content, style:{}} */
+BUILTIN(text_fn){
+    (void)line;
+    VCGVal s = vcg_struct_new("Text");
+    struct_set(s.obj,"content", n? a[0] : vcg_str(""));
+    struct_set(s.obj,"style",   vcg_struct_new("Style"));
+    VCGVal m; m.type=VT_BUILTIN; m.builtin=bi_el_color_method;
+    struct_set(s.obj,"color", m);
+    return s;
+}
+/* text_s(content, style) → نص بستايل مخصّص (text_s = "text styled") */
+BUILTIN(text_s_fn){
+    (void)line;
+    VCGVal s = vcg_struct_new("Text");
+    struct_set(s.obj,"content", n>=1 ? a[0] : vcg_str(""));
+    struct_set(s.obj,"style",   n>=2 ? a[1] : vcg_struct_new("Style"));
+    VCGVal m; m.type=VT_BUILTIN; m.builtin=bi_el_color_method;
+    struct_set(s.obj,"color", m);
+    return s;
+}
+/* btn("نص الزر" [, onclick_name] [, style]) → {type:"button", label, onclick, style} */
+BUILTIN(btn_fn){
+    (void)line;
+    VCGVal s = vcg_struct_new("Button");
+    struct_set(s.obj,"label",   n>=1 ? a[0] : vcg_str("زر"));
+    struct_set(s.obj,"onclick", n>=2 ? a[1] : VCG_NIL);
+    struct_set(s.obj,"style",   n>=3 ? a[2] : vcg_struct_new("Style"));
+    VCGVal m; m.type=VT_BUILTIN; m.builtin=bi_el_color_method;
+    struct_set(s.obj,"color", m);
+    return s;
+}
+/* ui(el1, el2, el3, ...) → يجمع عناصر الواجهة في شجرة واحدة { type:"ui", children:[...] }
+   يُستخدم مباشرة مع $set("ui", ui(text(...), btn(...), ...)) */
+BUILTIN(ui_fn){
+    (void)line;
+    VCGVal s = vcg_struct_new("UI");
+    VCGVal children = vcg_arr_new();
+    for(int i=0;i<n;i++) arr_push(children.arr, a[i]);
+    struct_set(s.obj,"children", children);
+    return s;
+}
+
+/* ── v2.1 NEW: Settings (إعدادات تطبيق/صفحة كاملة) ──
+   تُبنى بالكامل كـ builtin methods (لا VCG classes) لضمان أن التغييرات
+   تُحفظ فعلياً عند الإرجاع، مما يتيح استدعاءً متسلسلاً (chaining) موثوقاً:
+       settings.name("...").package("...").version("...").icon("icons/icon.png")
+       settings.background.color("#fff")
+*/
+BUILTIN(settings_name_m){
+    (void)line;
+    if(!n||a[0].type!=VT_STRUCT) return n?a[0]:VCG_NIL;
+    if(n>=2){ struct_set(a[0].obj,"_name",a[1]); return a[0]; }
+    VCGVal *v=struct_get(a[0].obj,"_name"); return v?*v:vcg_str("");
+}
+BUILTIN(settings_package_m){
+    (void)line;
+    if(!n||a[0].type!=VT_STRUCT) return n?a[0]:VCG_NIL;
+    if(n>=2){ struct_set(a[0].obj,"_package",a[1]); return a[0]; }
+    VCGVal *v=struct_get(a[0].obj,"_package"); return v?*v:vcg_str("");
+}
+BUILTIN(settings_version_m){
+    (void)line;
+    if(!n||a[0].type!=VT_STRUCT) return n?a[0]:VCG_NIL;
+    if(n>=2){ struct_set(a[0].obj,"_version",a[1]); return a[0]; }
+    VCGVal *v=struct_get(a[0].obj,"_version"); return v?*v:vcg_str("");
+}
+BUILTIN(settings_icon_m){
+    (void)line;
+    if(!n||a[0].type!=VT_STRUCT) return n?a[0]:VCG_NIL;
+    if(n>=2){ struct_set(a[0].obj,"_icon",a[1]); return a[0]; }
+    VCGVal *v=struct_get(a[0].obj,"_icon"); return v?*v:VCG_NIL;
+}
+/* background.color("#fff") | .color("vcg_olive") | .color(r,g,b[,a]) — يحدّث background.value
+   ويُحدّث أيضاً _background_hex في الأب (Settings) إن وُجد ربط _parent. */
+BUILTIN(settings_bg_color_m){
+    (void)line;
+    if(!n||a[0].type!=VT_STRUCT) return n?a[0]:VCG_NIL;
+    VCGVal c = color_logic(a+1, n-1);
+    struct_set(a[0].obj,"value",c);
+    VCGVal *parent = struct_get(a[0].obj,"_parent");
+    if(parent && parent->type==VT_STRUCT){
+        VCGVal *hex = struct_get(c.obj,"hex");
+        if(hex) struct_set(parent->obj,"_background_hex", *hex);
+    }
+    return a[0];
+}
+/* settings.snapshot() → struct بكل القيم الحالية (name/package/version/icon/background) جاهز للتخزين */
+BUILTIN(settings_snapshot_m){
+    (void)line;
+    if(!n||a[0].type!=VT_STRUCT) return vcg_struct_new("object");
+    VCGVal out = vcg_struct_new("object");
+    VCGVal *p;
+    p=struct_get(a[0].obj,"_name");    struct_set(out.obj,"name",    p?*p:vcg_str(""));
+    p=struct_get(a[0].obj,"_package"); struct_set(out.obj,"package", p?*p:vcg_str(""));
+    p=struct_get(a[0].obj,"_version"); struct_set(out.obj,"version", p?*p:vcg_str(""));
+    p=struct_get(a[0].obj,"_icon");    struct_set(out.obj,"icon",    p?*p:VCG_NIL);
+    p=struct_get(a[0].obj,"_background_hex"); struct_set(out.obj,"background", p?*p:vcg_str(""));
+    return out;
+}
+/* settings_new() → ينشئ كائن إعدادات تطبيق/صفحة جديد بكل الحقول والـ methods أعلاه */
+BUILTIN(settings_new_fn){
+    (void)n;(void)a;(void)line;
+    VCGVal s = vcg_struct_new("Settings");
+    struct_set(s.obj,"_name",    vcg_str("تطبيق VCG"));
+    struct_set(s.obj,"_package", vcg_str("com.syrianvcg.app"));
+    struct_set(s.obj,"_version", vcg_str("1.0.0"));
+    struct_set(s.obj,"_icon",    VCG_NIL);
+
+    VCGVal bg = vcg_struct_new("Background");
+    VCGVal defaultColor = vcg_make_color_struct(26,29,20,1.0); /* vcg_dark */
+    struct_set(bg.obj,"value", defaultColor);
+    struct_set(bg.obj,"_parent", s);
+    VCGVal bgColorMethod; bgColorMethod.type=VT_BUILTIN; bgColorMethod.builtin=bi_settings_bg_color_m;
+    struct_set(bg.obj,"color", bgColorMethod);
+    struct_set(s.obj,"background", bg);
+    VCGVal *hex=struct_get(defaultColor.obj,"hex");
+    struct_set(s.obj,"_background_hex", hex?*hex:vcg_str("#1A1D14"));
+
+    VCGVal m;
+    m.type=VT_BUILTIN; m.builtin=bi_settings_name_m;     struct_set(s.obj,"name",     m);
+    m.type=VT_BUILTIN; m.builtin=bi_settings_package_m;  struct_set(s.obj,"package",  m);
+    m.type=VT_BUILTIN; m.builtin=bi_settings_version_m;  struct_set(s.obj,"version",  m);
+    m.type=VT_BUILTIN; m.builtin=bi_settings_icon_m;     struct_set(s.obj,"icon",     m);
+    m.type=VT_BUILTIN; m.builtin=bi_settings_snapshot_m; struct_set(s.obj,"snapshot", m);
+    return s;
 }
 
 /* ── Register all ── */
@@ -804,10 +1334,49 @@ void stdlib_register(VCGEnv *env) {
     REG(env,"uuid",   uuid_fn);
     REG(env,"hash",   hash_fn);
     REG(env,"type_of",type_of);
+    REG(env,"kind",    kind_fn);
     REG(env,"copy",   copy_fn);
 
-    env_set(env,"VCG_VERSION",  vcg_str("2.0.0"),      1);
-    env_set(env,"VCG_DATE",     vcg_str("2026-06-06"),  1);
+    env_set(env,"VCG_VERSION",  vcg_str("2.1.0"),      1);
+    env_set(env,"VCG_DATE",     vcg_str("2026-06-21"),  1);
     env_set(env,"VCG_AUTHOR",   vcg_str("Syrian VCG"),  1);
     env_set(env,"VCG_EDITION",  vcg_str("Full Edition"),1);
+
+    /* v2.1 String manipulation */
+    REG(env,"split",       str_split);
+    REG(env,"replace",     str_replace);
+    REG(env,"trim",        str_trim);
+    REG(env,"upper",       str_upper);
+    REG(env,"lower",       str_lower);
+    REG(env,"starts_with", str_starts_with);
+    REG(env,"ends_with",   str_ends_with);
+
+    /* v2.1 Array mutation/slicing */
+    REG(env,"push",    arr_push_fn);
+    REG(env,"pop",     arr_pop_fn);
+    REG(env,"shift",   arr_shift_fn);
+    REG(env,"unshift", arr_unshift_fn);
+    REG(env,"reverse", arr_reverse_fn);
+    REG(env,"sort",    arr_sort_fn);
+    REG(env,"slice",   arr_str_slice);
+
+    /* v2.1 Base64 */
+    REG(env,"base64_encode", base64_encode_fn);
+    REG(env,"base64_decode", base64_decode_fn);
+
+    /* v2.1 Color / Style / Design */
+    REG(env,"color",      color_fn);
+    REG(env,"color_argv", color_argv_fn);
+    REG(env,"style",      style_fn);
+    REG(env,"design",     design_fn);
+    REG(env,"store_zip",  store_zip_fn);
+
+    /* v2.1 UI components */
+    REG(env,"text",    text_fn);
+    REG(env,"text_s",  text_s_fn);
+    REG(env,"btn",     btn_fn);
+    REG(env,"ui",      ui_fn);
+
+    /* v2.1 App/Page Settings */
+    REG(env,"settings_new", settings_new_fn);
 }
