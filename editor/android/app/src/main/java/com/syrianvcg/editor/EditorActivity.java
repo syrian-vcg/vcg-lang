@@ -8,7 +8,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -168,6 +167,8 @@ public class EditorActivity extends AppCompatActivity {
 
         codeEditor.setHorizontallyScrolling(!settings.getWordWrap());
         lineNumbers.setVisibility(settings.getShowLineNumbers() ? View.VISIBLE : View.GONE);
+        codeEditor.setAutoIndentEnabled(settings.getAutoIndent());
+        codeEditor.setSyntaxHighlightEnabled(settings.getSyntaxHighlight());
     }
 
     private void schedulePreviewUpdate() {
@@ -184,8 +185,14 @@ public class EditorActivity extends AppCompatActivity {
         String code = codeEditor.getText() != null ? codeEditor.getText().toString() : "";
         String assetsJson = buildAssetsJson();
         String html = VcgInterpreter.buildHtml(code, filename, assetsJson, settings.getTheme());
-        String encoded = Base64.encodeToString(html.getBytes(), Base64.NO_PADDING);
-        previewWebView.loadData(encoded, "text/html", "base64");
+        // ⚠️ كانت تُستخدم Base64.NO_PADDING مع html.getBytes() بدون ترميز صريح:
+        // (1) getBytes() بلا UTF-8 يعتمد على ترميز المنصّة الافتراضي، وقد يكسر
+        //     النص العربي على أجهزة بترميز افتراضي مختلف.
+        // (2) NO_PADDING يولّد base64 بلا "=" نهائية، وبعض إصدارات محرّك
+        //     WebView/Chromium لا تفكّك base64 بلا padding بشكل موثوق.
+        // loadDataWithBaseURL مع تحديد "UTF-8" صراحة يتجنّب base64 كلياً
+        // ويتعامل مع المحتوى مباشرة كنص، وهو الأسلوب الموثّق والأكثر استقراراً.
+        previewWebView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null);
     }
 
     private String buildAssetsJson() {
