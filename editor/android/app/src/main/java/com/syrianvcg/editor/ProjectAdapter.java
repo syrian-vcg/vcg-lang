@@ -10,8 +10,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ProjectViewHolder> {
 
@@ -27,10 +29,35 @@ public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ProjectV
     private final ProjectClickListener listener;
     private static final SimpleDateFormat DATE_FMT = new SimpleDateFormat("d MMM, HH:mm", Locale.US);
 
+    /**
+     * ⚠️ onBindViewHolder كانت تستدعي storage.getFilesInProject() و
+     * getAssetsInProject() لكل عنصر يُعرض — أي قراءة SharedPreferences
+     * وتحليل JSON لكل ملف/أصل في كل مشروع، تتكرر في كل تمرير (scroll) وكل
+     * bind. مع عدد كبير من المشاريع هذا يسبب تقطيعاً واضحاً (jank) بالواجهة.
+     * هذا التخزين المؤقت يحسب العدّ مرة واحدة فقط لكل مشروع ويُعاد استخدامه،
+     * ويُصفَّر بالكامل عند refreshCounts() التي تُستدعى من loadProjects().
+     */
+    private final Map<String, int[]> countsCache = new HashMap<>();
+
     public ProjectAdapter(List<VcgProject> projects, VcgStorage storage, ProjectClickListener listener) {
         this.projects = projects;
         this.storage = storage;
         this.listener = listener;
+    }
+
+    /** يصفّر التخزين المؤقت للعدّادات. يجب استدعاؤها كل مرة تُعاد فيها قراءة قائمة المشاريع من التخزين. */
+    public void invalidateCounts() {
+        countsCache.clear();
+    }
+
+    private int[] countsFor(String projectId) {
+        int[] cached = countsCache.get(projectId);
+        if (cached != null) return cached;
+        int fileCount = storage.getFilesInProject(projectId).size();
+        int assetCount = storage.getAssetsInProject(projectId).size();
+        int[] counts = {fileCount, assetCount};
+        countsCache.put(projectId, counts);
+        return counts;
     }
 
     @NonNull @Override
@@ -47,9 +74,8 @@ public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ProjectV
         h.desc.setText(p.getDescription() == null || p.getDescription().isEmpty()
             ? "بدون وصف" : p.getDescription());
 
-        int fileCount = storage.getFilesInProject(p.getId()).size();
-        int assetCount = storage.getAssetsInProject(p.getId()).size();
-        h.meta.setText(fileCount + " ملف · " + assetCount + " ملف وسائط · " + DATE_FMT.format(p.getLastModified()));
+        int[] counts = countsFor(p.getId());
+        h.meta.setText(counts[0] + " ملف · " + counts[1] + " ملف وسائط · " + DATE_FMT.format(p.getLastModified()));
 
         try {
             int color = Color.parseColor(p.getColorTag());
