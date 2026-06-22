@@ -102,6 +102,10 @@ public class ProjectsActivity extends AppCompatActivity
     private void loadProjects() {
         projects.clear();
         projects.addAll(storage.getAllProjects());
+        // نصفّر تخزين عدد الملفات/الأصول المؤقت لأن هذا هو اللحظة الوحيدة
+        // التي قد تكون فيها البيانات تغيّرت فعلياً (مثلاً المستخدم رجع من
+        // مشروع أضاف فيه ملفاً جديداً). راجع التعليق في ProjectAdapter.
+        adapter.invalidateCounts();
         adapter.notifyDataSetChanged();
         emptyView.setVisibility(projects.isEmpty() ? View.VISIBLE : View.GONE);
     }
