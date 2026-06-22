@@ -27,6 +27,9 @@ public class ProjectsActivity extends AppCompatActivity
     private VcgStorage storage;
     private TextView emptyView;
     private ActivityResultLauncher<String[]> importPicker;
+    private VcgCoins coins;
+    private VcgAds ads;
+    private TextView coinLabel;
 
     private static final String[] COLOR_TAGS = {
         "#4DC95A", "#6AB0FF", "#F5C842", "#FF7A7A", "#CC99FF", "#00D4FF"
@@ -53,6 +56,15 @@ public class ProjectsActivity extends AppCompatActivity
 
         emptyView = findViewById(R.id.empty_view);
 
+        coins = new VcgCoins(this);
+        ads = new VcgAds();
+        VcgAds.init(this);
+        ads.preload(this);
+        ads.preloadInterstitial(this);
+        coinLabel = findViewById(R.id.label_coin_balance_home);
+        refreshCoinBalance();
+        findViewById(R.id.btn_watch_ad_home).setOnClickListener(v -> watchAdForCoins());
+
         FloatingActionButton fab = findViewById(R.id.fab_new_project);
         fab.setOnClickListener(v -> showNewProjectDialog());
 
@@ -68,6 +80,7 @@ public class ProjectsActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         loadProjects();
+        if (coins != null) refreshCoinBalance();
     }
 
     private void maybeShowReadyPrompt() {
@@ -190,13 +203,13 @@ public class ProjectsActivity extends AppCompatActivity
 
     private void exportProjectAsZip(VcgProject project) {
         Toast.makeText(this, "جاري تجهيز الملف المضغوط...", Toast.LENGTH_SHORT).show();
-        new Thread(() -> {
+        ads.showInterstitial(this, () -> new Thread(() -> {
             try {
                 VcgExport.exportProject(this, storage, project);
             } catch (Exception e) {
                 runOnUiThread(() -> Toast.makeText(this, "فشل التصدير: " + e.getMessage(), Toast.LENGTH_LONG).show());
             }
-        }).start();
+        }).start());
     }
 
     private void importProjectFromZip(Uri uri) {
@@ -234,6 +247,10 @@ public class ProjectsActivity extends AppCompatActivity
             importPicker.launch(new String[]{"application/zip", "application/octet-stream", "*/*"});
             return true;
         }
+        if (item.getItemId() == R.id.action_suggestion) {
+            showSuggestionDialog();
+            return true;
+        }
         if (item.getItemId() == R.id.action_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
@@ -243,6 +260,50 @@ public class ProjectsActivity extends AppCompatActivity
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void refreshCoinBalance() {
+        if (coinLabel != null) coinLabel.setText("🪙 " + coins.getBalance() + " عملة");
+    }
+
+    private void watchAdForCoins() {
+        if (!ads.isReady()) {
+            Toast.makeText(this, "الإعلان غير جاهز بعد، حاول بعد لحظات", Toast.LENGTH_SHORT).show();
+            ads.preload(this);
+            return;
+        }
+        ads.show(this, new VcgAds.RewardListener() {
+            @Override
+            public void onRewardEarned() {
+                runOnUiThread(() -> {
+                    coins.grantCoinsForAd();
+                    refreshCoinBalance();
+                    Toast.makeText(ProjectsActivity.this,
+                        "🎉 حصلت على " + VcgCoins.COINS_PER_AD + " عملة!", Toast.LENGTH_LONG).show();
+                });
+            }
+
+            @Override
+            public void onAdUnavailable(String reason) {
+                runOnUiThread(() ->
+                    Toast.makeText(ProjectsActivity.this, "تعذّر عرض الإعلان", Toast.LENGTH_SHORT).show());
+            }
+        });
+    }
+
+    private void showSuggestionDialog() {
+        View view = getLayoutInflater().inflate(R.layout.dialog_suggestion, null);
+        com.google.android.material.textfield.TextInputEditText input = view.findViewById(R.id.input_suggestion);
+
+        new AlertDialog.Builder(this, R.style.VCGDialog)
+            .setTitle("اقتراح جديد 💡")
+            .setView(view)
+            .setPositiveButton("إرسال", (d, w) -> {
+                String text = input.getText() != null ? input.getText().toString() : "";
+                VcgFeedback.openSuggestionEmail(this, text);
+            })
+            .setNegativeButton("إلغاء", null)
+            .show();
     }
 
     private void showAbout() {
