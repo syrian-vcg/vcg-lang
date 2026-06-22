@@ -19,6 +19,28 @@
         android:orientation="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical"
+            android:paddingHorizontal="14dp" android:paddingVertical="10dp"
+            android:background="?attr/colorSurface2">
+
+            <TextView android:id="@+id/label_coin_balance_home"
+                android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="🪙 0 عملة"
+                android:textColor="?attr/colorGold" android:textSize="14sp"
+                android:textStyle="bold"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_watch_ad_home"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="📺 اكسب عملات"
+                android:textAllCaps="false" android:textSize="12sp"
+                style="@style/VCGButtonSubtle"
+                android:insetTop="0dp" android:insetBottom="0dp"/>
+        </LinearLayout>
+
         <TextView android:id="@+id/empty_view"
             android:layout_width="match_parent" android:layout_height="0dp"
             android:layout_weight="1"
