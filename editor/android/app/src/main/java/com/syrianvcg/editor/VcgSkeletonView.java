@@ -56,7 +56,14 @@ public class VcgSkeletonView extends View {
     public void setVisibility(int visibility) {
         super.setVisibility(visibility);
         if (visibility == VISIBLE) {
-            if (pulse != null && !pulse.isStarted()) pulse.start();
+            // ⚠️ كان الشرط isStarted() دائماً true بعد pause() (لأن pause لا
+            // توقف الأنيميشن فعلياً، بل تجمّد تحديثاته فقط)، فلم يكن start()
+            // يُستدعى أبداً، وتبقى النبضة مجمّدة للأبد بعد أول إخفاء/إظهار.
+            // resume() هي الاستدعاء الصحيح لاستئناف أنيميشن متوقف بـ pause().
+            if (pulse != null) {
+                if (pulse.isPaused()) pulse.resume();
+                else if (!pulse.isStarted()) pulse.start();
+            }
         } else if (pulse != null) {
             pulse.pause();
         }
