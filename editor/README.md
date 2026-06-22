@@ -92,8 +92,9 @@ base64 vcg-release.keystore | tr -d '\n'
 
 ## مفاتيح AdMob (لا تُرفع على GitHub)
 
-نظام العملات في المحرر يعتمد على إعلان AdMob مُجزٍ (Rewarded) + إعلان بيني
-(Interstitial). أرقام AdMob الحقيقية **لا** توجد في الكود المصدري — تُقرأ
+نظام العملات في المحرر يعتمد على إعلان AdMob "بيني مقابل مكافأة"
+(Rewarded Interstitial) + إعلان بيني عادي (Interstitial). أرقام AdMob
+الحقيقية **لا** توجد في الكود المصدري — تُقرأ
 من `android/local.properties` الذي مذكور في `.gitignore` ولن يُرفع أبداً
 لو كان المستودع عاماً على GitHub.
 
