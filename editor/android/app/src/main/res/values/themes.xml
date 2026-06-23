@@ -181,4 +181,11 @@
         <item name="elevation">0dp</item>
         <item name="rippleColor">?attr/colorAccentLight</item>
     </style>
+
+    <!-- Animation for the custom editor popup menu (scale + fade from anchor) -->
+    <style name="VCGPopupAnimation" parent="android:Animation">
+        <item name="android:windowEnterAnimation">@anim/popup_enter</item>
+        <item name="android:windowExitAnimation">@anim/popup_exit</item>
+    </style>
 </resources>
+
