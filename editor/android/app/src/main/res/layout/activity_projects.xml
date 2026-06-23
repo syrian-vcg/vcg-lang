@@ -5,44 +5,46 @@
     android:layout_width="match_parent" android:layout_height="match_parent"
     android:background="?attr/colorBg">
 
-    <!-- ═══════════════════════════════════════
-         TOP BAR
-    ════════════════════════════════════════ -->
+    <!-- ═══ TOP BAR ═══ -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent" android:layout_height="wrap_content"
         android:elevation="0dp"
         android:background="?attr/colorSurface"
         app:liftOnScroll="true">
 
+        <!-- Toolbar فارغ لـ setSupportActionBar() فقط - بدون محتوى -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="?attr/colorSurface"/>
+
+        <!-- TopBar الحقيقي -->
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="62dp"
             android:background="?attr/colorSurface"
-            android:paddingHorizontal="4dp"
-            app:contentInsetStart="0dp"
-            app:contentInsetEnd="0dp">
+            android:paddingHorizontal="8dp">
 
-            <!-- VCG Logo badge (LEFT) -->
+            <!-- يسار: لوغو + اسم -->
             <LinearLayout
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:layout_gravity="start|center_vertical"
+                android:id="@+id/topbar_logo_area"
+                android:layout_width="wrap_content" android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:paddingStart="10dp">
+                android:paddingStart="4dp">
 
-                <!-- Green square logo -->
                 <TextView
-                    android:layout_width="36dp" android:layout_height="36dp"
+                    android:layout_width="38dp" android:layout_height="38dp"
                     android:text="V"
                     android:textColor="?attr/colorBg"
-                    android:textSize="18sp"
+                    android:textSize="19sp"
                     android:textStyle="bold"
                     android:gravity="center"
-                    android:background="@drawable/bg_nav_fab"
-                    android:fontFamily="monospace"/>
+                    android:fontFamily="monospace"
+                    android:background="@drawable/bg_nav_fab"/>
 
-                <!-- Name stack -->
                 <LinearLayout
                     android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:orientation="vertical"
@@ -54,8 +56,7 @@
                         android:textColor="?attr/colorAccentSecondary"
                         android:textSize="17sp"
                         android:textStyle="bold"
-                        android:fontFamily="sans-serif-medium"
-                        android:letterSpacing="0.02"/>
+                        android:fontFamily="sans-serif-medium"/>
 
                     <TextView
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
@@ -66,47 +67,48 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- Right actions -->
-            <LinearLayout
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:layout_gravity="end|center_vertical"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:paddingEnd="4dp">
+            <!-- يمين: زر ⋮ -->
+            <ImageButton
+                android:id="@+id/btn_more"
+                android:layout_width="44dp" android:layout_height="44dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_toolbar_more"
+                android:background="@drawable/bg_topbar_circle_btn"
+                android:tint="?attr/colorTextMuted"
+                android:contentDescription="القائمة"/>
 
-                <!-- ⋮ overflow menu -->
-                <ImageButton
-                    android:id="@+id/btn_more"
-                    android:layout_width="42dp" android:layout_height="42dp"
-                    android:src="@drawable/ic_toolbar_more"
-                    android:background="@drawable/bg_topbar_circle_btn"
-                    android:tint="?attr/colorTextMuted"
-                    android:contentDescription="القائمة"/>
-            </LinearLayout>
+        </RelativeLayout>
 
-        </androidx.appcompat.widget.Toolbar>
-
-        <!-- Accent underline -->
+        <!-- خط فاصل -->
         <View
             android:layout_width="match_parent" android:layout_height="1.5dp"
             android:background="?attr/colorBorder"/>
+
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- ═══════════════════════════════════════
-         CONTENT
-    ════════════════════════════════════════ -->
+    <!-- ═══ CONTENT ═══ -->
     <LinearLayout
         android:layout_width="match_parent" android:layout_height="match_parent"
         android:orientation="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- Coin bar -->
+        <!-- شريط العملات -->
         <LinearLayout
             android:layout_width="match_parent" android:layout_height="48dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:paddingHorizontal="16dp"
             android:background="?attr/colorSurface2">
+
+            <TextView
+                android:id="@+id/label_coin_balance_home"
+                android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="🪙 0 عملة"
+                android:textColor="?attr/colorGold"
+                android:textSize="13.5sp"
+                android:textStyle="bold"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_watch_ad_home"
@@ -116,22 +118,13 @@
                 android:textSize="12sp"
                 android:insetTop="0dp" android:insetBottom="0dp"
                 style="@style/VCGButtonSubtle"/>
-
-            <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1"/>
-
-            <TextView android:id="@+id/label_coin_balance_home"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="0 عملة 🪙"
-                android:textColor="?attr/colorGold"
-                android:textSize="13.5sp"
-                android:textStyle="bold"/>
         </LinearLayout>
 
-        <!-- Divider -->
+        <!-- فاصل -->
         <View android:layout_width="match_parent" android:layout_height="1dp"
             android:background="?attr/colorBorder"/>
 
-        <!-- Empty state -->
+        <!-- حالة فارغة -->
         <TextView android:id="@+id/empty_view"
             android:layout_width="match_parent" android:layout_height="0dp"
             android:layout_weight="1"
