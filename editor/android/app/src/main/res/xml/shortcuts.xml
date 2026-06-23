@@ -13,6 +13,7 @@
             android:action="com.syrianvcg.editor.ACTION_NEW_PROJECT"
             android:targetPackage="com.syrianvcg.editor"
             android:targetClass="com.syrianvcg.editor.ProjectsActivity"/>
+        <categories android:name="android.shortcut.conversation"/>
     </shortcut>
 
     <!-- ② آخر مشروع -->
@@ -27,6 +28,7 @@
             android:action="com.syrianvcg.editor.ACTION_LAST_PROJECT"
             android:targetPackage="com.syrianvcg.editor"
             android:targetClass="com.syrianvcg.editor.ProjectsActivity"/>
+        <categories android:name="android.shortcut.conversation"/>
     </shortcut>
 
     <!-- ③ Terminal -->
@@ -38,9 +40,10 @@
         android:shortcutLongLabel="@string/shortcut_terminal_long"
         android:shortcutDisabledMessage="@string/shortcut_disabled">
         <intent
-            android:action="android.intent.action.MAIN"
+            android:action="com.syrianvcg.editor.ACTION_TERMINAL"
             android:targetPackage="com.syrianvcg.editor"
             android:targetClass="com.syrianvcg.editor.TerminalActivity"/>
+        <categories android:name="android.shortcut.conversation"/>
     </shortcut>
 
     <!-- ④ الإعدادات -->
@@ -52,9 +55,10 @@
         android:shortcutLongLabel="@string/shortcut_settings_long"
         android:shortcutDisabledMessage="@string/shortcut_disabled">
         <intent
-            android:action="android.intent.action.MAIN"
+            android:action="com.syrianvcg.editor.ACTION_SETTINGS"
             android:targetPackage="com.syrianvcg.editor"
             android:targetClass="com.syrianvcg.editor.SettingsActivity"/>
+        <categories android:name="android.shortcut.conversation"/>
     </shortcut>
 
 </shortcuts>
