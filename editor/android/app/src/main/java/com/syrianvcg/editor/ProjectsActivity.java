@@ -103,11 +103,8 @@ public class ProjectsActivity extends AppCompatActivity
 
     private void openLastProject() {
         if (projects == null || projects.isEmpty()) return;
-        com.syrianvcg.editor.model.VcgProject last = projects.get(0);
-        Intent i = new Intent(this, MainActivity.class);
-        i.putExtra("project_id", last.getId());
-        i.putExtra("project_name", last.getName());
-        startActivity(i);
+        VcgProject last = projects.get(0);
+        openProject(last);
     }
 
     @Override
