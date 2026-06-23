@@ -92,6 +92,10 @@ public final class VcgAds {
     //  1. Rewarded Interstitial — العملات
     // ══════════════════════════════════════════════════════════════════════
 
+    public interface AdReadyListener { void onAdReady(); }
+    private static AdReadyListener adReadyListener;
+    public void setAdReadyListener(AdReadyListener l) { adReadyListener = l; }
+
     public void preload(Activity activity) {
         if (rewardedAd != null || isLoading) return;
         isLoading = true;
@@ -103,6 +107,8 @@ public final class VcgAds {
                         rewardedAd = ad;
                         isLoading = false;
                         Log.d(TAG, "Rewarded interstitial (coins) loaded.");
+                        if (adReadyListener != null)
+                            activity.runOnUiThread(() -> adReadyListener.onAdReady());
                     }
 
                     @Override
