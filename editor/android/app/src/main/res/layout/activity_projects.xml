@@ -54,6 +54,14 @@
             android:layout_weight="1"
             android:padding="8dp"
             android:clipToPadding="false"/>
+
+        <!-- ── حاوية بانر AdMob ── تُملأ برمجياً عبر VcgAds.showBanner() ── -->
+        <FrameLayout
+            android:id="@+id/banner_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:background="?attr/colorSurface"/>
     </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
