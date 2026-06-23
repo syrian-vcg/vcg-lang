@@ -77,7 +77,27 @@ public class ProjectsActivity extends AppCompatActivity
         ads.preloadRewardedInterstitial(this);
         coinLabel = findViewById(R.id.label_coin_balance_home);
         refreshCoinBalance();
-        findViewById(R.id.btn_watch_ad_home).setOnClickListener(v -> watchAdForCoins());
+
+        com.google.android.material.button.MaterialButton adBtn =
+            findViewById(R.id.btn_watch_ad_home);
+
+        // إذا الإعلان جاهز مسبقاً (static) — فعّل الزر فوراً
+        if (ads.isReady()) {
+            adBtn.setText("📺 اكسب عملات");
+            adBtn.setEnabled(true);
+            adBtn.setAlpha(1f);
+        } else {
+            // اعرض حالة تحميل وفعّل الزر لما يجهز
+            adBtn.setText("⏳ جاري التحميل...");
+            adBtn.setEnabled(false);
+            adBtn.setAlpha(0.55f);
+            ads.setAdReadyListener(() -> {
+                adBtn.setText("📺 اكسب عملات");
+                adBtn.setEnabled(true);
+                adBtn.setAlpha(1f);
+            });
+        }
+        adBtn.setOnClickListener(v -> watchAdForCoins());
 
         // ── بانر AdMob في أسفل الشاشة ──────────────────────────────────────
         FrameLayout bannerContainer = findViewById(R.id.banner_container);
