@@ -326,12 +326,9 @@ public class ProjectsActivity extends AppCompatActivity
     }
 
     private void showAbout() {
+        View view = getLayoutInflater().inflate(R.layout.dialog_about, null);
         new AlertDialog.Builder(this, R.style.VCGDialog)
-            .setTitle("Syrian VCG Editor")
-            .setMessage("Version: 2.1.0\n\n" +
-                "محرر لغة VCG البرمجية السورية\n" +
-                "مترجم حقيقي مكتوب بـ C11\n\n" +
-                "github.com/syrian-vcg/vcg-lang")
+            .setView(view)
             .setPositiveButton("إغلاق", null)
             .show();
     }
