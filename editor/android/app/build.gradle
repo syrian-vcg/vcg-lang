@@ -18,6 +18,8 @@ if (localPropsFile.exists()) {
 def admobAppId = localProps.getProperty('ADMOB_APP_ID', 'ca-app-pub-3940256099942544~3347511713')
 def admobRewardedUnitId = localProps.getProperty('ADMOB_REWARDED_UNIT_ID', 'ca-app-pub-3940256099942544/5224354917')
 def admobInterstitialUnitId = localProps.getProperty('ADMOB_INTERSTITIAL_UNIT_ID', 'ca-app-pub-3940256099942544/1033173712')
+def admobBannerUnitId = localProps.getProperty('ADMOB_BANNER_UNIT_ID', 'ca-app-pub-3940256099942544/6300978111')
+def admobRewardedInterstitialUnitId = localProps.getProperty('ADMOB_REWARDED_INTERSTITIAL_UNIT_ID', 'ca-app-pub-3940256099942544/5354046379')
 
 android {
     namespace 'com.syrianvcg.editor'
@@ -35,6 +37,8 @@ android {
         buildConfigField "String", "ADMOB_APP_ID", "\"${admobAppId}\""
         buildConfigField "String", "ADMOB_REWARDED_UNIT_ID", "\"${admobRewardedUnitId}\""
         buildConfigField "String", "ADMOB_INTERSTITIAL_UNIT_ID", "\"${admobInterstitialUnitId}\""
+        buildConfigField "String", "ADMOB_BANNER_UNIT_ID", "\"${admobBannerUnitId}\""
+        buildConfigField "String", "ADMOB_REWARDED_INTERSTITIAL_UNIT_ID", "\"${admobRewardedInterstitialUnitId}\""
     }
 
     buildTypes {
