@@ -11,7 +11,18 @@
             android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorSurface"
             app:titleTextColor="?attr/colorAccentSecondary"
-            app:subtitleTextColor="?attr/colorTextMuted"/>
+            app:subtitleTextColor="?attr/colorTextMuted">
+
+            <ImageButton
+                android:id="@+id/btn_more"
+                android:layout_width="42dp" android:layout_height="42dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="4dp"
+                android:src="@drawable/ic_toolbar_more"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="خيارات إضافية"
+                app:tint="?attr/colorTextMuted"/>
+        </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
     <!-- Editor + Preview split -->
