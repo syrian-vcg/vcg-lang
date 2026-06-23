@@ -86,10 +86,13 @@ public class EditorActivity extends AppCompatActivity {
 
         setSupportActionBar(findViewById(R.id.editor_toolbar));
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(filename);
-            getSupportActionBar().setSubtitle(projectName);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+            getSupportActionBar().setDisplayShowHomeEnabled(false);
         }
+        android.widget.TextView tvTitle = findViewById(R.id.toolbar_title);
+        android.widget.TextView tvSub   = findViewById(R.id.toolbar_subtitle);
+        if (tvTitle != null) tvTitle.setText(filename);
+        if (tvSub   != null) tvSub.setText(projectName);
 
         codeEditor  = findViewById(R.id.code_editor);
         lineNumbers = findViewById(R.id.line_numbers);
@@ -116,8 +119,8 @@ public class EditorActivity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int st, int b, int c) {
                 modified = true;
                 updateLineNumbers();
-                if (getSupportActionBar() != null)
-                    getSupportActionBar().setTitle("• " + filename);
+                android.widget.TextView t = findViewById(R.id.toolbar_title);
+                if (t != null) t.setText("• " + filename);
                 schedulePreviewUpdate();
             }
         });
@@ -341,8 +344,8 @@ public class EditorActivity extends AppCompatActivity {
         VcgFile file = new VcgFile(projectId, filename, content);
         storage.saveFile(file);
         modified = false;
-        if (getSupportActionBar() != null)
-            getSupportActionBar().setTitle(filename);
+        android.widget.TextView t = findViewById(R.id.toolbar_title);
+        if (t != null) t.setText(filename);
         Toast.makeText(this, "✓ حُفظ", Toast.LENGTH_SHORT).show();
     }
 
