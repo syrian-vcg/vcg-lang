@@ -32,18 +32,20 @@ public final class VcgAds {
 
     // ── أرقام الوحدات الإعلانية ────────────────────────────────────────────
     public static final String REWARDED_AD_UNIT_ID =
-            BuildConfig.ADMOB_REWARDED_UNIT_ID;
+            "ca-app-pub-1525040025806904/5259086172";
 
     public static final String INTERSTITIAL_AD_UNIT_ID =
-            BuildConfig.ADMOB_INTERSTITIAL_UNIT_ID;
+            "ca-app-pub-1525040025806904/4305097153";
 
     /** بانر — ca-app-pub-1525040025806904/3150465990 */
     public static final String BANNER_UNIT_ID =
-            BuildConfig.ADMOB_BANNER_UNIT_ID;
+            "ca-app-pub-1525040025806904/3150465990";
 
     /** إعلان بيني مقابل مكافأة "coi" — ca-app-pub-1525040025806904/2699305783 */
     public static final String REWARDED_INTERSTITIAL_UNIT_ID =
-            BuildConfig.ADMOB_REWARDED_INTERSTITIAL_UNIT_ID;
+            "ca-app-pub-1525040025806904/2699305783";
+}
+
 
     // ── حالة SDK ───────────────────────────────────────────────────────────
     private static boolean initialized = false;
