@@ -130,6 +130,8 @@ public class EditorActivity extends AppCompatActivity {
         findViewById(R.id.btn_run).setOnClickListener(v -> runCode());
         findViewById(R.id.btn_toggle_preview).setOnClickListener(v -> togglePreview());
         findViewById(R.id.btn_insert_asset).setOnClickListener(v -> showAssetPicker());
+        findViewById(R.id.nav_save).setOnClickListener(v -> saveFile());
+        findViewById(R.id.nav_terminal).setOnClickListener(v -> openTerminal());
 
         previewVisible = settings.getLivePreview();
         updatePreviewVisibility();
@@ -217,8 +219,17 @@ public class EditorActivity extends AppCompatActivity {
 
     private void updatePreviewVisibility() {
         previewContainer.setVisibility(previewVisible ? View.VISIBLE : View.GONE);
-        MaterialButton btn = findViewById(R.id.btn_toggle_preview);
-        btn.setText(previewVisible ? "▦ إخفاء المعاينة" : "▦ معاينة مباشرة");
+        android.widget.ImageView icon = findViewById(R.id.icon_toggle_preview);
+        TextView lbl = findViewById(R.id.lbl_toggle_preview);
+        icon.setImageResource(previewVisible ? R.drawable.ic_nav_preview : R.drawable.ic_nav_preview_off);
+
+        android.util.TypedValue tv = new android.util.TypedValue();
+        getTheme().resolveAttribute(R.attr.colorAccentSecondary, tv, true);
+        int accent = tv.data;
+        androidx.core.widget.ImageViewCompat.setImageTintList(icon,
+                android.content.res.ColorStateList.valueOf(accent));
+        lbl.setText(previewVisible ? "إخفاء" : "معاينة");
+        lbl.setTextColor(accent);
     }
 
     private void showAssetPicker() {
