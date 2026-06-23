@@ -42,6 +42,18 @@ public class ProjectsActivity extends AppCompatActivity
         VcgThemeHelper.apply(this);
         setContentView(R.layout.activity_projects);
         setSupportActionBar(findViewById(R.id.toolbar));
+        // إخفاء العنوان الافتراضي — التصميم في RelativeLayout المنفصل
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+            getSupportActionBar().setDisplayShowHomeEnabled(false);
+        }
+        // ربط زر ⋮ يدوياً بـ PopupMenu
+        findViewById(R.id.btn_more).setOnClickListener(v -> {
+            android.widget.PopupMenu popup = new android.widget.PopupMenu(this, v);
+            popup.getMenuInflater().inflate(R.menu.menu_main, popup.getMenu());
+            popup.setOnMenuItemClickListener(item -> onOptionsItemSelected(item));
+            popup.show();
+        });
 
         storage = new VcgStorage(this);
         storage.migrateLegacyIfNeeded();
