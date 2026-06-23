@@ -5,67 +5,107 @@
     android:layout_width="match_parent" android:layout_height="match_parent"
     android:background="?attr/colorBg">
 
+    <!-- ═══ TopBar ═══ -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
-        <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
-            android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
+        android:elevation="0dp"
+        android:background="?attr/colorSurface"
+        app:liftOnScroll="true">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
             android:background="?attr/colorSurface"
+            android:paddingHorizontal="4dp"
+            app:contentInsetStart="16dp"
             app:titleTextColor="?attr/colorAccentSecondary"/>
+
+        <View
+            android:layout_width="match_parent" android:layout_height="1.5dp"
+            android:background="?attr/colorBorder"/>
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- ═══ Content ═══ -->
     <LinearLayout
         android:layout_width="match_parent" android:layout_height="match_parent"
         android:orientation="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- Project quick actions -->
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="horizontal" android:padding="10dp">
+        <!-- Quick actions row -->
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="10dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="4dp">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_assets"
-                android:layout_width="0dp" android:layout_height="wrap_content"
-                android:layout_weight="1" android:layout_marginEnd="6dp"
+                android:layout_width="0dp" android:layout_height="42dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="5dp"
                 android:text="🖼  الوسائط"
-                android:textAllCaps="false" android:textSize="13sp"
+                android:textAllCaps="false"
+                android:textSize="13sp"
+                android:insetTop="0dp" android:insetBottom="0dp"
                 android:backgroundTint="?attr/colorSurface2"
                 android:textColor="?attr/colorTextPrimary"
+                app:cornerRadius="10dp"
                 style="@style/Widget.MaterialComponents.Button"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_terminal"
-                android:layout_width="0dp" android:layout_height="wrap_content"
-                android:layout_weight="1" android:layout_marginStart="6dp"
+                android:layout_width="0dp" android:layout_height="42dp"
+                android:layout_weight="1"
+                android:layout_marginStart="5dp"
                 android:text="⌨  Terminal"
-                android:textAllCaps="false" android:textSize="13sp"
+                android:textAllCaps="false"
+                android:textSize="13sp"
+                android:insetTop="0dp" android:insetBottom="0dp"
                 android:backgroundTint="?attr/colorSurface2"
                 android:textColor="?attr/colorTextPrimary"
+                app:cornerRadius="10dp"
                 style="@style/Widget.MaterialComponents.Button"/>
         </LinearLayout>
 
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent" android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:background="?attr/colorBorder"/>
+
+        <!-- Empty state -->
         <TextView android:id="@+id/empty_view"
             android:layout_width="match_parent" android:layout_height="0dp"
             android:layout_weight="1"
-            android:gravity="center" android:visibility="gone"
+            android:gravity="center"
+            android:visibility="gone"
             android:text="لا يوجد ملفات\nاضغط + لإنشاء ملف جديد"
-            android:textColor="?attr/colorTextMuted" android:textSize="16sp"
+            android:textColor="?attr/colorTextMuted"
+            android:textSize="15sp"
+            android:lineSpacingMultiplier="1.6"
             android:textAlignment="center"/>
 
-        <androidx.recyclerview.widget.RecyclerView android:id="@+id/recycler_files"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_files"
             android:layout_width="match_parent" android:layout_height="0dp"
             android:layout_weight="1"
-            android:padding="8dp"
+            android:padding="10dp"
             android:clipToPadding="false"/>
     </LinearLayout>
 
+    <!-- FAB -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_new"
         android:layout_width="wrap_content" android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
+        android:layout_margin="20dp"
         android:contentDescription="New File"
         android:src="@android:drawable/ic_input_add"
         app:backgroundTint="?attr/colorAccentPrimary"
-        app:tint="?attr/colorTextPrimary"/>
+        app:tint="?attr/colorTextPrimary"
+        app:fabSize="normal"
+        app:elevation="6dp"/>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
