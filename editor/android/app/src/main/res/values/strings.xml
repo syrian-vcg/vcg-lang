@@ -16,4 +16,14 @@
     <string name="assets">الوسائط</string>
     <string name="empty_files">لا يوجد ملفات\nاضغط + لإنشاء ملف جديد</string>
     <string name="empty_projects">لا يوجد مشاريع بعد\nاضغط + لإنشاء أول مشروع</string>
+    <!-- App Shortcuts -->
+    <string name="shortcut_new_project_short">مشروع جديد</string>
+    <string name="shortcut_new_project_long">إنشاء مشروع VCG جديد</string>
+    <string name="shortcut_last_project_short">آخر مشروع</string>
+    <string name="shortcut_last_project_long">فتح آخر مشروع تم تعديله</string>
+    <string name="shortcut_terminal_short">Terminal</string>
+    <string name="shortcut_terminal_long">فتح موجه الأوامر</string>
+    <string name="shortcut_settings_short">الإعدادات</string>
+    <string name="shortcut_settings_long">إعدادات المحرر</string>
+    <string name="shortcut_disabled">هذا الاختصار غير متاح حالياً</string>
 </resources>
