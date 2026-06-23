@@ -32,6 +32,17 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x editor/android/gradlew
 
+      - name: Create local.properties from secrets
+        working-directory: editor/android
+        run: |
+          cat > local.properties <<EOF
+          ADMOB_APP_ID=${{ secrets.ADMOB_APP_ID }}
+          ADMOB_REWARDED_UNIT_ID=${{ secrets.ADMOB_REWARDED_UNIT_ID }}
+          ADMOB_INTERSTITIAL_UNIT_ID=${{ secrets.ADMOB_INTERSTITIAL_UNIT_ID }}
+          ADMOB_BANNER_UNIT_ID=${{ secrets.ADMOB_BANNER_UNIT_ID }}
+          ADMOB_REWARDED_INTERSTITIAL_UNIT_ID=${{ secrets.ADMOB_REWARDED_INTERSTITIAL_UNIT_ID }}
+          EOF
+
       - name: Build Debug APK
         working-directory: editor/android
         run: |
@@ -51,6 +62,11 @@ jobs:
         env:
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
         continue-on-error: true
+
+      - name: Remove local.properties (cleanup secret file)
+        if: always()
+        working-directory: editor/android
+        run: rm -f local.properties
 
       - name: Collect APKs
         run: |
