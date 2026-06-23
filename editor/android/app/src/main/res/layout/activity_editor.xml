@@ -103,37 +103,142 @@
             android:gravity="center_vertical"/>
     </HorizontalScrollView>
 
-    <!-- Action row -->
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:orientation="horizontal">
+    <!-- Professional bottom navigation bar -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_insert_asset"
-            android:layout_width="56dp" android:layout_height="48dp"
-            android:text="🖼"
-            android:textSize="16sp"
-            android:backgroundTint="?attr/colorSurface2"
-            android:insetTop="0dp" android:insetBottom="0dp"
-            style="@style/Widget.MaterialComponents.Button"/>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_gravity="top"
+            android:background="?attr/colorBorder"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_toggle_preview"
-            android:layout_width="0dp" android:layout_height="48dp"
-            android:layout_weight="1"
-            android:text="▦ إخفاء المعاينة"
-            android:textSize="13sp" android:textAllCaps="false"
-            android:backgroundTint="?attr/colorSurface2"
-            android:textColor="?attr/colorTextPrimary"
-            style="@style/Widget.MaterialComponents.Button"/>
+        <LinearLayout
+            android:id="@+id/editor_bottom_nav"
+            android:layout_width="match_parent"
+            android:layout_height="68dp"
+            android:layout_marginTop="1dp"
+            android:orientation="horizontal"
+            android:background="@drawable/bg_bottom_nav"
+            android:elevation="12dp"
+            android:gravity="center_vertical">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_run"
-            android:layout_width="0dp" android:layout_height="48dp"
-            android:layout_weight="1.4"
-            android:text="▶  تشغيل"
-            android:textSize="15sp" android:textStyle="bold" android:textAllCaps="false"
-            android:backgroundTint="?attr/colorAccentPrimary"
-            android:textColor="@android:color/white"
-            style="@style/Widget.MaterialComponents.Button"/>
-    </LinearLayout>
+            <!-- Save -->
+            <LinearLayout
+                android:id="@+id/nav_save"
+                android:layout_width="0dp" android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true" android:focusable="true">
+                <ImageView
+                    android:layout_width="22dp" android:layout_height="22dp"
+                    android:src="@drawable/ic_nav_save"
+                    app:tint="?attr/colorTextMuted"/>
+                <TextView
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="حفظ"
+                    android:textSize="10.5sp"
+                    android:textColor="?attr/colorTextMuted"/>
+            </LinearLayout>
+
+            <!-- Insert media -->
+            <LinearLayout
+                android:id="@+id/btn_insert_asset"
+                android:layout_width="0dp" android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true" android:focusable="true">
+                <ImageView
+                    android:layout_width="22dp" android:layout_height="22dp"
+                    android:src="@drawable/ic_nav_insert"
+                    app:tint="?attr/colorTextMuted"/>
+                <TextView
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="وسائط"
+                    android:textSize="10.5sp"
+                    android:textColor="?attr/colorTextMuted"/>
+            </LinearLayout>
+
+            <!-- Run (raised center action) -->
+            <FrameLayout
+                android:layout_width="0dp" android:layout_height="match_parent"
+                android:layout_weight="1.1"
+                android:gravity="center">
+
+                <LinearLayout
+                    android:id="@+id/btn_run"
+                    android:layout_width="58dp" android:layout_height="58dp"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="14dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:background="@drawable/bg_nav_fab"
+                    android:elevation="8dp"
+                    android:clickable="true" android:focusable="true">
+                    <ImageView
+                        android:layout_width="24dp" android:layout_height="24dp"
+                        android:src="@drawable/ic_nav_run"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_marginBottom="6dp"
+                    android:text="تشغيل"
+                    android:textSize="10.5sp" android:textStyle="bold"
+                    android:textColor="?attr/colorAccentPrimary"/>
+            </FrameLayout>
+
+            <!-- Preview toggle -->
+            <LinearLayout
+                android:id="@+id/btn_toggle_preview"
+                android:layout_width="0dp" android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true" android:focusable="true">
+                <ImageView
+                    android:id="@+id/icon_toggle_preview"
+                    android:layout_width="22dp" android:layout_height="22dp"
+                    android:src="@drawable/ic_nav_preview"
+                    app:tint="?attr/colorAccentSecondary"/>
+                <TextView
+                    android:id="@+id/lbl_toggle_preview"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="معاينة"
+                    android:textSize="10.5sp"
+                    android:textColor="?attr/colorAccentSecondary"/>
+            </LinearLayout>
+
+            <!-- Terminal -->
+            <LinearLayout
+                android:id="@+id/nav_terminal"
+                android:layout_width="0dp" android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true" android:focusable="true">
+                <ImageView
+                    android:layout_width="22dp" android:layout_height="22dp"
+                    android:src="@drawable/ic_nav_terminal"
+                    app:tint="?attr/colorTextMuted"/>
+                <TextView
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="Terminal"
+                    android:textSize="10.5sp"
+                    android:textColor="?attr/colorTextMuted"/>
+            </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
 </LinearLayout>
