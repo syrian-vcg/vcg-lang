@@ -418,7 +418,7 @@ public class ProjectsActivity extends AppCompatActivity
             android.widget.LinearLayout.LayoutParams descLp =
                 new android.widget.LinearLayout.LayoutParams(0,
                     android.view.ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-            descLp.marginStart = dp(6);
+            descLp.setMarginStart(dp(6));
             row.addView(numTv);
             row.addView(descTv, descLp);
             root.addView(row, rowLp);
