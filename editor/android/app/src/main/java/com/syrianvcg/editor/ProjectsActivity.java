@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
@@ -61,9 +62,14 @@ public class ProjectsActivity extends AppCompatActivity
         VcgAds.init(this);
         ads.preload(this);
         ads.preloadInterstitial(this);
+        ads.preloadRewardedInterstitial(this);
         coinLabel = findViewById(R.id.label_coin_balance_home);
         refreshCoinBalance();
         findViewById(R.id.btn_watch_ad_home).setOnClickListener(v -> watchAdForCoins());
+
+        // ── بانر AdMob في أسفل الشاشة ──────────────────────────────────────
+        FrameLayout bannerContainer = findViewById(R.id.banner_container);
+        ads.showBanner(this, bannerContainer);
 
         FloatingActionButton fab = findViewById(R.id.fab_new_project);
         fab.setOnClickListener(v -> showNewProjectDialog());
@@ -81,6 +87,19 @@ public class ProjectsActivity extends AppCompatActivity
         super.onResume();
         loadProjects();
         if (coins != null) refreshCoinBalance();
+        if (ads != null) ads.resumeBanner();
+    }
+
+    @Override
+    protected void onPause() {
+        if (ads != null) ads.pauseBanner();
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (ads != null) ads.destroyBanner();
+        super.onDestroy();
     }
 
     private void maybeShowReadyPrompt() {
