@@ -245,8 +245,7 @@ public class MainActivity extends AppCompatActivity
                 }
                 runOnUiThread(() -> {
                     Toast.makeText(this, "تم الرفع بنجاح إلى " + fullRepo + " ✓", Toast.LENGTH_LONG).show();
-                    VcgNotifications.notify(this, 4, "تم الرفع إلى GitHub ✓",
-                        project.getName() + " → " + fullRepo);
+                    VcgNotifications.notifyGitHubPushed(this, project.getName(), fullRepo);
                 });
             } catch (Exception e) {
                 String msg = e.getMessage();
