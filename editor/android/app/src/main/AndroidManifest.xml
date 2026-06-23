@@ -26,14 +26,9 @@
 
         <activity
             android:name=".SplashActivity"
-            android:exported="true"
+            android:exported="false"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.VCGEditor.Splash">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:theme="@style/Theme.VCGEditor.Splash"/>
 
         <!--
             ════════════ Activity-alias لتبديل أيقونة التطبيق ════════════
@@ -42,8 +37,11 @@
             وتُفعَّل/تُعطَّل عبر PackageManager.setComponentEnabledSetting، لذا
             exported="true" + intent-filter LAUNCHER ضروريان لتظهر كأيقونة قابلة
             للتفعيل على الشاشة الرئيسية متى احتاجها التبديل.
-            "olive" هو الافتراضي (ic_launcher / ic_launcher_round العاديين)
-            ولذلك لا يحتاج alias خاص به — هو نفس <activity> الأساسية أعلاه.
+
+            ملاحظة مهمة: SplashActivity الأساسية أعلاه لا تحمل intent-filter
+            LAUNCHER خاص بها — هذا كان سبب ظهور نسختين من التطبيق على الشاشة
+            الرئيسية (نسخة من <activity> نفسها + نسخة من LauncherOlive، وكلاهما
+            مفعّل دائماً). الآن LauncherOlive وحده هو نقطة الدخول الافتراضية.
         -->
         <activity-alias
             android:name=".LauncherOlive"
