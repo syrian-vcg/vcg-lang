@@ -80,6 +80,34 @@ public class ProjectsActivity extends AppCompatActivity
         );
 
         loadProjects();
+
+        // ── App Shortcuts Intent Handler ────────────────────────────
+        handleShortcutIntent(getIntent());
+    }
+
+    private void handleShortcutIntent(Intent intent) {
+        if (intent == null) return;
+        String action = intent.getAction();
+        if (action == null) return;
+        switch (action) {
+            case "com.syrianvcg.editor.ACTION_NEW_PROJECT":
+                // slight delay so UI is ready
+                findViewById(R.id.fab_new_project).postDelayed(
+                    this::showNewProjectDialog, 300);
+                break;
+            case "com.syrianvcg.editor.ACTION_LAST_PROJECT":
+                openLastProject();
+                break;
+        }
+    }
+
+    private void openLastProject() {
+        if (projects == null || projects.isEmpty()) return;
+        com.syrianvcg.editor.model.VcgProject last = projects.get(0);
+        Intent i = new Intent(this, MainActivity.class);
+        i.putExtra("project_id", last.getId());
+        i.putExtra("project_name", last.getName());
+        startActivity(i);
     }
 
     @Override
