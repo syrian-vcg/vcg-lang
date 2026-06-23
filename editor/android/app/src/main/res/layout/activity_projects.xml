@@ -15,39 +15,59 @@
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="64dp"
+            android:layout_height="68dp"
             android:background="?attr/colorSurface"
-            android:paddingHorizontal="4dp"
-            app:contentInsetStart="16dp">
+            android:paddingHorizontal="6dp"
+            app:contentInsetStart="12dp">
 
-            <!-- Logo + Title stacked -->
+            <!-- Logo badge + Title stacked -->
             <LinearLayout
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
                 android:layout_gravity="center_vertical">
 
-                <TextView
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Syrian VCG"
-                    android:textColor="?attr/colorAccentSecondary"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:fontFamily="sans-serif-medium"
-                    android:letterSpacing="0.03"/>
+                <FrameLayout
+                    android:layout_width="40dp" android:layout_height="40dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/bg_about_logo_badge">
+                    <ImageView
+                        android:layout_width="24dp" android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_vcg_logo"
+                        android:contentDescription="VCG"/>
+                </FrameLayout>
 
-                <TextView
+                <LinearLayout
                     android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="مشاريعي"
-                    android:textColor="?attr/colorTextMuted"
-                    android:textSize="11.5sp"
-                    android:layout_marginTop="-1dp"/>
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Syrian VCG"
+                        android:textColor="?attr/colorAccentSecondary"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:fontFamily="sans-serif-medium"
+                        android:letterSpacing="0.03"/>
+
+                    <TextView
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="مشاريعي · VCG Editor"
+                        android:textColor="?attr/colorTextMuted"
+                        android:textSize="11sp"
+                        android:layout_marginTop="-1dp"/>
+                </LinearLayout>
             </LinearLayout>
 
         </androidx.appcompat.widget.Toolbar>
 
         <!-- Accent line under toolbar -->
         <View
-            android:layout_width="match_parent" android:layout_height="1.5dp"
+            android:layout_width="match_parent" android:layout_height="2dp"
+            android:background="?attr/colorAccentPrimary"/>
+        <View
+            android:layout_width="match_parent" android:layout_height="1dp"
             android:background="?attr/colorBorder"/>
     </com.google.android.material.appbar.AppBarLayout>
 
