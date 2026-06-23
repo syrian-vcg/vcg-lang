@@ -2,51 +2,70 @@ package com.syrianvcg.editor;
 
 import android.app.Activity;
 import android.util.Log;
+import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd;
 import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAdLoadCallback;
 
 /**
- * VcgAds — غلاف بسيط حول Google Mobile Ads (AdMob) لعرض إعلان "بيني مقابل
- * مكافأة" (Rewarded Interstitial) يمنح المستخدم عملات داخل المحرر عند
- * مشاهدته كاملاً.
+ * VcgAds — غلاف حول Google Mobile Ads (AdMob) يدير أربع وحدات إعلانية:
  *
- * ⚠️ هذه الوحدة الإعلانية أُنشئت في AdMob كنوع "Rewarded Interstitial"
- * تحديداً (هذا ما تؤكده صفحة الإنشاء التي توجّه لدليل "تنفيذ الإعلانات
- * البينية مقابل مكافأة")، وهو تنسيق مختلف عن "Rewarded" العادي رغم
- * تشابه الاسم: يُحمَّل ويُعرض عبر فئة RewardedInterstitialAd في الحزمة
- * com.google.android.gms.ads.rewardedinterstitial، وليس عبر RewardedAd.
- * استخدام الفئة الخاطئة مع رقم تعريف وحدة من نوع مختلف يؤدي غالباً إلى
- * فشل تحميل الإعلان (No Fill) لأن خادم AdMob يطابق التنسيق بدقة.
+ *  1. Rewarded Interstitial (REWARDED_AD_UNIT_ID)      — يمنح عملات عند المشاهدة الكاملة.
+ *  2. Interstitial          (INTERSTITIAL_AD_UNIT_ID)  — إعلان بيني عادي.
+ *  3. Banner                (BANNER_UNIT_ID)            — شريط بانر في أسفل الشاشة.
+ *  4. Rewarded Interstitial "coi" (REWARDED_INTERSTITIAL_UNIT_ID) — وحدة مُجزية ثانية.
  *
- * رقم تعريف التطبيق (AdMob App ID) موضوع في AndroidManifest.xml كـ meta-data،
- * ورقم تعريف الوحدة الإعلانية هنا أدناه (AD_UNIT_ID).
+ * أرقام التعريف الحقيقية تُقرأ من BuildConfig (مصدرها local.properties غير المرفوع).
+ * عند غيابها تُستخدم أرقام AdMob الرسمية للاختبار حتى يظل المشروع قابلاً للبناء.
  */
 public final class VcgAds {
 
     private static final String TAG = "VcgAds";
 
-    /**
-     * أرقام تعريف الوحدات الإعلانية الحقيقية لا تُكتب هنا مباشرة — تُقرأ من
-     * BuildConfig الذي يأخذها من local.properties (غير مرفوع على GitHub).
-     * إن لم تُضبط، تُستخدم أرقام AdMob الرسمية للاختبار تلقائياً، فيبقى
-     * المشروع قابلاً للبناء بأمان لأي شخص يستنسخه من المستودع العام.
-     */
-    public static final String REWARDED_AD_UNIT_ID = BuildConfig.ADMOB_REWARDED_UNIT_ID;
-    public static final String INTERSTITIAL_AD_UNIT_ID = BuildConfig.ADMOB_INTERSTITIAL_UNIT_ID;
+    // ── أرقام الوحدات الإعلانية ────────────────────────────────────────────
+    public static final String REWARDED_AD_UNIT_ID =
+            BuildConfig.ADMOB_REWARDED_UNIT_ID;
 
+    public static final String INTERSTITIAL_AD_UNIT_ID =
+            BuildConfig.ADMOB_INTERSTITIAL_UNIT_ID;
+
+    /** بانر — ca-app-pub-1525040025806904/3150465990 */
+    public static final String BANNER_UNIT_ID =
+            BuildConfig.ADMOB_BANNER_UNIT_ID;
+
+    /** إعلان بيني مقابل مكافأة "coi" — ca-app-pub-1525040025806904/2699305783 */
+    public static final String REWARDED_INTERSTITIAL_UNIT_ID =
+            BuildConfig.ADMOB_REWARDED_INTERSTITIAL_UNIT_ID;
+
+    // ── حالة SDK ───────────────────────────────────────────────────────────
     private static boolean initialized = false;
 
+    // ── Rewarded Interstitial (الأولى — لمنح العملات) ─────────────────────
     private RewardedInterstitialAd rewardedAd;
     private boolean isLoading = false;
 
+    // ── Interstitial ───────────────────────────────────────────────────────
     private com.google.android.gms.ads.interstitial.InterstitialAd interstitialAd;
     private boolean isInterstitialLoading = false;
+
+    // ── Rewarded Interstitial الثانية "coi" ────────────────────────────────
+    private RewardedInterstitialAd rewardedInterstitialAd;
+    private boolean isRewardedInterstitialLoading = false;
+
+    // ── Banner ─────────────────────────────────────────────────────────────
+    private AdView bannerAdView;
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  Listener
+    // ══════════════════════════════════════════════════════════════════════
 
     public interface RewardListener {
         /** يُستدعى فقط إذا شاهد المستخدم الإعلان كاملاً واستحق المكافأة. */
@@ -55,31 +74,41 @@ public final class VcgAds {
         default void onAdUnavailable(String reason) {}
     }
 
-    /** يُستدعى مرة واحدة (مثلاً من Application أو أول Activity) لتهيئة SDK. */
+    // ══════════════════════════════════════════════════════════════════════
+    //  تهيئة SDK
+    // ══════════════════════════════════════════════════════════════════════
+
+    /** يُستدعى مرة واحدة (من Application أو أول Activity) لتهيئة Mobile Ads SDK. */
     public static void init(Activity activity) {
         if (initialized) return;
         initialized = true;
         MobileAds.initialize(activity, status -> Log.d(TAG, "AdMob initialized"));
     }
 
+    // ══════════════════════════════════════════════════════════════════════
+    //  1. Rewarded Interstitial — العملات
+    // ══════════════════════════════════════════════════════════════════════
+
     public void preload(Activity activity) {
         if (rewardedAd != null || isLoading) return;
         isLoading = true;
         AdRequest request = new AdRequest.Builder().build();
-        RewardedInterstitialAd.load(activity, REWARDED_AD_UNIT_ID, request, new RewardedInterstitialAdLoadCallback() {
-            @Override
-            public void onAdLoaded(@NonNull RewardedInterstitialAd ad) {
-                rewardedAd = ad;
-                isLoading = false;
-            }
+        RewardedInterstitialAd.load(activity, REWARDED_AD_UNIT_ID, request,
+                new RewardedInterstitialAdLoadCallback() {
+                    @Override
+                    public void onAdLoaded(@NonNull RewardedInterstitialAd ad) {
+                        rewardedAd = ad;
+                        isLoading = false;
+                        Log.d(TAG, "Rewarded interstitial (coins) loaded.");
+                    }
 
-            @Override
-            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                rewardedAd = null;
-                isLoading = false;
-                Log.w(TAG, "Rewarded interstitial ad failed to load: " + loadAdError.getMessage());
-            }
-        });
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                        rewardedAd = null;
+                        isLoading = false;
+                        Log.w(TAG, "Rewarded interstitial (coins) failed: " + loadAdError.getMessage());
+                    }
+                });
     }
 
     public boolean isReady() {
@@ -111,28 +140,31 @@ public final class VcgAds {
         rewardedAd.show(activity, rewardItem -> listener.onRewardEarned());
     }
 
-    // ═══════════════ إعلان بيني (Interstitial) — الوحدة الإعلانية الثانية ═══════════════
+    // ══════════════════════════════════════════════════════════════════════
+    //  2. Interstitial — إعلان بيني عادي
+    // ══════════════════════════════════════════════════════════════════════
 
     public void preloadInterstitial(Activity activity) {
         if (interstitialAd != null || isInterstitialLoading) return;
         isInterstitialLoading = true;
         AdRequest request = new AdRequest.Builder().build();
         com.google.android.gms.ads.interstitial.InterstitialAd.load(
-            activity, INTERSTITIAL_AD_UNIT_ID, request,
-            new com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback() {
-                @Override
-                public void onAdLoaded(@NonNull com.google.android.gms.ads.interstitial.InterstitialAd ad) {
-                    interstitialAd = ad;
-                    isInterstitialLoading = false;
-                }
+                activity, INTERSTITIAL_AD_UNIT_ID, request,
+                new com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback() {
+                    @Override
+                    public void onAdLoaded(@NonNull com.google.android.gms.ads.interstitial.InterstitialAd ad) {
+                        interstitialAd = ad;
+                        isInterstitialLoading = false;
+                        Log.d(TAG, "Interstitial loaded.");
+                    }
 
-                @Override
-                public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                    interstitialAd = null;
-                    isInterstitialLoading = false;
-                    Log.w(TAG, "Interstitial ad failed to load: " + loadAdError.getMessage());
-                }
-            });
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                        interstitialAd = null;
+                        isInterstitialLoading = false;
+                        Log.w(TAG, "Interstitial failed: " + loadAdError.getMessage());
+                    }
+                });
     }
 
     public boolean isInterstitialReady() {
@@ -163,5 +195,144 @@ public final class VcgAds {
             }
         });
         interstitialAd.show(activity);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  3. Banner — شريط إعلاني
+    // ══════════════════════════════════════════════════════════════════════
+
+    /**
+     * يُحمِّل ويعرض بانر AdMob داخل الـ ViewGroup المُمرَّر (عادةً FrameLayout أو
+     * LinearLayout في أسفل الشاشة). الوحدة الإعلانية: BANNER_UNIT_ID.
+     *
+     * استخدام:
+     * <pre>
+     *   ads.showBanner(this, findViewById(R.id.banner_container));
+     * </pre>
+     *
+     * @param activity        النشاط الحالي (مطلوب لبناء AdRequest).
+     * @param bannerContainer الحاوية في التخطيط التي ستستقبل الـ AdView.
+     */
+    public void showBanner(Activity activity, ViewGroup bannerContainer) {
+        if (bannerAdView != null) {
+            // أعِد الاستخدام إن كان البانر محمَّلاً مسبقاً
+            if (bannerAdView.getParent() == null) {
+                bannerContainer.addView(bannerAdView);
+            }
+            return;
+        }
+
+        bannerAdView = new AdView(activity);
+        bannerAdView.setAdUnitId(BANNER_UNIT_ID);
+        bannerAdView.setAdSize(AdSize.BANNER);
+
+        bannerAdView.setAdListener(new AdListener() {
+            @Override
+            public void onAdLoaded() {
+                Log.d(TAG, "Banner loaded.");
+            }
+
+            @Override
+            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                Log.w(TAG, "Banner failed: " + loadAdError.getMessage());
+            }
+        });
+
+        bannerContainer.removeAllViews();
+        bannerContainer.addView(bannerAdView);
+
+        AdRequest request = new AdRequest.Builder().build();
+        bannerAdView.loadAd(request);
+    }
+
+    /**
+     * يجب استدعاؤها من onPause() في الـ Activity/Fragment الذي يحتوي البانر.
+     */
+    public void pauseBanner() {
+        if (bannerAdView != null) bannerAdView.pause();
+    }
+
+    /**
+     * يجب استدعاؤها من onResume() في الـ Activity/Fragment الذي يحتوي البانر.
+     */
+    public void resumeBanner() {
+        if (bannerAdView != null) bannerAdView.resume();
+    }
+
+    /**
+     * يجب استدعاؤها من onDestroy() في الـ Activity/Fragment الذي يحتوي البانر
+     * لتحرير الموارد ومنع تسرّب الذاكرة.
+     */
+    public void destroyBanner() {
+        if (bannerAdView != null) {
+            bannerAdView.destroy();
+            bannerAdView = null;
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  4. Rewarded Interstitial "coi" — الوحدة المُجزية الثانية
+    // ══════════════════════════════════════════════════════════════════════
+
+    /**
+     * يُحمِّل الوحدة البينية مقابل مكافأة "coi" مسبقاً.
+     * تُستخدم كوحدة مُجزية إضافية (مثلاً لفتح ميزة بدلاً من العملات).
+     */
+    public void preloadRewardedInterstitial(Activity activity) {
+        if (rewardedInterstitialAd != null || isRewardedInterstitialLoading) return;
+        isRewardedInterstitialLoading = true;
+        AdRequest request = new AdRequest.Builder().build();
+        RewardedInterstitialAd.load(activity, REWARDED_INTERSTITIAL_UNIT_ID, request,
+                new RewardedInterstitialAdLoadCallback() {
+                    @Override
+                    public void onAdLoaded(@NonNull RewardedInterstitialAd ad) {
+                        rewardedInterstitialAd = ad;
+                        isRewardedInterstitialLoading = false;
+                        Log.d(TAG, "Rewarded interstitial (coi) loaded.");
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                        rewardedInterstitialAd = null;
+                        isRewardedInterstitialLoading = false;
+                        Log.w(TAG, "Rewarded interstitial (coi) failed: " + loadAdError.getMessage());
+                    }
+                });
+    }
+
+    public boolean isRewardedInterstitialReady() {
+        return rewardedInterstitialAd != null;
+    }
+
+    /**
+     * يعرض إعلان "coi" البيني المُجزي. يمنح المستخدم المكافأة فقط عند اكتمال المشاهدة.
+     *
+     * @param activity النشاط الحالي.
+     * @param listener مستمع يُستدعى عند الاستحقاق أو الفشل.
+     */
+    public void showRewardedInterstitial(Activity activity, RewardListener listener) {
+        if (rewardedInterstitialAd == null) {
+            if (listener != null) listener.onAdUnavailable("الإعلان غير جاهز، حاول لاحقاً");
+            preloadRewardedInterstitial(activity);
+            return;
+        }
+
+        rewardedInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+            @Override
+            public void onAdDismissedFullScreenContent() {
+                rewardedInterstitialAd = null;
+                preloadRewardedInterstitial(activity);
+            }
+
+            @Override
+            public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                rewardedInterstitialAd = null;
+                if (listener != null) listener.onAdUnavailable(adError.getMessage());
+                preloadRewardedInterstitial(activity);
+            }
+        });
+
+        rewardedInterstitialAd.show(activity,
+                rewardItem -> { if (listener != null) listener.onRewardEarned(); });
     }
 }
