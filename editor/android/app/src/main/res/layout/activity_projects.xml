@@ -5,7 +5,9 @@
     android:layout_width="match_parent" android:layout_height="match_parent"
     android:background="?attr/colorBg">
 
-    <!-- ═══ TopBar ═══ -->
+    <!-- ═══════════════════════════════════════
+         TOP BAR
+    ════════════════════════════════════════ -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent" android:layout_height="wrap_content"
         android:elevation="0dp"
@@ -15,63 +17,84 @@
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="68dp"
+            android:layout_height="62dp"
             android:background="?attr/colorSurface"
-            android:paddingHorizontal="6dp"
-            app:contentInsetStart="12dp">
+            android:paddingHorizontal="4dp"
+            app:contentInsetStart="0dp"
+            app:contentInsetEnd="0dp">
 
-            <!-- Logo badge + Title stacked -->
+            <!-- VCG Logo badge (LEFT) -->
             <LinearLayout
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_gravity="start|center_vertical"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_gravity="center_vertical">
+                android:paddingStart="10dp">
 
-                <FrameLayout
-                    android:layout_width="40dp" android:layout_height="40dp"
-                    android:layout_marginEnd="10dp"
-                    android:background="@drawable/bg_about_logo_badge">
-                    <ImageView
-                        android:layout_width="24dp" android:layout_height="24dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_vcg_logo"
-                        android:contentDescription="VCG"/>
-                </FrameLayout>
+                <!-- Green square logo -->
+                <TextView
+                    android:layout_width="36dp" android:layout_height="36dp"
+                    android:text="V"
+                    android:textColor="?attr/colorBg"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:background="@drawable/bg_nav_fab"
+                    android:fontFamily="monospace"/>
 
+                <!-- Name stack -->
                 <LinearLayout
                     android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:paddingStart="10dp">
 
                     <TextView
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="Syrian VCG"
                         android:textColor="?attr/colorAccentSecondary"
-                        android:textSize="18sp"
+                        android:textSize="17sp"
                         android:textStyle="bold"
                         android:fontFamily="sans-serif-medium"
-                        android:letterSpacing="0.03"/>
+                        android:letterSpacing="0.02"/>
 
                     <TextView
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="مشاريعي · VCG Editor"
+                        android:text="مشاريعي"
                         android:textColor="?attr/colorTextMuted"
                         android:textSize="11sp"
                         android:layout_marginTop="-1dp"/>
                 </LinearLayout>
             </LinearLayout>
 
+            <!-- Right actions -->
+            <LinearLayout
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_gravity="end|center_vertical"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingEnd="4dp">
+
+                <!-- ⋮ overflow menu -->
+                <ImageButton
+                    android:id="@+id/btn_more"
+                    android:layout_width="42dp" android:layout_height="42dp"
+                    android:src="@drawable/ic_toolbar_more"
+                    android:background="@drawable/bg_topbar_circle_btn"
+                    android:tint="?attr/colorTextMuted"
+                    android:contentDescription="القائمة"/>
+            </LinearLayout>
+
         </androidx.appcompat.widget.Toolbar>
 
-        <!-- Accent line under toolbar -->
+        <!-- Accent underline -->
         <View
-            android:layout_width="match_parent" android:layout_height="2dp"
-            android:background="?attr/colorAccentPrimary"/>
-        <View
-            android:layout_width="match_parent" android:layout_height="1dp"
+            android:layout_width="match_parent" android:layout_height="1.5dp"
             android:background="?attr/colorBorder"/>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- ═══ Content ═══ -->
+    <!-- ═══════════════════════════════════════
+         CONTENT
+    ════════════════════════════════════════ -->
     <LinearLayout
         android:layout_width="match_parent" android:layout_height="match_parent"
         android:orientation="vertical"
@@ -85,14 +108,6 @@
             android:paddingHorizontal="16dp"
             android:background="?attr/colorSurface2">
 
-            <TextView android:id="@+id/label_coin_balance_home"
-                android:layout_width="0dp" android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="🪙 0 عملة"
-                android:textColor="?attr/colorGold"
-                android:textSize="13.5sp"
-                android:textStyle="bold"/>
-
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_watch_ad_home"
                 android:layout_width="wrap_content" android:layout_height="32dp"
@@ -101,7 +116,20 @@
                 android:textSize="12sp"
                 android:insetTop="0dp" android:insetBottom="0dp"
                 style="@style/VCGButtonSubtle"/>
+
+            <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1"/>
+
+            <TextView android:id="@+id/label_coin_balance_home"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="0 عملة 🪙"
+                android:textColor="?attr/colorGold"
+                android:textSize="13.5sp"
+                android:textStyle="bold"/>
         </LinearLayout>
+
+        <!-- Divider -->
+        <View android:layout_width="match_parent" android:layout_height="1dp"
+            android:background="?attr/colorBorder"/>
 
         <!-- Empty state -->
         <TextView android:id="@+id/empty_view"
@@ -135,10 +163,10 @@
         android:layout_width="wrap_content" android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="20dp"
-        android:contentDescription="New Project"
+        android:contentDescription="مشروع جديد"
         android:src="@android:drawable/ic_input_add"
         app:backgroundTint="?attr/colorAccentPrimary"
-        app:tint="?attr/colorTextPrimary"
+        app:tint="?attr/colorBg"
         app:fabSize="normal"
         app:elevation="6dp"/>
 
