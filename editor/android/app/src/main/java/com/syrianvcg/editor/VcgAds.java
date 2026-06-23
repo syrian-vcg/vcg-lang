@@ -32,35 +32,36 @@ public final class VcgAds {
 
     // ── أرقام الوحدات الإعلانية ────────────────────────────────────────────
     public static final String REWARDED_AD_UNIT_ID =
-            "ca-app-pub-1525040025806904/5259086172";
+            BuildConfig.ADMOB_REWARDED_UNIT_ID;
 
     public static final String INTERSTITIAL_AD_UNIT_ID =
-            "ca-app-pub-1525040025806904/4305097153";
+            BuildConfig.ADMOB_INTERSTITIAL_UNIT_ID;
 
     /** بانر — ca-app-pub-1525040025806904/3150465990 */
     public static final String BANNER_UNIT_ID =
-            "ca-app-pub-1525040025806904/3150465990";
+            BuildConfig.ADMOB_BANNER_UNIT_ID;
 
     /** إعلان بيني مقابل مكافأة "coi" — ca-app-pub-1525040025806904/2699305783 */
     public static final String REWARDED_INTERSTITIAL_UNIT_ID =
-            "ca-app-pub-1525040025806904/2699305783";
-}
-
+            BuildConfig.ADMOB_REWARDED_INTERSTITIAL_UNIT_ID;
 
     // ── حالة SDK ───────────────────────────────────────────────────────────
     private static boolean initialized = false;
 
     // ── Rewarded Interstitial (الأولى — لمنح العملات) ─────────────────────
-    private RewardedInterstitialAd rewardedAd;
-    private boolean isLoading = false;
+    // ملاحظة: static عمداً — كل Activity كانت تنشئ VcgAds() جديدة فتُصفَّر
+    // حالة الإعلان المحمَّل مسبقاً وتظهر رسالة "غير جاهز" حتى لو كان الإعلان
+    // قد اكتمل تحميله بالفعل في شاشة سابقة. مشاركة الحالة عبر static تحلّ هذا.
+    private static RewardedInterstitialAd rewardedAd;
+    private static boolean isLoading = false;
 
     // ── Interstitial ───────────────────────────────────────────────────────
-    private com.google.android.gms.ads.interstitial.InterstitialAd interstitialAd;
-    private boolean isInterstitialLoading = false;
+    private static com.google.android.gms.ads.interstitial.InterstitialAd interstitialAd;
+    private static boolean isInterstitialLoading = false;
 
     // ── Rewarded Interstitial الثانية "coi" ────────────────────────────────
-    private RewardedInterstitialAd rewardedInterstitialAd;
-    private boolean isRewardedInterstitialLoading = false;
+    private static RewardedInterstitialAd rewardedInterstitialAd;
+    private static boolean isRewardedInterstitialLoading = false;
 
     // ── Banner ─────────────────────────────────────────────────────────────
     private AdView bannerAdView;
@@ -203,21 +204,8 @@ public final class VcgAds {
     //  3. Banner — شريط إعلاني
     // ══════════════════════════════════════════════════════════════════════
 
-    /**
-     * يُحمِّل ويعرض بانر AdMob داخل الـ ViewGroup المُمرَّر (عادةً FrameLayout أو
-     * LinearLayout في أسفل الشاشة). الوحدة الإعلانية: BANNER_UNIT_ID.
-     *
-     * استخدام:
-     * <pre>
-     *   ads.showBanner(this, findViewById(R.id.banner_container));
-     * </pre>
-     *
-     * @param activity        النشاط الحالي (مطلوب لبناء AdRequest).
-     * @param bannerContainer الحاوية في التخطيط التي ستستقبل الـ AdView.
-     */
     public void showBanner(Activity activity, ViewGroup bannerContainer) {
         if (bannerAdView != null) {
-            // أعِد الاستخدام إن كان البانر محمَّلاً مسبقاً
             if (bannerAdView.getParent() == null) {
                 bannerContainer.addView(bannerAdView);
             }
@@ -247,24 +235,14 @@ public final class VcgAds {
         bannerAdView.loadAd(request);
     }
 
-    /**
-     * يجب استدعاؤها من onPause() في الـ Activity/Fragment الذي يحتوي البانر.
-     */
     public void pauseBanner() {
         if (bannerAdView != null) bannerAdView.pause();
     }
 
-    /**
-     * يجب استدعاؤها من onResume() في الـ Activity/Fragment الذي يحتوي البانر.
-     */
     public void resumeBanner() {
         if (bannerAdView != null) bannerAdView.resume();
     }
 
-    /**
-     * يجب استدعاؤها من onDestroy() في الـ Activity/Fragment الذي يحتوي البانر
-     * لتحرير الموارد ومنع تسرّب الذاكرة.
-     */
     public void destroyBanner() {
         if (bannerAdView != null) {
             bannerAdView.destroy();
@@ -276,10 +254,6 @@ public final class VcgAds {
     //  4. Rewarded Interstitial "coi" — الوحدة المُجزية الثانية
     // ══════════════════════════════════════════════════════════════════════
 
-    /**
-     * يُحمِّل الوحدة البينية مقابل مكافأة "coi" مسبقاً.
-     * تُستخدم كوحدة مُجزية إضافية (مثلاً لفتح ميزة بدلاً من العملات).
-     */
     public void preloadRewardedInterstitial(Activity activity) {
         if (rewardedInterstitialAd != null || isRewardedInterstitialLoading) return;
         isRewardedInterstitialLoading = true;
@@ -306,12 +280,6 @@ public final class VcgAds {
         return rewardedInterstitialAd != null;
     }
 
-    /**
-     * يعرض إعلان "coi" البيني المُجزي. يمنح المستخدم المكافأة فقط عند اكتمال المشاهدة.
-     *
-     * @param activity النشاط الحالي.
-     * @param listener مستمع يُستدعى عند الاستحقاق أو الفشل.
-     */
     public void showRewardedInterstitial(Activity activity, RewardListener listener) {
         if (rewardedInterstitialAd == null) {
             if (listener != null) listener.onAdUnavailable("الإعلان غير جاهز، حاول لاحقاً");
