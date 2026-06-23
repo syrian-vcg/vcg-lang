@@ -3,18 +3,22 @@ package com.syrianvcg.editor;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -132,6 +136,7 @@ public class EditorActivity extends AppCompatActivity {
         findViewById(R.id.btn_insert_asset).setOnClickListener(v -> showAssetPicker());
         findViewById(R.id.nav_save).setOnClickListener(v -> saveFile());
         findViewById(R.id.nav_terminal).setOnClickListener(v -> openTerminal());
+        findViewById(R.id.btn_more).setOnClickListener(this::showEditorPopupMenu);
 
         previewVisible = settings.getLivePreview();
         updatePreviewVisibility();
@@ -343,8 +348,8 @@ public class EditorActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_editor, menu);
-        return true;
+        // Actions moved to the bottom navigation bar and the custom toolbar popup menu.
+        return false;
     }
 
     @Override
@@ -354,10 +359,6 @@ public class EditorActivity extends AppCompatActivity {
             onBackPressed();
             return true;
         }
-        if (id == R.id.action_save) { saveFile(); return true; }
-        if (id == R.id.action_run)  { runCode();  return true; }
-        if (id == R.id.action_terminal) { openTerminal(); return true; }
-        if (id == R.id.action_share) { shareCode(); return true; }
         return super.onOptionsItemSelected(item);
     }
 
@@ -374,6 +375,36 @@ public class EditorActivity extends AppCompatActivity {
             codeEditor.getText() != null ? codeEditor.getText().toString() : "");
         share.putExtra(Intent.EXTRA_SUBJECT, filename);
         startActivity(Intent.createChooser(share, "مشاركة الكود"));
+    }
+
+    /** Shows a custom-styled popup menu (card, icon badges, animation) anchored to the toolbar button. */
+    private void showEditorPopupMenu(View anchor) {
+        View content = getLayoutInflater().inflate(R.layout.popup_menu_editor, null);
+
+        PopupWindow popup = new PopupWindow(
+            content,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            true);
+        popup.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        popup.setElevation(16f);
+        popup.setOutsideTouchable(true);
+        popup.setAnimationStyle(R.style.VCGPopupAnimation);
+
+        content.findViewById(R.id.popup_item_share).setOnClickListener(v -> {
+            popup.dismiss();
+            shareCode();
+        });
+        content.findViewById(R.id.popup_item_terminal).setOnClickListener(v -> {
+            popup.dismiss();
+            openTerminal();
+        });
+        content.findViewById(R.id.popup_item_close).setOnClickListener(v -> {
+            popup.dismiss();
+            onBackPressed();
+        });
+
+        popup.showAsDropDown(anchor, -anchor.getWidth() * 4, 6, Gravity.END);
     }
 
     @Override
