@@ -1,7 +1,7 @@
 package com.syrianvcg.vcgsdk;
 
 /**
- * VCG Language Keywords & Built-in Functions Registry
+ * VCG Language Keywords &amp; Built-in Functions Registry
  * Used for syntax highlighting, autocomplete, and IDE tooling.
  */
 public final class VcgKeywords {
