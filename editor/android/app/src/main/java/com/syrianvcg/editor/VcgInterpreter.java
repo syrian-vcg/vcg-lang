@@ -33,17 +33,39 @@ public class VcgInterpreter {
             "<style>" + getStyles(theme) + "</style>\n" +
             "</head>\n" +
             "<body>\n" +
+            "<div id='vcgHeader' class='vcg-header'>\n" +
+            "  <span id='vcgStatus' class='vcg-status vcg-status-running'>● قيد التشغيل…</span>\n" +
+            "  <span id='vcgMeta' class='vcg-meta'></span>\n" +
+            "  <span class='vcg-actions'>\n" +
+            "    <button type='button' class='vcg-btn' onclick='_vcgCopyOutput()'>نسخ المخرجات</button>\n" +
+            "    <button type='button' class='vcg-btn vcg-btn-ghost' onclick='_vcgClearOutput()'>تنظيف</button>\n" +
+            "  </span>\n" +
+            "</div>\n" +
             "<div id='out'></div>\n" +
             "<script>\n" +
             "var _ASSETS=" + (assetsJson == null || assetsJson.isEmpty() ? "{}" : assetsJson) + ";\n" +
             "function _resolveAsset(s){return (typeof s==='string'&&_ASSETS[s])?_ASSETS[s]:s;}\n" +
+            "function _vcgCopyOutput(){\n" +
+            "  var txt=document.getElementById('out').innerText||'';\n" +
+            "  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt);}\n" +
+            "  var st=document.getElementById('vcgMeta');if(st){var old=st.textContent;st.textContent='تم النسخ ✓';setTimeout(function(){st.textContent=old;},1200);}\n" +
+            "}\n" +
+            "function _vcgClearOutput(){document.getElementById('out').innerHTML='';}\n" +
+            "var _consoleLog=[];\n" +
+            "(function(){\n" +
+            "  var origLog=console.log, origErr=console.error, origWarn=console.warn;\n" +
+            "  console.log=function(){_consoleLog.push({k:'log',v:Array.prototype.slice.call(arguments).map(String).join(' ')});origLog.apply(console,arguments);};\n" +
+            "  console.error=function(){_consoleLog.push({k:'error',v:Array.prototype.slice.call(arguments).map(String).join(' ')});origErr.apply(console,arguments);};\n" +
+            "  console.warn=function(){_consoleLog.push({k:'warn',v:Array.prototype.slice.call(arguments).map(String).join(' ')});origWarn.apply(console,arguments);};\n" +
+            "})();\n" +
             getRuntime() +
-            "\ntry{\n" +
+            "\nvar _vcgStart=(typeof performance!=='undefined'&&performance.now)?performance.now():Date.now();\n" +
+            "try{\n" +
             "  var _toks=tokenize(`" + escaped + "`);\n" +
             "  var _rt=new VCG(_toks);\n" +
             "  _rt.run();\n" +
             "  var _out=document.getElementById('out');\n" +
-            "  if(_rt.out.length===0){\n" +
+            "  if(_rt.out.length===0&&_consoleLog.length===0){\n" +
             "    _out.innerHTML='<p class=\"empty\">لا يوجد مخرجات</p>';\n" +
             "  } else {\n" +
             "    _rt.out.forEach(function(item){\n" +
@@ -57,16 +79,33 @@ public class VcgInterpreter {
             "        _out.appendChild(el);\n" +
             "      }\n" +
             "    });\n" +
+            "    _consoleLog.forEach(function(c){\n" +
+            "      var el=document.createElement('span');\n" +
+            "      el.className='line console-'+c.k; el.textContent='» '+c.v;\n" +
+            "      _out.appendChild(el);\n" +
+            "    });\n" +
             "  }\n" +
+            "  var _elapsed=_rt._elapsedMs!==undefined?_rt._elapsedMs:Math.round(((typeof performance!=='undefined'&&performance.now?performance.now():Date.now())-_vcgStart)*100)/100;\n" +
+            "  var _st=document.getElementById('vcgStatus');\n" +
+            "  if(_st){_st.textContent='● تم التشغيل بنجاح';_st.className='vcg-status vcg-status-ok';}\n" +
+            "  var _meta=document.getElementById('vcgMeta');\n" +
+            "  if(_meta){_meta.textContent=_rt.out.length+' عنصر مخرجات • '+_elapsed+'ms';}\n" +
             "  if(window.VcgAndroid&&window.VcgAndroid.onRunSuccess){\n" +
             "    window.VcgAndroid.onRunSuccess(String(_rt.out.length));\n" +
             "  }\n" +
             "} catch(e) {\n" +
-            "  var el=document.createElement('span');\n" +
+            "  var _lineMatch=/\\(line (\\d+)\\)/.exec(e.message||'');\n" +
+            "  var _line=_lineMatch?_lineMatch[1]:null;\n" +
+            "  var el=document.createElement('div');\n" +
             "  el.className='line error';\n" +
-            "  el.textContent='خطأ: '+e.message;\n" +
+            "  el.innerHTML='<span class=\"error-title\">خطأ في التنفيذ'+(_line?' — السطر '+_line:'')+'</span><span class=\"error-detail\"></span>';\n" +
+            "  el.querySelector('.error-detail').textContent=e.message;\n" +
             "  document.getElementById('out').appendChild(el);\n" +
             "  console.error(e);\n" +
+            "  var _st2=document.getElementById('vcgStatus');\n" +
+            "  if(_st2){_st2.textContent='● فشل التنفيذ';_st2.className='vcg-status vcg-status-err';}\n" +
+            "  var _meta2=document.getElementById('vcgMeta');\n" +
+            "  if(_meta2){_meta2.textContent=_line?'السطر '+_line:'';}\n" +
             "  if(window.VcgAndroid&&window.VcgAndroid.onRunError){\n" +
             "    window.VcgAndroid.onRunError(e.message);\n" +
             "  }\n" +
@@ -91,11 +130,25 @@ public class VcgInterpreter {
             ":root{--bg:" + bg + ";--panel:" + panel + ";--border:" + border + ";--accent:" + accent + ";--text:" + text + ";--muted:" + muted + ";--olive:" + olive + "}" +
             "*{box-sizing:border-box;margin:0;padding:0}" +
             "body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;padding:0.9rem}" +
+            ".vcg-header{display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:0.5rem 0.7rem;margin-bottom:0.7rem;font-size:0.8rem}" +
+            ".vcg-status{font-weight:700;display:flex;align-items:center;gap:0.3rem}" +
+            ".vcg-status-running{color:var(--muted)}" +
+            ".vcg-status-ok{color:var(--accent)}" +
+            ".vcg-status-err{color:#e25b4f}" +
+            ".vcg-meta{color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:0.75rem}" +
+            ".vcg-actions{margin-right:auto;display:flex;gap:0.4rem}" +
+            ".vcg-btn{background:var(--olive);color:#fff;border:none;border-radius:7px;padding:0.32rem 0.7rem;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif}" +
+            ".vcg-btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}" +
             "#out{font-family:'JetBrains Mono',monospace;font-size:0.82rem;line-height:2}" +
             ".line{display:block;padding:0.12rem 0.4rem;border-radius:4px;color:var(--text)}" +
             ".line:hover{background:rgba(127,127,127,0.08)}" +
-            ".error{display:flex;align-items:flex-start;gap:0.5rem;color:#7a1f17;background:rgba(214,72,60,0.08);border:1px solid rgba(214,72,60,0.35);border-radius:8px;padding:0.6rem 0.7rem;font-weight:600;margin:0.2rem 0}" +
-            ".error::before{content:'⚠';flex-shrink:0;font-size:1rem}" +
+            ".console-log{color:var(--muted)}" +
+            ".console-warn{color:#e0a84d}" +
+            ".console-error{color:#e25b4f}" +
+            ".error{display:flex;flex-direction:column;gap:0.2rem;color:#7a1f17;background:rgba(214,72,60,0.08);border:1px solid rgba(214,72,60,0.35);border-radius:8px;padding:0.6rem 0.7rem;font-weight:600;margin:0.2rem 0}" +
+            ".error-title{display:flex;align-items:center;gap:0.4rem;font-size:0.85rem}" +
+            ".error-title::before{content:'⚠'}" +
+            ".error-detail{font-weight:500;font-size:0.8rem;opacity:0.9;white-space:pre-wrap}" +
             ".empty{color:var(--muted);font-style:italic;padding:0.5rem}" +
             ".html-block{margin:0.4rem 0}" +
             "h1,h2,h3,h4,h5,h6{color:var(--accent);font-family:'Cairo',sans-serif;border-bottom:2px solid var(--border);padding-bottom:0.25rem;margin:0.6rem 0 0.3rem}" +
@@ -419,7 +472,19 @@ public class VcgInterpreter {
 
             "};\n" +
 
-            "VCG.prototype.run=function(){while(this.cur().t!=='EOF'&&!this._hasRet){this.parseStmt(this.env);}};\n" +
+            "VCG.prototype.run=function(){\n" +
+            "  var t0=(typeof performance!=='undefined'&&performance.now)?performance.now():Date.now();\n" +
+            "  while(this.cur().t!=='EOF'&&!this._hasRet){\n" +
+            "    var ln=this.cur().ln;\n" +
+            "    try{this.parseStmt(this.env);}\n" +
+            "    catch(err){\n" +
+            "      if(err&&err.message&&!/\\(line \\d+\\)/.test(err.message)){err.message=err.message+' (line '+ln+')';}\n" +
+            "      throw err;\n" +
+            "    }\n" +
+            "  }\n" +
+            "  var t1=(typeof performance!=='undefined'&&performance.now)?performance.now():Date.now();\n" +
+            "  this._elapsedMs=Math.max(0,Math.round((t1-t0)*100)/100);\n" +
+            "};\n" +
             "VCG.prototype.parseBlock=function(e){this.eat('{');while(this.cur().v!=='}'&&this.cur().t!=='EOF'){this.parseStmt(e);if(this._hasRet||this._brk||this._cnt)break;}this.eat('}');};\n" +
             "VCG.prototype._skipBlock=function(){this.eat('{');var d=1;while(d>0&&this.cur().t!=='EOF'){if(this.cur().v==='{')d++;else if(this.cur().v==='}')d--;if(d>0)this.eat();else break;}this.eat('}');};\n" +
             "VCG.prototype._skipStmt=function(){var t=this.cur();if(t.v==='if'){this.eat();this.parseExpr(this.env);this._skipBlock();if(this.cur().v==='else'){this.eat();if(this.cur().v==='if')this._skipStmt();else this._skipBlock();}}else{while(this.cur().t!=='NL'&&this.cur().v!=='}'&&this.cur().t!=='EOF')this.eat();}};\n" +
