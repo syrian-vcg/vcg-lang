@@ -81,22 +81,13 @@ public class ProjectsActivity extends AppCompatActivity
         com.google.android.material.button.MaterialButton adBtn =
             findViewById(R.id.btn_watch_ad_home);
 
-        // إذا الإعلان جاهز مسبقاً (static) — فعّل الزر فوراً
-        if (ads.isReady()) {
-            adBtn.setText("📺 اكسب عملات");
-            adBtn.setEnabled(true);
-            adBtn.setAlpha(1f);
-        } else {
-            // اعرض حالة تحميل وفعّل الزر لما يجهز
-            adBtn.setText("⏳ جاري التحميل...");
-            adBtn.setEnabled(false);
-            adBtn.setAlpha(0.55f);
-            ads.setAdReadyListener(() -> {
-                adBtn.setText("📺 اكسب عملات");
-                adBtn.setEnabled(true);
-                adBtn.setAlpha(1f);
-            });
-        }
+        // ══════════════════════════════════════════════════════════════
+        // إصلاح: الزر يكون مفعَّلاً دائماً — إذا لم يكن الإعلان جاهزاً
+        // يُظهر رسالة ويبدأ التحميل مجدداً بدلاً من تجميد الواجهة.
+        // ══════════════════════════════════════════════════════════════
+        adBtn.setText("📺 اكسب عملات");
+        adBtn.setEnabled(true);
+        adBtn.setAlpha(1f);
         adBtn.setOnClickListener(v -> watchAdForCoins());
 
         // ── بانر AdMob في أسفل الشاشة ──────────────────────────────────────
@@ -344,8 +335,12 @@ public class ProjectsActivity extends AppCompatActivity
 
     private void watchAdForCoins() {
         if (!ads.isReady()) {
-            Toast.makeText(this, "الإعلان غير جاهز بعد، حاول بعد لحظات", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "جاري تحميل الإعلان، حاول بعد لحظات...", Toast.LENGTH_SHORT).show();
             ads.preload(this);
+            // أعِد المحاولة تلقائياً بعد 3 ثوان إن اكتمل التحميل
+            ads.setAdReadyListener(() -> runOnUiThread(() ->
+                Toast.makeText(this, "الإعلان جاهز! اضغط مجدداً 📺", Toast.LENGTH_SHORT).show()
+            ));
             return;
         }
         ads.show(this, new VcgAds.RewardListener() {
