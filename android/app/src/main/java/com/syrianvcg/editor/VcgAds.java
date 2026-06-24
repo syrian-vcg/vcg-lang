@@ -31,19 +31,23 @@ public final class VcgAds {
     private static final String TAG = "VcgAds";
 
     // ── أرقام الوحدات الإعلانية ────────────────────────────────────────────
-    public static final String REWARDED_AD_UNIT_ID =
-            BuildConfig.ADMOB_REWARDED_UNIT_ID;
+    
+    /** إعلان بيني مقابل مكافأة — "set" (لمنح العملات في SettingsActivity) */
+    public static final String REWARDED_AD_UNIT_ID = 
+            "ca-app-pub-1525040025806904/5325469129";
 
-    public static final String INTERSTITIAL_AD_UNIT_ID =
-            BuildConfig.ADMOB_INTERSTITIAL_UNIT_ID;
+    /** إعلان بيني عادي — "john" */
+    public static final String INTERSTITIAL_AD_UNIT_ID = 
+            "ca-app-pub-1525040025806904/4027633665";
 
-    /** بانر — ca-app-pub-1525040025806904/3150465990 */
-    public static final String BANNER_UNIT_ID =
-            BuildConfig.ADMOB_BANNER_UNIT_ID;
+    /** إعلان شاشة فتح التطبيق "oi" (يُستخدم كبانر) */
+    public static final String BANNER_UNIT_ID = 
+            "ca-app-pub-1525040025806904/3150465990";
 
-    /** إعلان بيني مقابل مكافأة "coi" — ca-app-pub-1525040025806904/2699305783 */
-    public static final String REWARDED_INTERSTITIAL_UNIT_ID =
-            BuildConfig.ADMOB_REWARDED_INTERSTITIAL_UNIT_ID;
+    /** إعلان بيني مقابل مكافأة ثاني — "coi" */
+    public static final String REWARDED_INTERSTITIAL_UNIT_ID = 
+            "ca-app-pub-1525040025806904/2699305783";
+
 
     // ── حالة SDK ───────────────────────────────────────────────────────────
     private static boolean initialized = false;
