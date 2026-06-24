@@ -2,36 +2,8 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp" android:height="24dp"
     android:viewportWidth="24" android:viewportHeight="24">
-
-    <!-- Document body -->
-    <path
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="1.5"
-        android:fillColor="#00000000"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M5,3 L14,3 L19,8 L19,18 Q19,20 17,20 L7,20 Q5,20 5,18 Z"/>
-
-    <!-- Folded corner -->
-    <path
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="1.5"
-        android:fillColor="#00000000"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M14,3 L14,8 L19,8"/>
-
-    <!-- Plus sign (new) -->
-    <path
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="2"
-        android:fillColor="#00000000"
-        android:strokeLineCap="round"
-        android:pathData="M10,12 L10,16"/>
-    <path
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="2"
-        android:fillColor="#00000000"
-        android:strokeLineCap="round"
-        android:pathData="M8,14 L12,14"/>
+    <path android:fillColor="#FF2E9E44"
+        android:pathData="M5,0 H19 Q24,0 24,5 V19 Q24,24 19,24 H5 Q0,24 0,19 V5 Q0,0 5,0 Z"/>
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
 </vector>
