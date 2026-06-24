@@ -1,0 +1,19 @@
+# مجال: صفحات التواصل والروابط الشخصية (Link-in-bio)
+# يوضح: h, img, url, btn, youtube, facebook, instagram, xsocial
+
+h(1, "🌿 أحمد الزراعي")
+html "<p>مزارع ومصمم محتوى زراعي — سوريا</p>"
+
+img("https://picsum.photos/seed/vcg/600/240", "صورة غلاف", "100%")
+
+h(3, "📺 آخر فيديو")
+youtube("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+
+h(3, "🔗 تابعني")
+facebook("https://facebook.com/ahmad.farm", "فيسبوك")
+instagram("@ahmad.farm", "إنستغرام")
+xsocial("@ahmad_farm", "X (تويتر)")
+url("https://ahmadfarm.example.com", "🌐 الموقع الرسمي")
+
+h(3, "📞 تواصل معي")
+btn("راسلني الآن", "location.href='mailto:[email protected]'")
