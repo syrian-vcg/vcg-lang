@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VCG Editor</string>
+    <string name="app_name_full">Syrian VCG Editor</string>
+    <string name="version">2.1.0</string>
+    <string name="new_file">ملف جديد</string>
+    <string name="new_project">مشروع جديد</string>
+    <string name="save">حفظ</string>
+    <string name="run">تشغيل</string>
+    <string name="settings">الإعدادات</string>
+    <string name="about">حول التطبيق</string>
+    <string name="delete">حذف</string>
+    <string name="cancel">إلغاء</string>
+    <string name="share">مشاركة</string>
+    <string name="terminal">Terminal</string>
+    <string name="assets">الوسائط</string>
+    <string name="empty_files">لا يوجد ملفات\nاضغط + لإنشاء ملف جديد</string>
+    <string name="empty_projects">لا يوجد مشاريع بعد\nاضغط + لإنشاء أول مشروع</string>
+    <!-- App Shortcuts -->
+    <string name="shortcut_new_project_short">مشروع جديد</string>
+    <string name="shortcut_new_project_long">إنشاء مشروع VCG جديد</string>
+    <string name="shortcut_last_project_short">آخر مشروع</string>
+    <string name="shortcut_last_project_long">فتح آخر مشروع تم تعديله</string>
+    <string name="shortcut_terminal_short">Terminal</string>
+    <string name="shortcut_terminal_long">فتح موجه الأوامر</string>
+    <string name="shortcut_settings_short">الإعدادات</string>
+    <string name="shortcut_settings_long">إعدادات المحرر</string>
+    <string name="shortcut_disabled">هذا الاختصار غير متاح حالياً</string>
+
+    <!-- Home screen widget -->
+    <string name="widget_description">تطبيق مصغّر يعرض آخر مشروع ويتيح فتح مشروع جديد أو الـ Terminal بضغطة واحدة</string>
+    <string name="widget_last_project">آخر مشروع</string>
+    <string name="widget_no_projects">لا توجد مشاريع بعد</string>
+    <string name="widget_tagline">محرر أكواد VCG</string>
+</resources>
