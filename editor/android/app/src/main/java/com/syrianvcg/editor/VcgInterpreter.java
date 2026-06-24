@@ -147,7 +147,8 @@ public class VcgInterpreter {
             " 'safe','unsafe','guard',\n" +
             " 'map','filter','reduce','find',\n" +
             " 'doc','test','expect','mock',\n" +
-            " 'with','case','pipeline','watch'];\n" +
+            " 'with','case','pipeline','watch',\n" +
+            " 'data_vcg','to_set','make_zip','make_pdf'];\n" +
 
             "function tokenize(src){\n" +
             "  var toks=[],i=0,ln=1;\n" +
@@ -350,6 +351,72 @@ public class VcgInterpreter {
             "    var li=items.map(function(it){return '<li>'+it+'</li>';}).join('');\n" +
             "    self.out.push({t:'html',v:'<ul>'+li+'</ul>'});\n" +
             "    return null;};\n" +
+
+            // ══════════════════════════════════════════════
+            //  VCG App Builder — ميزات بناء التطبيقات
+            // ══════════════════════════════════════════════
+            "  self._appmeta={};\n" +
+            "  self._datastore={};\n" +
+
+            // _setProxy — يُستخدم عبر $set.name_app / $set.app.package / $set.app.version / $set.get.icon
+            "  self._setProxy={\n" +
+            "    name_app:function(n){if(n!==undefined)self._appmeta.name=n;return n!==undefined?n:(self._appmeta.name||'VCG App');},\n" +
+            "    app:{package:function(p){if(p!==undefined)self._appmeta.pkg=p;return p!==undefined?p:(self._appmeta.pkg||'com.vcg.app');},\n" +
+            "         version:function(v){if(v!==undefined)self._appmeta.version=v;return v!==undefined?v:(self._appmeta.version||'1.0.0');}},\n" +
+            "    get:{icon:function(p){if(p!==undefined)self._appmeta.icon=p;return p!==undefined?p:(self._appmeta.icon||'');}}\n" +
+            "  };\n" +
+
+            // data_vcg(name, value) — تعريف وتخزين
+            "  e.data_vcg=function(name,value){self._datastore[name]=value;self._store['data:'+name]=value;e[name]=value;return value;};\n" +
+
+            // get.data — قراءة
+            "  e.get={data:function(ref){return typeof ref==='string'?(self._datastore[ref]!==undefined?self._datastore[ref]:null):ref;}};\n" +
+
+            // to_set — ثابت للتصدير
+            "  e.to_set='__vcg_export_apk__';\n" +
+
+            // export(to_set) — يعرض واجهة البناء ويرسل إشعار للـ Android
+            "  e['export']=function(target){\n" +
+            "    var meta=self._appmeta;\n" +
+            "    var n=meta.name||'VCG App',p=meta.pkg||'com.vcg.app',v=meta.version||'1.0.0';\n" +
+            "    self.out.push({t:'html',v:\n" +
+            "      '<div style=\"background:linear-gradient(135deg,#1a3a1a,#0a1a0a);border:2px solid #4dc95a;border-radius:14px;padding:1.1rem 1.3rem;margin:.8rem 0\">'\n" +
+            "      +'<div style=\"color:#4dc95a;font-weight:900;font-size:1.1rem;margin-bottom:.5rem\">🔨 عملية البناء بدأت...</div>'\n" +
+            "      +'<div style=\"color:#e8f5e0;font-size:.88rem;line-height:2\">'\n" +
+            "      +'<div>📛 الاسم &nbsp;: <b style=\"color:#4dc95a\">'+n+'</b></div>'\n" +
+            "      +'<div>📦 الحزمة: <code style=\"color:#adf\">'+p+'</code></div>'\n" +
+            "      +'<div>🔖 الإصدار: <span style=\"color:#e0a84d\">'+v+'</span></div></div>'\n" +
+            "      +'<div style=\"margin-top:.6rem;display:flex;gap:.4rem;flex-wrap:wrap\">'\n" +
+            "      +'<span style=\"background:#0d2e0d;border:1px solid #4dc95a;color:#4dc95a;padding:.2rem .65rem;border-radius:6px;font-size:.82rem\">📱 APK</span>'\n" +
+            "      +'<span style=\"background:#1c1812;border:1px solid #e0a84d;color:#e0a84d;padding:.2rem .65rem;border-radius:6px;font-size:.82rem\">📦 ZIP</span>'\n" +
+            "      +'<span style=\"background:#12121c;border:1px solid #5b8cff;color:#5b8cff;padding:.2rem .65rem;border-radius:6px;font-size:.82rem\">📄 PDF</span>'\n" +
+            "      +'</div></div>'\n" +
+            "    });\n" +
+            "    if(window.VcgAndroid&&window.VcgAndroid.onExportRequest){\n" +
+            "      window.VcgAndroid.onExportRequest(JSON.stringify({action:'build_apk',name:n,pkg:p,version:v,icon:meta.icon||''}));\n" +
+            "    }\n" +
+            "    return null;\n" +
+            "  };\n" +
+
+            // make_zip
+            "  e.make_zip=function(name,entries){\n" +
+            "    var items=Array.isArray(entries)?entries:(entries&&typeof entries==='object'?Object.keys(entries):[]);\n" +
+            "    self.out.push({t:'html',v:'<div style=\"background:#0f1e10;border:1px solid #4dc95a;border-radius:9px;padding:.6rem .85rem;margin:.35rem 0\">'\n" +
+            "      +'<div style=\"color:#4dc95a;font-weight:700\">📦 '+name+'</div>'\n" +
+            "      +items.map(function(f){return '<div style=\"color:#888;font-size:.8rem\">  ＋ '+f+'</div>';}).join('')+'</div>'});\n" +
+            "    if(window.VcgAndroid&&window.VcgAndroid.onMakeZip)window.VcgAndroid.onMakeZip(name,JSON.stringify(items));\n" +
+            "    return name;\n" +
+            "  };\n" +
+
+            // make_pdf
+            "  e.make_pdf=function(title,content){\n" +
+            "    self.out.push({t:'html',v:'<div style=\"background:#1c1812;border:1px solid #e0a84d;border-radius:9px;padding:.6rem .85rem;margin:.35rem 0\">'\n" +
+            "      +'<div style=\"color:#e0a84d;font-weight:700\">📄 '+title+'.pdf</div>'\n" +
+            "      +'<div style=\"color:#888;font-size:.8rem\">'+(typeof content==='string'?content.substring(0,100)+'...':JSON.stringify(content))+'</div></div>'});\n" +
+            "    if(window.VcgAndroid&&window.VcgAndroid.onMakePdf)window.VcgAndroid.onMakePdf(title,content||'');\n" +
+            "    return title;\n" +
+            "  };\n" +
+
             "};\n" +
 
             "VCG.prototype.run=function(){while(this.cur().t!=='EOF'&&!this._hasRet){this.parseStmt(this.env);}};\n" +
@@ -392,7 +459,10 @@ public class VcgInterpreter {
             "  if(t.v==='('){this.eat();var v=this.parseExpr(e);this.eat(')');return v;}\n" +
             "  if(t.v==='['){this.eat();var a=[];while(this.cur().v!==']'&&this.cur().t!=='EOF'){a.push(this.parseExpr(e));this.eatIf(',');}this.eat(']');return a;}\n" +
             "  if(t.v==='{'){this.eat();var o=Object.create(null);while(this.cur().v!=='}'&&this.cur().t!=='EOF'){var k=this.eat().v;this.eat(':');o[k]=this.parseExpr(e);this.eatIf(',');}this.eat('}');return o;}\n" +
-            "  if(t.v==='$set'){this.eat();this.eat('(');var k=this.parseExpr(e);this.eat(',');var v=this.parseExpr(e);this.eat(')');this._store[k]=v;if(this._watchers[k])this._watchers[k](v);return v;}\n" +
+            "  if(t.v==='$set'){this.eat();\n" +
+            "    if(this.cur().v==='.'){return this._postfix(e,this._setProxy,'$set');}\n" +
+            "    this.eat('(');var k=this.parseExpr(e);this.eat(',');var v=this.parseExpr(e);this.eat(')');\n" +
+            "    this._store[k]=v;if(this._watchers[k])this._watchers[k](v);return v;}\n" +
             "  if(t.v==='$get'){this.eat();this.eat('(');var k=this.parseExpr(e);this.eat(')');return this._store[k]!==undefined?this._store[k]:null;}\n" +
             "  if(t.v==='$x'){this.eat();var v=this.parseExpr(e);return typeof v==='function'?v():v;}\n" +
             "  if(t.v==='await'){this.eat();return this.parseExpr(e);}\n" +
@@ -474,9 +544,18 @@ public class VcgInterpreter {
             "    if(this.cur().v==='('){this.eat();var args=[];\n" +
             "      while(this.cur().v!==')'&&this.cur().t!=='EOF'){args.push(this.parseExpr(e));this.eatIf(',');}\n" +
             "      this.eat(')');if(typeof this.env[nm]==='function')this.env[nm].apply(null,args);}return;}\n" +
-            "  if(t.v==='$set'){this.eat();this.eat('(');var k=this.parseExpr(e);this.eat(',');var v=this.parseExpr(e);this.eat(')');this._store[k]=v;if(this._watchers[k])this._watchers[k](v);return;}\n" +
+            "  if(t.v==='$set'){this.eat();\n" +
+            "    // $set.name_app(...) / $set.app.X(...) / $set.get.icon(...)  ← dot-chained\n" +
+            "    if(this.cur().v==='.'){return this._postfix(e,this._setProxy,'$set');}\n" +
+            "    // $set(key, value)  ← classic reactive store\n" +
+            "    this.eat('(');var k=this.parseExpr(e);this.eat(',');var v=this.parseExpr(e);this.eat(')');\n" +
+            "    this._store[k]=v;if(this._watchers[k])this._watchers[k](v);return;}\n" +
             "  if(t.v==='watch'){this.eat();this.eat('(');var k=this.parseExpr(e);this.eat(',');var fn=this.parseExpr(e);this.eat(')');this._watchers[k]=fn;return;}\n" +
             "  if(t.v==='public'||t.v==='export'||t.v==='async'||t.v==='doc'){this.eat();if(this.cur().t!=='EOF'&&this.cur().v!=='}')this.parseStmt(e);return;}\n" +
+            "  if(t.v==='data_vcg'){this.eat();var nm=this.eat().v;\n" +
+            "    this.eat('=');var vv=this.parseExpr(e);\n" +
+            "    this._datastore=this._datastore||{};this._datastore[nm]=vv;\n" +
+            "    this._store['data:'+nm]=vv;this._def(e,nm,vv);return;}\n" +
             "  if(t.v==='w'){this.eat();var nm=this.eat().v;if(this.cur().v==='='){this.eat();var v=this.parseExpr(e);this._def(e,nm,v);this.out.push({t:'txt',v:'[w] '+nm+' \u2190 '+this._str(v)});}return;}\n" +
             "  if(t.v==='c'){this.eat();if(this.cur().t==='ID'){var nm=this.eat().v;var init=null;if(this.cur().v==='='){this.eat();init=this.parseExpr(e);}var ch={_buf:[],_name:nm};if(init!==null)ch._buf.push(init);this._def(e,nm,ch);}return;}\n" +
             "  if(t.v==='let'||t.v==='const'){this.eat();var nm=this.eat().v;if(this.cur().v==='='){this.eat();this._def(e,nm,this.parseExpr(e));}else this._def(e,nm,null);return;}\n" +
