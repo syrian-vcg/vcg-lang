@@ -1,0 +1,38 @@
+# مجال: تطبيقات الأعمال الصغيرة — مخزون ونقاط بيع مصغّرة
+# يوضح: class, struct/maps, data_vcg/get.data, export(to_set)
+
+class Product {
+    func init(name, price, qty) {
+        self.name = name
+        self.price = price
+        self.qty = qty
+    }
+    func total() {
+        return self.price * self.qty
+    }
+}
+
+let inventory = [
+    new Product("صابون طبيعي", 5.5, 40),
+    new Product("شمع عسل", 12, 15),
+    new Product("زيت زيتون", 20, 8)
+]
+
+h(1, "🧾 تقرير المخزون")
+let grand_total = 0
+for p in inventory {
+    show(p.name, "—", p.qty, "قطعة ×", p.price, "=", p.total())
+    grand_total = grand_total + p.total()
+}
+html "<hr>"
+show("الإجمالي الكلي:", grand_total)
+
+# تخزين بيانات التطبيق ليُعاد استخدامها بين الجلسات
+data_vcg("last_total", grand_total)
+show("آخر إجمالي محفوظ:", get.data("last_total"))
+
+# إعداد بيانات التطبيق وتجهيزه للتصدير كـ APK من المحرر
+$set.name_app("متجر الحرفيين")
+$set.app.package("com.vcg.craftshop")
+$set.app.version("1.0.0")
+export(to_set)
