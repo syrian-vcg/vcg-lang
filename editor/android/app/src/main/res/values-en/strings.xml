@@ -31,4 +31,5 @@
     <string name="widget_description">A home screen widget showing your last project, with quick actions for a new project or the Terminal</string>
     <string name="widget_last_project">Last project</string>
     <string name="widget_no_projects">No projects yet</string>
+    <string name="widget_tagline">VCG code editor</string>
 </resources>
