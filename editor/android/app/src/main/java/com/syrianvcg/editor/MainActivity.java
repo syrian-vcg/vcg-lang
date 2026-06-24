@@ -2,7 +2,6 @@ package com.syrianvcg.editor;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -20,11 +19,15 @@ public class MainActivity extends AppCompatActivity
         implements FileAdapter.FileClickListener {
 
     private FileAdapter adapter;
-    private List<VcgFile> files = new ArrayList<>();
+    private List<VcgFile> items = new ArrayList<>();
     private VcgStorage storage;
     private TextView emptyView;
+    private TextView breadcrumbView;
     private String projectId;
     private String projectName;
+
+    /** المسار الحالي المعروض — "" يعني الجذر، "lib/" يعني مجلد lib */
+    private String currentPath = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,15 +36,11 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         setSupportActionBar(findViewById(R.id.toolbar));
 
-        storage = new VcgStorage(this);
-        projectId = getIntent().getStringExtra("projectId");
+        storage     = new VcgStorage(this);
+        projectId   = getIntent().getStringExtra("projectId");
         projectName = getIntent().getStringExtra("projectName");
 
-        if (projectId == null) {
-            // Safety net: shouldn't happen, but avoid crashing if launched directly.
-            finish();
-            return;
-        }
+        if (projectId == null) { finish(); return; }
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -50,31 +49,58 @@ public class MainActivity extends AppCompatActivity
 
         RecyclerView rv = findViewById(R.id.recycler_files);
         rv.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new FileAdapter(files, this);
+        adapter = new FileAdapter(items, this);
         rv.setAdapter(adapter);
 
-        emptyView = findViewById(R.id.empty_view);
+        emptyView      = findViewById(R.id.empty_view);
+        breadcrumbView = findViewById(R.id.breadcrumb_path);
 
         FloatingActionButton fab = findViewById(R.id.fab_new);
-        fab.setOnClickListener(v -> showNewFileDialog());
+        fab.setOnClickListener(v -> showNewItemDialog());
 
         findViewById(R.id.btn_assets).setOnClickListener(v -> openAssets());
         findViewById(R.id.btn_terminal).setOnClickListener(v -> openTerminal());
 
-        loadFiles();
+        loadCurrentFolder();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        loadFiles();
+        loadCurrentFolder();
     }
 
-    private void loadFiles() {
-        files.clear();
-        files.addAll(storage.getFilesInProject(projectId));
+    // ── تحميل محتويات المجلد الحالي ─────────────────────────
+
+    private void loadCurrentFolder() {
+        items.clear();
+        items.addAll(storage.getFilesInFolder(projectId, currentPath));
         adapter.notifyDataSetChanged();
-        emptyView.setVisibility(files.isEmpty() ? View.VISIBLE : View.GONE);
+        emptyView.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
+        updateBreadcrumb();
+    }
+
+    private void updateBreadcrumb() {
+        if (currentPath.isEmpty()) {
+            breadcrumbView.setText("/ " + projectName);
+        } else {
+            breadcrumbView.setText("/ " + projectName + " / " +
+                currentPath.replace("/", " / ").trim());
+        }
+    }
+
+    // ── حوار إنشاء ملف أو مجلد جديد ────────────────────────
+
+    private void showNewItemDialog() {
+        // خيار: ملف أو مجلد
+        new AlertDialog.Builder(this, R.style.VCGDialog)
+            .setTitle("إنشاء جديد")
+            .setItems(new String[]{"📄  ملف جديد", "📁  مجلد جديد"}, (d, which) -> {
+                if (which == 0) showNewFileDialog();
+                else            showNewFolderDialog();
+            })
+            .setNegativeButton("إلغاء", null)
+            .show();
     }
 
     private void showNewFileDialog() {
@@ -88,7 +114,13 @@ public class MainActivity extends AppCompatActivity
                 String name = input.getText() != null ? input.getText().toString().trim() : "";
                 if (name.isEmpty()) name = "untitled";
                 if (!name.endsWith(".vcg")) name += ".vcg";
-                VcgFile f = new VcgFile(projectId, name, "# " + name + "\n\n");
+                // المسار الكامل = المجلد الحالي + اسم الملف
+                String fullPath = currentPath + name;
+                if (storage.fileExists(projectId, fullPath)) {
+                    Toast.makeText(this, "الملف موجود بالفعل", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                VcgFile f = new VcgFile(projectId, fullPath, "# " + name + "\n\n");
                 storage.saveFile(f);
                 openEditor(f);
             })
@@ -96,56 +128,140 @@ public class MainActivity extends AppCompatActivity
             .show();
     }
 
+    private void showNewFolderDialog() {
+        View view = getLayoutInflater().inflate(R.layout.dialog_new_file, null);
+        TextInputEditText input = view.findViewById(R.id.input_filename);
+
+        new AlertDialog.Builder(this, R.style.VCGDialog)
+            .setTitle("مجلد جديد")
+            .setView(view)
+            .setPositiveButton("إنشاء", (d, w) -> {
+                String name = input.getText() != null ? input.getText().toString().trim() : "";
+                if (name.isEmpty()) return;
+                // أزل أي امتداد إذا أضافه المستخدم
+                name = name.replace("/", "");
+                String fullPath = currentPath + name + "/";
+                if (storage.fileExists(projectId, fullPath)) {
+                    Toast.makeText(this, "المجلد موجود بالفعل", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                storage.createFolder(projectId, fullPath);
+                loadCurrentFolder();
+            })
+            .setNegativeButton("إلغاء", null)
+            .show();
+    }
+
+    // ── FileClickListener ────────────────────────────────────
+
     @Override
     public void onFileClick(VcgFile file) {
         openEditor(file);
     }
 
     @Override
+    public void onFolderClick(VcgFile folder) {
+        // ادخل المجلد
+        currentPath = folder.getPath();
+        loadCurrentFolder();
+    }
+
+    @Override
     public void onFileDelete(VcgFile file) {
+        showOptionsDialog(file);
+    }
+
+    @Override
+    public void onFileRename(VcgFile file) {
+        showRenameDialog(file);
+    }
+
+    // ── زر الرجوع ────────────────────────────────────────────
+
+    @Override
+    public void onBackPressed() {
+        if (!currentPath.isEmpty()) {
+            // ارجع للمجلد الأب
+            String parent = getParentPath(currentPath);
+            currentPath = parent;
+            loadCurrentFolder();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    // ── حوارات الخيارات / إعادة التسمية / الحذف ─────────────
+
+    private void showOptionsDialog(VcgFile item) {
+        String title = item.isFolder() ? "مجلد: " + item.getName() : item.getName();
         new AlertDialog.Builder(this, R.style.VCGDialog)
-            .setTitle("حذف الملف")
-            .setMessage("هل تريد حذف " + file.getName() + "?")
+            .setTitle(title)
+            .setItems(new String[]{"✏️  إعادة تسمية", "🗑️  حذف"}, (d, which) -> {
+                if (which == 0) showRenameDialog(item);
+                else            confirmDelete(item);
+            })
+            .setNegativeButton("إلغاء", null)
+            .show();
+    }
+
+    private void showRenameDialog(VcgFile item) {
+        View view = getLayoutInflater().inflate(R.layout.dialog_new_file, null);
+        TextInputEditText input = view.findViewById(R.id.input_filename);
+        input.setText(item.getName());
+
+        new AlertDialog.Builder(this, R.style.VCGDialog)
+            .setTitle(item.isFolder() ? "إعادة تسمية المجلد" : "إعادة تسمية الملف")
+            .setView(view)
+            .setPositiveButton("حفظ", (d, w) -> {
+                String newName = input.getText() != null ? input.getText().toString().trim() : "";
+                if (newName.isEmpty()) return;
+                if (item.isFolder()) {
+                    storage.renameFolder(projectId, item.getPath(), newName);
+                } else {
+                    if (!newName.endsWith(".vcg")) newName += ".vcg";
+                    String newPath = currentPath + newName;
+                    storage.renameFile(projectId, item.getPath(), newPath);
+                }
+                loadCurrentFolder();
+            })
+            .setNegativeButton("إلغاء", null)
+            .show();
+    }
+
+    private void confirmDelete(VcgFile item) {
+        String msg = item.isFolder()
+            ? "سيتم حذف المجلد \"" + item.getName() + "\" وكل محتوياته. لا يمكن التراجع."
+            : "هل تريد حذف " + item.getName() + "?";
+
+        new AlertDialog.Builder(this, R.style.VCGDialog)
+            .setTitle(item.isFolder() ? "حذف المجلد" : "حذف الملف")
+            .setMessage(msg)
             .setPositiveButton("حذف", (d, w) -> {
-                storage.deleteFile(projectId, file.getName());
-                loadFiles();
+                if (item.isFolder()) {
+                    storage.deleteFolder(projectId, item.getPath());
+                } else {
+                    storage.deleteFile(projectId, item.getPath());
+                }
+                loadCurrentFolder();
                 Toast.makeText(this, "تم الحذف", Toast.LENGTH_SHORT).show();
             })
             .setNegativeButton("إلغاء", null)
             .show();
     }
 
-    @Override
-    public void onFileRename(VcgFile file) {
-        View view = getLayoutInflater().inflate(R.layout.dialog_new_file, null);
-        TextInputEditText input = view.findViewById(R.id.input_filename);
-        input.setText(file.getName());
-
-        new AlertDialog.Builder(this, R.style.VCGDialog)
-            .setTitle("إعادة تسمية")
-            .setView(view)
-            .setPositiveButton("حفظ", (d, w) -> {
-                String name = input.getText() != null ? input.getText().toString().trim() : "";
-                if (name.isEmpty()) return;
-                if (!name.endsWith(".vcg")) name += ".vcg";
-                storage.renameFile(projectId, file.getName(), name);
-                loadFiles();
-            })
-            .setNegativeButton("إلغاء", null)
-            .show();
-    }
+    // ── Navigation ───────────────────────────────────────────
 
     private void openEditor(VcgFile file) {
         Intent intent = new Intent(this, EditorActivity.class);
-        intent.putExtra("projectId", projectId);
+        intent.putExtra("projectId",   projectId);
         intent.putExtra("projectName", projectName);
-        intent.putExtra("filename", file.getName());
+        intent.putExtra("filename",    file.getPath()); // مسار كامل
         startActivity(intent);
     }
 
     private void openAssets() {
         Intent intent = new Intent(this, AssetsActivity.class);
-        intent.putExtra("projectId", projectId);
+        intent.putExtra("projectId",   projectId);
         intent.putExtra("projectName", projectName);
         startActivity(intent);
     }
@@ -157,7 +273,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(android.view.Menu menu) {
         getMenuInflater().inflate(R.menu.menu_project_files, menu);
         return true;
     }
@@ -165,7 +281,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            finish();
+            onBackPressed();
             return true;
         }
         if (item.getItemId() == R.id.action_settings) {
@@ -187,6 +303,14 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    // ── Helpers ──────────────────────────────────────────────
+
+    private String getParentPath(String path) {
+        String p = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
+        int slash = p.lastIndexOf('/');
+        return slash >= 0 ? p.substring(0, slash + 1) : "";
+    }
+
     private void exportProject() {
         VcgProject project = storage.getProject(projectId);
         if (project == null) return;
@@ -202,54 +326,61 @@ public class MainActivity extends AppCompatActivity
         if (!settings.isGithubConnected()) {
             new AlertDialog.Builder(this, R.style.VCGDialog)
                 .setTitle("GitHub غير مرتبط")
-                .setMessage("اربط حسابك في GitHub أولاً من الإعدادات (يحتاج Personal Access Token).")
-                .setPositiveButton("فتح الإعدادات", (d, w) -> startActivity(new Intent(this, SettingsActivity.class)))
+                .setMessage("اربط حسابك في GitHub أولاً من الإعدادات.")
+                .setPositiveButton("فتح الإعدادات", (d, w) ->
+                    startActivity(new Intent(this, SettingsActivity.class)))
                 .setNegativeButton("إلغاء", null)
                 .show();
             return;
         }
-
         VcgProject project = storage.getProject(projectId);
         if (project == null) return;
-        String suggestedRaw = project.getName().toLowerCase().replaceAll("[^a-z0-9_\\-]+", "-");
-        final String suggested = suggestedRaw.isEmpty() ? "vcg-project" : suggestedRaw;
+        String suggested = project.getName().toLowerCase().replaceAll("[^a-z0-9_\\-]+", "-");
+        if (suggested.isEmpty()) suggested = "vcg-project";
+        final String suggestedFinal = suggested;
 
         View view = getLayoutInflater().inflate(R.layout.dialog_github_upload, null);
         TextInputEditText repoInput = view.findViewById(R.id.input_repo_name);
-        TextView userLabel = view.findViewById(R.id.label_github_user);
-        repoInput.setText(suggested);
+        TextView userLabel          = view.findViewById(R.id.label_github_user);
+        repoInput.setText(suggestedFinal);
         userLabel.setText("متّصل كـ: " + settings.getGithubUsername());
 
         new AlertDialog.Builder(this, R.style.VCGDialog)
             .setTitle("رفع \"" + project.getName() + "\" إلى GitHub")
             .setView(view)
             .setPositiveButton("إنشاء ورفع", (d, w) -> {
-                String typedRepoName = repoInput.getText() != null ? repoInput.getText().toString().trim() : "";
-                String finalRepoName = typedRepoName.isEmpty() ? suggested : typedRepoName;
-                uploadProjectToGithub(project, settings, finalRepoName);
+                String repoName = repoInput.getText() != null
+                    ? repoInput.getText().toString().trim() : suggestedFinal;
+                if (repoName.isEmpty()) repoName = suggestedFinal;
+                uploadToGithub(project, settings, repoName);
             })
             .setNegativeButton("إلغاء", null)
             .show();
     }
 
-    private void uploadProjectToGithub(VcgProject project, VcgSettings settings, String repoName) {
+    private void uploadToGithub(VcgProject project, VcgSettings settings, String repoName) {
         Toast.makeText(this, "جاري الرفع إلى GitHub...", Toast.LENGTH_SHORT).show();
         String token = settings.getGithubToken();
         new Thread(() -> {
             try {
                 String fullRepo = VcgGitHub.createRepo(token, repoName, true);
-                List<VcgFile> filesToUpload = storage.getFilesInProject(projectId);
-                for (VcgFile f : filesToUpload) {
+                // رفع كل الملفات مع مساراتها الكاملة (بما فيها المجلدات)
+                List<VcgFile> allFiles = storage.getAllInProject(projectId);
+                for (VcgFile f : allFiles) {
+                    if (f.isFolder()) continue; // المجلدات تُنشأ ضمنياً على GitHub
                     byte[] content = (f.getContent() != null ? f.getContent() : "").getBytes("UTF-8");
-                    VcgGitHub.putFile(token, fullRepo, f.getName(), content, "VCG Editor: " + f.getName());
+                    VcgGitHub.putFile(token, fullRepo, f.getPath(), content,
+                        "VCG Editor: " + f.getPath());
                 }
                 runOnUiThread(() -> {
-                    Toast.makeText(this, "تم الرفع بنجاح إلى " + fullRepo + " ✓", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "تم الرفع بنجاح إلى " + fullRepo + " ✓",
+                        Toast.LENGTH_LONG).show();
                     VcgNotifications.notifyGitHubPushed(this, project.getName(), fullRepo);
                 });
             } catch (Exception e) {
                 String msg = e.getMessage();
-                runOnUiThread(() -> Toast.makeText(this, "فشل الرفع: " + msg, Toast.LENGTH_LONG).show());
+                runOnUiThread(() ->
+                    Toast.makeText(this, "فشل الرفع: " + msg, Toast.LENGTH_LONG).show());
             }
         }).start();
     }
@@ -257,10 +388,7 @@ public class MainActivity extends AppCompatActivity
     private void showAbout() {
         new AlertDialog.Builder(this, R.style.VCGDialog)
             .setTitle("Syrian VCG Editor")
-            .setMessage("Version: 2.1.0\n\n" +
-                "محرر لغة VCG البرمجية السورية\n" +
-                "مترجم حقيقي مكتوب بـ C11\n\n" +
-                "github.com/syrian-vcg/vcg-lang")
+            .setMessage("Version: 2.1.0\n\nمحرر لغة VCG البرمجية السورية\n\ngithub.com/syrian-vcg/vcg-lang")
             .setPositiveButton("إغلاق", null)
             .show();
     }
