@@ -175,6 +175,7 @@
         <!-- ════════════ App Widget: تطبيق مصغّر للمحرر على الشاشة الرئيسية ════════════ -->
         <receiver
             android:name=".EditorWidgetProvider"
+            android:icon="@mipmap/ic_launcher"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
