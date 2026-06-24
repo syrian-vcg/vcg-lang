@@ -48,7 +48,7 @@ public class OutputActivity extends AppCompatActivity {
         webView     = findViewById(R.id.web_view);
         progressBar = findViewById(R.id.progress_bar);
         skeleton    = findViewById(R.id.output_skeleton);
-        skeleton.setDark(VcgThemeHelper.isDark(new VcgSettings(this).getAppTheme()));
+        skeleton.setDark(VcgThemeHelper.isDark(VcgThemeHelper.resolve(new VcgSettings(this).getAppTheme(), this)));
 
         WebSettings ws = webView.getSettings();
         ws.setJavaScriptEnabled(true);
