@@ -24,13 +24,16 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
       - name: Make gradlew executable
         run: chmod +x editor/android/gradlew
+
+      - name: Clean stale build outputs
+        working-directory: editor/android
+        run: ./gradlew clean --no-daemon
 
       - name: Create local.properties from secrets
         working-directory: editor/android
