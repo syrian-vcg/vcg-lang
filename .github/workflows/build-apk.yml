@@ -3,40 +3,237 @@ name: Build VCG Editor APK
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'editor/android/**'
+      - '.github/workflows/build-apk.yml'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'editor/android/**'
+      - '.github/workflows/build-apk.yml'
   workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build variant to produce'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
+          - both
+      run_security_scan:
+        description: 'Run secret/dependency security scan'
+        required: true
+        default: true
+        type: boolean
   release:
     types: [ created ]
 
-jobs:
-  build-apk:
-    name: Build APK
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+concurrency:
+  group: build-apk-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
+env:
+  WORKING_DIR: editor/android
+  JAVA_VERSION: '17'
+
+permissions:
+  contents: read
+
+jobs:
+  # ════════════════════════════════════════════════════════════
+  # JOB 1 — Security: secrets scanning + dependency review
+  # ════════════════════════════════════════════════════════════
+  security-scan:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.run_security_scan != 'false' }}
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan for leaked secrets (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Check local.properties is git-ignored
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          if git check-ignore local.properties >/dev/null 2>&1; then
+            echo "local.properties is correctly git-ignored."
+          else
+            echo "::warning::local.properties is NOT in .gitignore — risk of leaking local secrets if ever committed."
+          fi
+
+      - name: Dependency review (PRs only)
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/dependency-review-action@v4
+        continue-on-error: true
+
+      - name: Scan for hardcoded API keys in source
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          patterns='AIza[0-9A-Za-z_-]{35}|sk_live_[0-9a-zA-Z]{24}|AKIA[0-9A-Z]{16}'
+          if grep -rEn --include="*.kt" --include="*.java" --include="*.xml" "$patterns" app/src/ 2>/dev/null; then
+            echo "::error::Potential hardcoded API key or credential found in source. Review above matches."
+            exit 1
+          else
+            echo "No hardcoded credential patterns detected."
+          fi
+
+  # ════════════════════════════════════════════════════════════
+  # JOB 2 — Code quality: lint, static analysis, format checks
+  # ════════════════════════════════════════════════════════════
+  code-quality:
+    name: 🧹 Code Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: Setup Gradle (with build cache)
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-home-cache-cleanup: true
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
       - name: Make gradlew executable
-        run: chmod +x editor/android/gradlew
+        working-directory: ${{ env.WORKING_DIR }}
+        run: chmod +x gradlew
 
-      - name: Clean stale build outputs
-        working-directory: editor/android
-        run: ./gradlew clean --no-daemon
+      - name: Create placeholder local.properties for analysis
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          cat > local.properties <<EOF
+          ADMOB_APP_ID=ca-app-pub-0000000000000000~0000000000
+          ADMOB_REWARDED_UNIT_ID=ca-app-pub-0000000000000000/0000000000
+          ADMOB_INTERSTITIAL_UNIT_ID=ca-app-pub-0000000000000000/0000000000
+          ADMOB_BANNER_UNIT_ID=ca-app-pub-0000000000000000/0000000000
+          ADMOB_REWARDED_INTERSTITIAL_UNIT_ID=ca-app-pub-0000000000000000/0000000000
+          EOF
 
+      - name: Run Android Lint
+        working-directory: ${{ env.WORKING_DIR }}
+        continue-on-error: true
+        run: ./gradlew lintDebug --no-daemon
+
+      - name: Check for ktlint config and run if present
+        working-directory: ${{ env.WORKING_DIR }}
+        continue-on-error: true
+        run: |
+          if grep -q "ktlint" build.gradle app/build.gradle 2>/dev/null; then
+            ./gradlew ktlintCheck --no-daemon
+          else
+            echo "ktlint not configured in this project — skipping."
+          fi
+
+      - name: Static analysis summary
+        if: always()
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          echo "### Code Quality Report" >> "$GITHUB_STEP_SUMMARY"
+          report=$(find app/build/reports/lint-results-debug.html -type f 2>/dev/null | head -n1)
+          if [ -n "$report" ]; then
+            issues=$(grep -o 'id="[A-Za-z]*Issues"' "$report" 2>/dev/null | wc -l || echo "n/a")
+            echo "- Lint report generated: \`$report\`" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- No lint report found." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: ${{ env.WORKING_DIR }}/app/build/reports/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # ════════════════════════════════════════════════════════════
+  # JOB 3a — Compute which variants to build
+  # ════════════════════════════════════════════════════════════
+  prepare-matrix:
+    name: 🧮 Prepare Build Matrix
+    runs-on: ubuntu-latest
+    needs: [ code-quality ]
+    if: ${{ always() && needs.code-quality.result != 'cancelled' }}
+    outputs:
+      variants: ${{ steps.set.outputs.variants }}
+    steps:
+      - name: Determine variants to build
+        id: set
+        run: |
+          if [ "${{ github.event.inputs.build_type }}" = "release" ]; then
+            variants='["release"]'
+          elif [ "${{ github.event.inputs.build_type }}" = "both" ]; then
+            variants='["debug","release"]'
+          elif [ "${{ github.event_name }}" = "release" ]; then
+            variants='["release"]'
+          else
+            variants='["debug"]'
+          fi
+          echo "variants=${variants}" >> "$GITHUB_OUTPUT"
+          echo "Building variants: ${variants}"
+
+  # ════════════════════════════════════════════════════════════
+  # JOB 3b — Build matrix: debug + release in parallel
+  # ════════════════════════════════════════════════════════════
+  build-apk:
+    name: 🏗️ Build (${{ matrix.variant }})
+    runs-on: ubuntu-latest
+    needs: [ prepare-matrix ]
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: ${{ fromJSON(needs.prepare-matrix.outputs.variants) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Setup Gradle (with remote build cache)
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+          gradle-home-cache-cleanup: true
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Make gradlew executable
+        working-directory: ${{ env.WORKING_DIR }}
+        run: chmod +x gradlew
+
+      # ── Configuration & secrets ──────────────────────────────
       - name: Create local.properties from secrets
-        working-directory: editor/android
+        working-directory: ${{ env.WORKING_DIR }}
         run: |
           cat > local.properties <<EOF
           ADMOB_APP_ID=${{ secrets.ADMOB_APP_ID }}
@@ -46,108 +243,164 @@ jobs:
           ADMOB_REWARDED_INTERSTITIAL_UNIT_ID=${{ secrets.ADMOB_REWARDED_INTERSTITIAL_UNIT_ID }}
           EOF
 
-      - name: Build Debug APK
-        working-directory: editor/android
+      - name: Verify required secrets are present
+        working-directory: ${{ env.WORKING_DIR }}
         run: |
-          ./gradlew assembleDebug \
-            --no-daemon \
-            --stacktrace \
-            -Dorg.gradle.jvmargs=-Xmx2048m
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          missing=0
+          for key in ADMOB_APP_ID ADMOB_REWARDED_UNIT_ID ADMOB_INTERSTITIAL_UNIT_ID ADMOB_BANNER_UNIT_ID ADMOB_REWARDED_INTERSTITIAL_UNIT_ID; do
+            value=$(grep "^${key}=" local.properties | cut -d'=' -f2-)
+            if [ -z "$value" ]; then
+              echo "::warning::Secret '$key' is empty. Related features may fail at runtime."
+              missing=1
+            fi
+          done
+          [ "$missing" -eq 0 ] && echo "All AdMob secrets are present."
 
-      - name: Build Release APK
-        working-directory: editor/android
+      - name: Decode release keystore
+        if: ${{ matrix.variant == 'release' }}
+        working-directory: ${{ env.WORKING_DIR }}
         run: |
-          ./gradlew assembleRelease \
-            --no-daemon \
-            -Dorg.gradle.jvmargs=-Xmx2048m
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          if [ -n "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" ]; then
+            echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > release.keystore
+            {
+              echo "RELEASE_STORE_FILE=release.keystore"
+              echo "RELEASE_STORE_PASSWORD=${{ secrets.RELEASE_STORE_PASSWORD }}"
+              echo "RELEASE_KEY_ALIAS=${{ secrets.RELEASE_KEY_ALIAS }}"
+              echo "RELEASE_KEY_PASSWORD=${{ secrets.RELEASE_KEY_PASSWORD }}"
+            } >> local.properties
+          else
+            echo "::error::RELEASE_KEYSTORE_BASE64 secret is missing; cannot sign release build."
+            exit 1
+          fi
+
+      # ── Clean & build ────────────────────────────────────────
+      - name: Clean stale build outputs
+        working-directory: ${{ env.WORKING_DIR }}
+        run: ./gradlew clean --no-daemon
+
+      - name: Build ${{ matrix.variant }} APK
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          variant_cap="$(echo "${{ matrix.variant }}" | sed 's/./\U&/')"
+          ./gradlew "assemble${variant_cap}" --no-daemon --stacktrace --build-cache
+
+      - name: Run unit tests
+        working-directory: ${{ env.WORKING_DIR }}
         continue-on-error: true
-
-      - name: Remove local.properties (cleanup secret file)
-        if: always()
-        working-directory: editor/android
-        run: rm -f local.properties
-
-      - name: Collect APKs
         run: |
-          mkdir -p apk-output
-          find editor/android/app/build/outputs/apk -name "*.apk" 2>/dev/null \
-            -exec cp {} apk-output/ \; || true
-          echo "=== APK files ==="
-          ls -lh apk-output/ || echo "No APKs found"
+          variant_cap="$(echo "${{ matrix.variant }}" | sed 's/./\U&/')"
+          ./gradlew "test${variant_cap}UnitTest" --no-daemon
 
-      - name: Upload Debug APK
+      # ── Locate, rename, verify ───────────────────────────────
+      - name: Resolve build metadata
+        id: meta
+        run: |
+          echo "short_sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          echo "timestamp=$(date -u +'%Y%m%d-%H%M%S')" >> "$GITHUB_OUTPUT"
+
+      - name: Locate APK
+        id: locate
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          apk_path=$(find "app/build/outputs/apk/${{ matrix.variant }}" -name "*.apk" | head -n1)
+          if [ -z "$apk_path" ]; then
+            echo "::error::No APK found under app/build/outputs/apk/${{ matrix.variant }}"
+            exit 1
+          fi
+          echo "apk_path=${apk_path}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify APK integrity
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          apk="${{ steps.locate.outputs.apk_path }}"
+          if ! unzip -tq "$apk" >/dev/null; then
+            echo "::error::APK failed zip integrity check: $apk"
+            exit 1
+          fi
+          if ! unzip -p "$apk" AndroidManifest.xml >/dev/null 2>&1; then
+            echo "::error::APK is missing AndroidManifest.xml"
+            exit 1
+          fi
+          echo "APK integrity verified."
+
+      - name: Rename APK with build metadata
+        id: rename
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          src="${{ steps.locate.outputs.apk_path }}"
+          dest_name="vcg-editor-${{ matrix.variant }}-${{ steps.meta.outputs.timestamp }}-${{ steps.meta.outputs.short_sha }}.apk"
+          dest_dir=$(dirname "$src")
+          cp "$src" "${dest_dir}/${dest_name}"
+          echo "apk_name=${dest_name}" >> "$GITHUB_OUTPUT"
+          echo "apk_full_path=${dest_dir}/${dest_name}" >> "$GITHUB_OUTPUT"
+
+      - name: Compute APK checksum (SHA-256)
+        id: checksum
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          sha256sum "${{ steps.rename.outputs.apk_full_path }}" | tee "${{ steps.rename.outputs.apk_full_path }}.sha256"
+          echo "sha256=$(cut -d' ' -f1 < "${{ steps.rename.outputs.apk_full_path }}.sha256")" >> "$GITHUB_OUTPUT"
+
+      - name: Build summary
+        run: |
+          size=$(du -h "${{ env.WORKING_DIR }}/${{ steps.rename.outputs.apk_full_path }}" | cut -f1)
+          {
+            echo "### 📦 Build Summary — ${{ matrix.variant }}"
+            echo "| Field | Value |"
+            echo "|---|---|"
+            echo "| Variant | ${{ matrix.variant }} |"
+            echo "| Commit | \`${{ steps.meta.outputs.short_sha }}\` |"
+            echo "| Size | ${size} |"
+            echo "| SHA-256 | \`${{ steps.checksum.outputs.sha256 }}\` |"
+            echo "| File | \`${{ steps.rename.outputs.apk_name }}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # ── Upload artifacts ──────────────────────────────────────
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
-        if: always()
         with:
-          name: vcg-editor-debug-apk
-          path: apk-output/*debug*.apk
+          name: ${{ steps.rename.outputs.apk_name }}
+          path: |
+            ${{ env.WORKING_DIR }}/${{ steps.rename.outputs.apk_full_path }}
+            ${{ env.WORKING_DIR }}/${{ steps.rename.outputs.apk_full_path }}.sha256
           retention-days: 30
+          if-no-files-found: error
 
-      - name: Upload Release APK
+      - name: Upload test/build reports
+        if: always()
         uses: actions/upload-artifact@v4
-        if: always()
         with:
-          name: vcg-editor-release-apk
-          path: apk-output/*release*.apk
-          retention-days: 30
+          name: reports-${{ matrix.variant }}-${{ steps.meta.outputs.timestamp }}
+          path: ${{ env.WORKING_DIR }}/app/build/reports/**
+          retention-days: 7
+          if-no-files-found: ignore
 
-      - name: Upload to Release
-        if: github.event_name == 'release'
+      - name: Attach APK to GitHub Release
+        if: ${{ github.event_name == 'release' && matrix.variant == 'release' }}
         uses: softprops/action-gh-release@v2
         with:
-          files: apk-output/*.apk
-        continue-on-error: true
-
-  sign-apk:
-    name: Sign APK
-    runs-on: ubuntu-latest
-    needs: build-apk
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Download Release APK
-        uses: actions/download-artifact@v4
-        with:
-          name: vcg-editor-release-apk
-          path: to-sign/
-        continue-on-error: true
-
-      - name: Sign APK
+          files: |
+            ${{ env.WORKING_DIR }}/${{ steps.rename.outputs.apk_full_path }}
+            ${{ env.WORKING_DIR }}/${{ steps.rename.outputs.apk_full_path }}.sha256
         env:
-          KEYSTORE_B64: ${{ secrets.KEYSTORE_BASE64 }}
-          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASS: ${{ secrets.KEY_PASS }}
-        run: |
-          if [ -z "$KEYSTORE_B64" ]; then
-            echo "No keystore configured — skipping signing"
-            exit 0
-          fi
-          echo "$KEYSTORE_B64" | base64 -d > release.keystore
-          find to-sign -name "*.apk" | while read apk; do
-            $JAVA_HOME/bin/jarsigner -verbose \
-              -sigalg SHA256withRSA -digestalg SHA-256 \
-              -keystore release.keystore \
-              -storepass "$KEYSTORE_PASS" \
-              -keypass "$KEY_PASS" \
-              "$apk" "$KEY_ALIAS"
-          done
-        continue-on-error: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload Signed APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: vcg-editor-signed-apk
-          path: to-sign/*.apk
-          retention-days: 30
-        continue-on-error: true
+  # ════════════════════════════════════════════════════════════
+  # JOB 4 — Final gate: aggregate status for branch protection
+  # ════════════════════════════════════════════════════════════
+  build-status:
+    name: ✅ Build Gate
+    runs-on: ubuntu-latest
+    needs: [ security-scan, code-quality, build-apk ]
+    if: always()
+    steps:
+      - name: Check all jobs succeeded
+        run: |
+          echo "security-scan:   ${{ needs.security-scan.result }}"
+          echo "code-quality:    ${{ needs.code-quality.result }}"
+          echo "build-apk:       ${{ needs.build-apk.result }}"
+          if [ "${{ needs.build-apk.result }}" != "success" ]; then
+            echo "::error::Build job failed — see logs above."
+            exit 1
+          fi
+          echo "All required jobs passed."
