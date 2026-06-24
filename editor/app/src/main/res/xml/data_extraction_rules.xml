@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    قواعد استخراج البيانات (Android 12+ — dataExtractionRules).
-    القيم الصالحة لـ domain: root, file, database, sharedpref, external
--->
 <data-extraction-rules>
     <cloud-backup>
         <exclude domain="file" path="../cache"/>
