@@ -14,7 +14,9 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -36,7 +38,11 @@ public class AssetsActivity extends AppCompatActivity implements AssetAdapter.As
     private List<VcgAsset> assets = new ArrayList<>();
     private TextView emptyView;
 
-    private ActivityResultLauncher<String> pickMedia;
+    // PickVisualMedia: منتقي وسائط نظام Android 13+ (Photo Picker API).
+    // يعمل تلقائياً على الأجهزة الأقدم (Android 11-12) عبر Google Play Services backport.
+    // لا يتطلب أذونات READ_MEDIA_* ويفتح واجهة النظام المدمجة (أكثر خصوصيةً وأماناً).
+    private ActivityResultLauncher<PickVisualMediaRequest> pickImage;
+    private ActivityResultLauncher<PickVisualMediaRequest> pickVideo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,15 +66,27 @@ public class AssetsActivity extends AppCompatActivity implements AssetAdapter.As
         rv.setAdapter(adapter);
         emptyView = findViewById(R.id.empty_assets_view);
 
-        pickMedia = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+        pickImage = registerForActivityResult(new PickVisualMedia(), uri -> {
+            if (uri != null) importMedia(uri);
+        });
+        pickVideo = registerForActivityResult(new PickVisualMedia(), uri -> {
             if (uri != null) importMedia(uri);
         });
 
         FloatingActionButton fab = findViewById(R.id.fab_upload);
-        fab.setOnClickListener(v -> pickMedia.launch("image/*"));
+        fab.setOnClickListener(v ->
+            pickImage.launch(new PickVisualMediaRequest.Builder()
+                .setMediaType(PickVisualMedia.ImageOnly.INSTANCE)
+                .build()));
 
-        findViewById(R.id.btn_pick_video).setOnClickListener(v -> pickMedia.launch("video/*"));
-        findViewById(R.id.btn_pick_image).setOnClickListener(v -> pickMedia.launch("image/*"));
+        findViewById(R.id.btn_pick_video).setOnClickListener(v ->
+            pickVideo.launch(new PickVisualMediaRequest.Builder()
+                .setMediaType(PickVisualMedia.VideoOnly.INSTANCE)
+                .build()));
+        findViewById(R.id.btn_pick_image).setOnClickListener(v ->
+            pickImage.launch(new PickVisualMediaRequest.Builder()
+                .setMediaType(PickVisualMedia.ImageOnly.INSTANCE)
+                .build()));
 
         loadAssets();
     }
