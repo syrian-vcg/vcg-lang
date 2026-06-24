@@ -104,9 +104,18 @@
 
         <activity
             android:name=".ProjectsActivity"
-            android:exported="false"
+            android:exported="true"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustResize"/>
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.syrianvcg.editor.ACTION_NEW_PROJECT"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.syrianvcg.editor.ACTION_LAST_PROJECT"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
 
         <activity
             android:name=".MainActivity"
@@ -161,6 +170,19 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- ════════════ App Widget: تطبيق مصغّر للمحرر على الشاشة الرئيسية ════════════ -->
+        <receiver
+            android:name=".EditorWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+                <action android:name="com.syrianvcg.editor.WIDGET_REFRESH"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_editor_info"/>
+        </receiver>
 
     </application>
 </manifest>
