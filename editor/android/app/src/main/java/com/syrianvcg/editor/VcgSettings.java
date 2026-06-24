@@ -119,7 +119,7 @@ public class VcgSettings {
     // ═══════════════════ سمة واجهة التطبيق ═══════════════════
 
     /** white | dark | black | blue — راجع VcgThemeHelper */
-    public String getAppTheme() { return prefs.getString("app_theme", VcgThemeHelper.THEME_WHITE); }
+    public String getAppTheme() { return prefs.getString("app_theme", VcgThemeHelper.THEME_SYSTEM); }
     public void setAppTheme(String v) { prefs.edit().putString("app_theme", v).apply(); }
 
     // ═══════════════════ أيقونة التطبيق ═══════════════════
