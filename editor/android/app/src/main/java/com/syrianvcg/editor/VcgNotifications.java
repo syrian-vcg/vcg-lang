@@ -161,9 +161,11 @@ public final class VcgNotifications {
 
         Intent open = new Intent(ctx, openClass);
         open.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        int piFlags = PendingIntent.FLAG_UPDATE_CURRENT
-            | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ? PendingIntent.FLAG_IMMUTABLE : 0);
-        PendingIntent pi = PendingIntent.getActivity(ctx, id, open, piFlags);
+        // FLAG_IMMUTABLE إلزامي على Android 12+ (API 31+) لكل PendingIntent لا يحتاج تعديلاً.
+        // نحدده دائماً لأن minSdk=24 فمضمون أن Build.VERSION.SDK_INT >= 31
+        // لأي جهاز سيشغّل targetSdk=34.
+        PendingIntent pi = PendingIntent.getActivity(ctx, id, open,
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         int accentColor = (color != 0) ? color : COLOR_GREEN;
 
