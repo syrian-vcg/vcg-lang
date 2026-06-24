@@ -29,7 +29,7 @@
                 android:layout_gravity="start|center_vertical"
                 android:src="@drawable/ic_toolbar_more"
                 android:background="@drawable/bg_topbar_circle_btn"
-                android:tint="?attr/colorTextMuted"
+                app:tint="?attr/colorTextMuted"
                 android:contentDescription="خيارات"/>
 
             <!-- File name + project name (CENTER) -->
@@ -70,7 +70,7 @@
                 <ImageView
                     android:layout_width="20dp" android:layout_height="20dp"
                     android:src="@drawable/ic_nav_run"
-                    android:tint="?attr/colorBg"/>
+                    app:tint="?attr/colorBg"/>
             </LinearLayout>
 
         </androidx.appcompat.widget.Toolbar>
@@ -181,7 +181,7 @@
                     android:layout_width="28dp" android:layout_height="28dp"
                     android:src="@android:drawable/ic_menu_zoom"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:tint="?attr/colorTextMuted"
+                    app:tint="?attr/colorTextMuted"
                     android:contentDescription="ملء الشاشة"/>
             </LinearLayout>
 
