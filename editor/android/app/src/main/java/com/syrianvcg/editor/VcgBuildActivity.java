@@ -53,8 +53,8 @@ public class VcgBuildActivity extends AppCompatActivity {
     private void startBuild() {
         String projectId = getIntent().getStringExtra(EXTRA_PROJECT_ID);
 
-        VcgStorage storage = VcgStorage.getInstance(this);
-        VcgProject project = storage.getProjectById(projectId);
+        VcgStorage storage = new VcgStorage(this);
+        VcgProject project = storage.getProject(projectId);
         if (project == null) {
             appendLog("❌ لم يُعثر على المشروع: " + projectId);
             return;
