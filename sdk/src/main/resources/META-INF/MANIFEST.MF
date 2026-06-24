@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Implementation-Title: VCG Language SDK
+Implementation-Version: 2.0.1
+Implementation-Vendor: Syrian VCG Project
+Main-Class: com.syrianvcg.vcgsdk.VcgSDK
+Created-By: VCG SDK Build System
