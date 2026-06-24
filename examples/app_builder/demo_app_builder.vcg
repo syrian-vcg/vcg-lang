@@ -1,0 +1,133 @@
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║      demo_app_builder.vcg — شرح كامل لميزات بناء التطبيقات     ║
+# ║      VCG v2.0 — App Builder Features Demo                       ║
+# ╚══════════════════════════════════════════════════════════════════╝
+
+# ═══════════════════════════════════════════════════════════════════
+#  القسم 1 — إعدادات التطبيق (يوضع في أول ملف في المشروع)
+# ═══════════════════════════════════════════════════════════════════
+
+$set.name_app("متجر الكتب")
+$set.app.package("com.example.bookstore")
+$set.app.version("2.0.0")
+$set.get.icon("assets/icon.png")
+
+h(1, "📱 " + $set.name_app())
+
+show("الاسم    :", $set.name_app())
+show("الحزمة   :", $set.app.package())
+show("الإصدار  :", $set.app.version())
+show("الأيقونة :", $set.get.icon())
+
+# ═══════════════════════════════════════════════════════════════════
+#  القسم 2 — data_vcg و get.data
+#  تُعرِّف data_vcg بيانات مُخزَّنة يمكن قراءتها لاحقاً
+# ═══════════════════════════════════════════════════════════════════
+
+h(2, "📦 البيانات المخزَّنة (data_vcg)")
+
+data_vcg books = [
+    { id: 1, title: "الف ليلة وليلة",   author: "مجهول",         price: 25.0 },
+    { id: 2, title: "رحلة ابن بطوطة",   author: "ابن بطوطة",     price: 30.0 },
+    { id: 3, title: "المقدمة",           author: "ابن خلدون",     price: 45.0 },
+    { id: 4, title: "كليلة ودمنة",       author: "ابن المقفع",    price: 20.0 }
+]
+
+data_vcg store_config = {
+    name:     "متجر الكتب العربية",
+    currency: "دولار",
+    discount: 0.10
+}
+
+# قراءة البيانات
+let all_books  = get.data(books)
+let config     = get.data(store_config)
+
+show("عدد الكتب :", len(all_books))
+show("اسم المتجر:", config.name)
+show("العملة    :", config.currency)
+
+# عرض الكتب
+h(3, "📚 قائمة الكتب")
+let i = 0
+while i < len(all_books) {
+    let book = all_books[i]
+    let final_price = book.price * (1 - config.discount)
+    l("《" + book.title + "》 — " + book.author
+        + " | السعر: " + final_price + " " + config.currency)
+    i += 1
+}
+
+# ═══════════════════════════════════════════════════════════════════
+#  القسم 3 — data_vcg مع $set/$get للمتجر التفاعلي
+# ═══════════════════════════════════════════════════════════════════
+
+h(2, "🔁 التكامل مع المتجر التفاعلي")
+
+data_vcg user_cart = []
+
+$set("cart_total", 0)
+
+watch("cart_total", func(v) {
+    show("[🛒 سلة] إجمالي جديد:", v, store_config.currency)
+})
+
+let b = all_books[0]
+$set("cart_total", $get("cart_total") + b.price)
+
+let b2 = all_books[2]
+$set("cart_total", $get("cart_total") + b2.price)
+
+show("إجمالي السلة:", $get("cart_total"), config.currency)
+
+# ═══════════════════════════════════════════════════════════════════
+#  القسم 4 — إنشاء ملف مضغوط
+# ═══════════════════════════════════════════════════════════════════
+
+h(2, "📦 إنشاء ملف ZIP")
+
+make_zip("backup_books.zip", [
+    "data/books.json",
+    "data/config.json",
+    "assets/cover1.png",
+    "assets/cover2.png",
+    "main.vcg"
+])
+
+# يمكن أيضاً تمرير كائن — ستُستخرج المفاتيح كأسماء ملفات
+make_zip("export_data.zip", {
+    "books.json": all_books,
+    "config.json": config
+})
+
+# ═══════════════════════════════════════════════════════════════════
+#  القسم 5 — إنشاء ملف PDF
+# ═══════════════════════════════════════════════════════════════════
+
+h(2, "📄 إنشاء ملف PDF")
+
+let report = "تقرير المتجر\n"
+             + "===========\n"
+             + "الاسم: " + config.name + "\n"
+             + "عدد الكتب: " + len(all_books) + "\n"
+             + "إجمالي السلة: " + $get("cart_total") + "\n"
+
+make_pdf("تقرير_المتجر", report)
+make_pdf("كتالوج_الكتب", "قائمة شاملة بكتب المتجر للموسم 2026")
+
+# ═══════════════════════════════════════════════════════════════════
+#  القسم 6 — التصدير إلى APK
+#  export(to_set) هو الأمر الأخير — يُطلق عملية البناء الكاملة
+# ═══════════════════════════════════════════════════════════════════
+
+h(2, "🚀 تصدير التطبيق")
+
+l("سيُنشأ: " + $set.name_app() + "-" + $set.app.version() + ".apk")
+l("سيُنشأ: " + $set.name_app() + "-" + $set.app.version() + "-project.zip")
+l("سيُنشأ: " + $set.name_app() + "-" + $set.app.version() + "-docs.pdf")
+
+# الأمر الأساسي للتصدير — يُنشئ APK + ZIP + PDF
+export(to_set)
+
+show("")
+show("✅ اكتمل التحليل. افتح Generate_Stack.apk.yml لبدء البناء الفعلي.")
