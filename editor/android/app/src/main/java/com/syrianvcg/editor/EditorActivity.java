@@ -434,6 +434,15 @@ public class EditorActivity extends AppCompatActivity {
 
     private void runCode() {
         saveFile();
+
+        // ── كشف Generate_Stack.apk.yml ← يُطلق شاشة البناء مباشرة ──
+        if (VcgAppBuilder.isStackFile(filename)) {
+            Intent buildIntent = new Intent(this, VcgBuildActivity.class);
+            buildIntent.putExtra(VcgBuildActivity.EXTRA_PROJECT_ID, projectId);
+            startActivity(buildIntent);
+            return;
+        }
+
         String code = codeEditor.getText() != null ? codeEditor.getText().toString() : "";
         Intent intent = new Intent(this, OutputActivity.class);
         intent.putExtra("code", code);
