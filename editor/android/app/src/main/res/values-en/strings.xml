@@ -26,4 +26,9 @@
     <string name="shortcut_settings_short">Settings</string>
     <string name="shortcut_settings_long">Editor settings</string>
     <string name="shortcut_disabled">This shortcut is currently unavailable</string>
+
+    <!-- Home screen widget -->
+    <string name="widget_description">A home screen widget showing your last project, with quick actions for a new project or the Terminal</string>
+    <string name="widget_last_project">Last project</string>
+    <string name="widget_no_projects">No projects yet</string>
 </resources>
