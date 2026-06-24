@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    قواعد استخراج البيانات (Android 12+ — dataExtractionRules).
+    تفصّل ما يُنسخ احتياطياً (cloud backup) وما يُنقل عبر نقل الجهاز (d2d).
+    SharedPreferences (مشاريع المستخدم وإعداداته) مُدرجة افتراضياً في كلا الوضعين.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="cache" path="."/>
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="cache" path="."/>
+    </device-transfer>
+</data-extraction-rules>
