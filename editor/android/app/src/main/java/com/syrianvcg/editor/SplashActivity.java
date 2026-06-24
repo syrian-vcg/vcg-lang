@@ -156,9 +156,20 @@ public class SplashActivity extends AppCompatActivity {
         }, 1200);
 
         // ── الانتقال إلى قائمة المشاريع ──────────────────────────────────
+        // نحرص على تمرير action الـ shortcut (إن وُجد) عبر Intent Stack:
+        // عندما يضغط المستخدم على shortcut مثل "مشروع جديد" أو "آخر مشروع"،
+        // يصل الـ ACTION إلى SplashActivity عبر سلسلة Intents في shortcuts.xml،
+        // لذا نعيد تمريره يدوياً إلى ProjectsActivity لضمان معالجته حتى بعد Splash.
         navigateRunnable = () -> {
             if (isFinishing() || isDestroyed()) return;
-            startActivity(new Intent(this, ProjectsActivity.class));
+            Intent dest = new Intent(this, ProjectsActivity.class);
+            String incomingAction = getIntent() != null ? getIntent().getAction() : null;
+            if (incomingAction != null
+                    && (incomingAction.equals("com.syrianvcg.editor.ACTION_NEW_PROJECT")
+                     || incomingAction.equals("com.syrianvcg.editor.ACTION_LAST_PROJECT"))) {
+                dest.setAction(incomingAction);
+            }
+            startActivity(dest);
             finish();
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         };
