@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.Switch;
@@ -94,7 +95,7 @@ public class SettingsActivity extends AppCompatActivity {
             @Override public void onStopTrackingTouch(SeekBar s)  {}
         });
 
-        // Theme selector
+        // Theme selector (ثيم المحرر)
         RadioGroup themeGroup = findViewById(R.id.radio_theme);
         int[] themeIds = {R.id.theme_olive, R.id.theme_white, R.id.theme_midnight, R.id.theme_amoled, R.id.theme_sand};
         String[] themeNames = {"olive", "white", "midnight", "amoled", "sand"};
@@ -116,23 +117,51 @@ public class SettingsActivity extends AppCompatActivity {
         fontGroup.setOnCheckedChangeListener((group, checkedId) ->
             settings.setFontFamily(checkedId == sansId ? "sans-serif" : checkedId == serifId ? "serif" : "monospace"));
 
-        // App UI theme selector (System / White / Dark / Black / Blue)
-        RadioGroup appThemeGroup = findViewById(R.id.radio_app_theme);
-        int[] appThemeIds = {R.id.app_theme_system, R.id.app_theme_white, R.id.app_theme_dark, R.id.app_theme_black, R.id.app_theme_blue};
-        // إعادة ترتيب لتطابق ترتيب الأزرار في الواجهة (نظام، أبيض، داكن، أسود، أزرق)
-        String[] appThemeOrder = {VcgThemeHelper.THEME_SYSTEM, VcgThemeHelper.THEME_WHITE, VcgThemeHelper.THEME_DARK, VcgThemeHelper.THEME_BLACK, VcgThemeHelper.THEME_BLUE};
+        // ══════════════════════════════════════════════════════════════
+        // إصلاح: App UI theme selector
+        // المشكلة: RadioButton داخل LinearLayout داخل RadioGroup لا يعمل
+        // تلقائياً — يجب إدارة الاختيار يدوياً لضمان زر واحد فقط مُحدَّد.
+        // ══════════════════════════════════════════════════════════════
+        final int[] appThemeIds = {
+            R.id.app_theme_system,
+            R.id.app_theme_white,
+            R.id.app_theme_dark,
+            R.id.app_theme_black,
+            R.id.app_theme_blue
+        };
+        final String[] appThemeOrder = {
+            VcgThemeHelper.THEME_SYSTEM,
+            VcgThemeHelper.THEME_WHITE,
+            VcgThemeHelper.THEME_DARK,
+            VcgThemeHelper.THEME_BLACK,
+            VcgThemeHelper.THEME_BLUE
+        };
+
+        // تعيين الزر الصحيح مُحدَّداً عند فتح الشاشة
         String curAppTheme = settings.getAppTheme();
-        for (int i = 0; i < appThemeOrder.length; i++) {
-            if (appThemeOrder[i].equals(curAppTheme)) appThemeGroup.check(appThemeIds[i]);
+        for (int i = 0; i < appThemeIds.length; i++) {
+            RadioButton rb = findViewById(appThemeIds[i]);
+            rb.setChecked(appThemeOrder[i].equals(curAppTheme));
         }
-        appThemeGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            for (int i = 0; i < appThemeIds.length; i++) {
-                if (appThemeIds[i] == checkedId && !appThemeOrder[i].equals(settings.getAppTheme())) {
-                    settings.setAppTheme(appThemeOrder[i]);
+
+        // معالجة الضغط يدوياً: أوقف كل الأزرار ثم فعّل المضغوط فقط
+        for (int i = 0; i < appThemeIds.length; i++) {
+            final int index = i;
+            RadioButton rb = findViewById(appThemeIds[i]);
+            rb.setOnClickListener(v -> {
+                // أزِل تحديد كل الأزرار أولاً
+                for (int id : appThemeIds) {
+                    ((RadioButton) findViewById(id)).setChecked(false);
+                }
+                // حدِّد الزر المضغوط فقط
+                rb.setChecked(true);
+                // احفظ وأعِد رسم الشاشة إذا تغيّر الاختيار
+                if (!appThemeOrder[index].equals(settings.getAppTheme())) {
+                    settings.setAppTheme(appThemeOrder[index]);
                     recreate();
                 }
-            }
-        });
+            });
+        }
 
         // Word wrap
         Switch wrapSwitch = findViewById(R.id.switch_word_wrap);
