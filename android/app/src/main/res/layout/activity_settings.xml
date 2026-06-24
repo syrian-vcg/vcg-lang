@@ -1,0 +1,517 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="?attr/colorBg">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent" android:layout_height="wrap_content">
+        <androidx.appcompat.widget.Toolbar android:id="@+id/settings_toolbar"
+            android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorSurface"
+            app:titleTextColor="?attr/colorAccentSecondary"/>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ScrollView android:layout_width="match_parent" android:layout_height="match_parent">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:padding="16dp">
+
+            <!-- ═══ العملات والمكافآت ═══ -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="العملات والمكافآت" android:textColor="?attr/colorGold"
+                android:textSize="13sp" android:textStyle="bold"
+                android:paddingBottom="10dp"/>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="16dp"
+                android:background="@drawable/bg_card_surface"
+                android:layout_marginBottom="20dp">
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:paddingBottom="10dp">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="رصيدك الحالي"
+                        android:textColor="?attr/colorTextMuted" android:textSize="12sp"/>
+                    <TextView android:id="@+id/label_coin_balance"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="🪙 0"
+                        android:textColor="?attr/colorGold" android:textSize="20sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_watch_ad"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="📺  شاهد إعلاناً واكسب 10 عملات"
+                    android:textAllCaps="false"
+                    style="@style/VCGButton"/>
+
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="تُمنح العملات فقط بعد مشاهدة الإعلان كاملاً، ويمكنك تكرار ذلك عدة مرات في اليوم."
+                    android:textColor="?attr/colorTextMuted" android:textSize="11sp"
+                    android:paddingTop="8dp"/>
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="?attr/colorBorder" android:layout_marginBottom="18dp"/>
+
+            <!-- ═══ المظهر ═══ -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="المظهر" android:textColor="?attr/colorGold"
+                android:textSize="13sp" android:textStyle="bold"
+                android:paddingBottom="10dp"/>
+
+            <!-- App UI Theme -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="سمة واجهة التطبيق" android:textColor="?attr/colorTextPrimary"
+                android:textSize="14sp" android:paddingBottom="6dp"/>
+            <RadioGroup android:id="@+id/radio_app_theme"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:paddingBottom="8dp">
+                <RadioButton android:id="@+id/app_theme_white"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="أبيض"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="11.5sp"
+                    android:buttonTint="?attr/colorAccentPrimary"/>
+                <RadioButton android:id="@+id/app_theme_dark"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="داكن"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="11.5sp"
+                    android:buttonTint="?attr/colorAccentPrimary"/>
+                <RadioButton android:id="@+id/app_theme_black"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="أسود"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="11.5sp"
+                    android:buttonTint="?attr/colorAccentPrimary"/>
+                <RadioButton android:id="@+id/app_theme_blue"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="أزرق"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="11.5sp"
+                    android:buttonTint="?attr/colorAccentPrimary"/>
+            </RadioGroup>
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="سمة شاشات التطبيق نفسه (مختلفة عن ثيم نتيجة المعاينة أدناه)"
+                android:textColor="?attr/colorTextMuted" android:textSize="11sp"
+                android:paddingBottom="14dp"/>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="?attr/colorBorder" android:layout_marginVertical="14dp"/>
+
+            <!-- Theme -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="ثيم العرض" android:textColor="?attr/colorTextPrimary"
+                android:textSize="14sp" android:paddingBottom="6dp"/>
+            <RadioGroup android:id="@+id/radio_theme"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:paddingBottom="8dp">
+                <RadioButton android:id="@+id/theme_olive"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="زيتوني"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="11.5sp"
+                    android:buttonTint="?attr/colorAccentPrimary"/>
+                <RadioButton android:id="@+id/theme_white"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="أبيض"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="11.5sp"
+                    android:buttonTint="?attr/colorAccentPrimary"/>
+                <RadioButton android:id="@+id/theme_midnight"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="ليلي"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="11.5sp"
+                    android:buttonTint="?attr/colorAccentPrimary"/>
+                <RadioButton android:id="@+id/theme_amoled"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="أسود"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="11.5sp"
+                    android:buttonTint="?attr/colorAccentPrimary"/>
+                <RadioButton android:id="@+id/theme_sand"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="رملي"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="11.5sp"
+                    android:buttonTint="?attr/colorAccentPrimary"/>
+            </RadioGroup>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="?attr/colorBorder" android:layout_marginVertical="14dp"/>
+
+            <!-- Font family -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="نوع الخط" android:textColor="?attr/colorTextPrimary"
+                android:textSize="14sp" android:paddingBottom="6dp"/>
+            <RadioGroup android:id="@+id/radio_font_family"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:paddingBottom="4dp">
+                <RadioButton android:id="@+id/font_mono"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="Monospace"
+                    android:fontFamily="monospace"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="13sp"
+                    android:buttonTint="?attr/colorAccentSecondary"/>
+                <RadioButton android:id="@+id/font_sans"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="Sans-serif"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="13sp"
+                    android:buttonTint="?attr/colorAccentSecondary"/>
+                <RadioButton android:id="@+id/font_serif"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="Serif"
+                    android:fontFamily="serif"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="13sp"
+                    android:buttonTint="?attr/colorAccentSecondary"/>
+            </RadioGroup>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="?attr/colorBorder" android:layout_marginVertical="14dp"/>
+
+            <!-- Font Size -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="حجم الخط" android:textColor="?attr/colorTextPrimary"
+                android:textSize="14sp" android:paddingBottom="8dp"/>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical">
+                <SeekBar android:id="@+id/seek_font_size"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:max="18" android:progress="4"
+                    android:progressTint="?attr/colorAccentPrimary"
+                    android:thumbTint="?attr/colorAccentSecondary"/>
+                <TextView android:id="@+id/label_font_size"
+                    android:layout_width="48dp" android:layout_height="wrap_content"
+                    android:text="14sp" android:textColor="?attr/colorTextPrimary"
+                    android:gravity="center" android:fontFamily="monospace"/>
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="?attr/colorBorder" android:layout_marginVertical="14dp"/>
+
+            <!-- Tab size -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="حجم المسافة البادئة (Tab)" android:textColor="?attr/colorTextPrimary"
+                android:textSize="14sp" android:paddingBottom="8dp"/>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical">
+                <SeekBar android:id="@+id/seek_tab_size"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:max="6" android:progress="2"
+                    android:progressTint="?attr/colorAccentPrimary"
+                    android:thumbTint="?attr/colorAccentSecondary"/>
+                <TextView android:id="@+id/label_tab_size"
+                    android:layout_width="48dp" android:layout_height="wrap_content"
+                    android:text="4" android:textColor="?attr/colorTextPrimary"
+                    android:gravity="center" android:fontFamily="monospace"/>
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="?attr/colorBorder" android:layout_marginVertical="18dp"/>
+
+            <!-- ═══ المحرر ═══ -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="المحرر" android:textColor="?attr/colorGold"
+                android:textSize="13sp" android:textStyle="bold"
+                android:paddingBottom="10dp"/>
+
+            <!-- Word Wrap -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:paddingBottom="12dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="التفاف النص"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="15sp"/>
+                <Switch android:id="@+id/switch_word_wrap"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:thumbTint="?attr/colorAccentSecondary"
+                    android:trackTint="?attr/colorAccentPrimary"/>
+            </LinearLayout>
+
+            <!-- Auto Indent -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:paddingBottom="12dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="المسافة البادئة التلقائية"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="15sp"/>
+                <Switch android:id="@+id/switch_auto_indent"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:thumbTint="?attr/colorAccentSecondary"
+                    android:trackTint="?attr/colorAccentPrimary"/>
+            </LinearLayout>
+
+            <!-- Syntax Highlighting -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:paddingBottom="12dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="تلوين الكود"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="15sp"/>
+                <Switch android:id="@+id/switch_syntax_hl"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:thumbTint="?attr/colorAccentSecondary"
+                    android:trackTint="?attr/colorAccentPrimary"/>
+            </LinearLayout>
+
+            <!-- Show line numbers -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:paddingBottom="12dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="إظهار أرقام السطور"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="15sp"/>
+                <Switch android:id="@+id/switch_line_numbers"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:thumbTint="?attr/colorAccentSecondary"
+                    android:trackTint="?attr/colorAccentPrimary"/>
+            </LinearLayout>
+
+            <!-- Auto save -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:paddingBottom="12dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="حفظ تلقائي قبل التشغيل"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="15sp"/>
+                <Switch android:id="@+id/switch_auto_save"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:thumbTint="?attr/colorAccentSecondary"
+                    android:trackTint="?attr/colorAccentPrimary"/>
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="?attr/colorBorder" android:layout_marginVertical="18dp"/>
+
+            <!-- ═══ التشغيل ═══ -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="التشغيل والمعاينة" android:textColor="?attr/colorGold"
+                android:textSize="13sp" android:textStyle="bold"
+                android:paddingBottom="10dp"/>
+
+            <!-- Live preview -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:paddingBottom="12dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="معاينة مباشرة أثناء الكتابة"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="15sp"/>
+                <Switch android:id="@+id/switch_live_preview"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:thumbTint="?attr/colorAccentSecondary"
+                    android:trackTint="?attr/colorAccentPrimary"/>
+            </LinearLayout>
+
+            <!-- Vibrate on run -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:paddingBottom="12dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="اهتزاز عند التشغيل"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="15sp"/>
+                <Switch android:id="@+id/switch_vibrate_run"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:thumbTint="?attr/colorAccentSecondary"
+                    android:trackTint="?attr/colorAccentPrimary"/>
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="?attr/colorBorder" android:layout_marginVertical="18dp"/>
+
+            <!-- ═══ الإشعارات والتحفيز ═══ -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="الإشعارات والتحفيز" android:textColor="?attr/colorGold"
+                android:textSize="13sp" android:textStyle="bold"
+                android:paddingBottom="10dp"/>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:paddingBottom="12dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="إشعارات النظام"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="15sp"/>
+                <Switch android:id="@+id/switch_notifications"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:thumbTint="?attr/colorAccentSecondary"
+                    android:trackTint="?attr/colorAccentPrimary"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:paddingBottom="12dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="رسائل تشجيعية (هل أنت مستعد؟ ..)"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="15sp"/>
+                <Switch android:id="@+id/switch_motivation"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:thumbTint="?attr/colorAccentSecondary"
+                    android:trackTint="?attr/colorAccentPrimary"/>
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="?attr/colorBorder" android:layout_marginVertical="18dp"/>
+
+            <!-- ═══ GitHub ═══ -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="GitHub" android:textColor="?attr/colorGold"
+                android:textSize="13sp" android:textStyle="bold"
+                android:paddingBottom="10dp"/>
+
+            <TextView android:id="@+id/label_github_status"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="غير متصل" android:textColor="?attr/colorTextMuted"
+                android:textSize="13sp" android:paddingBottom="10dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout android:id="@+id/layout_github_token"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:hint="GitHub Personal Access Token (ghp_...)"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/input_github_token"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:inputType="textPassword" android:fontFamily="monospace"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="يحتاج صلاحية repo فقط، ويُحفظ على هذا الجهاز محلياً. أنشئه من: github.com/settings/tokens"
+                android:textColor="?attr/colorTextMuted" android:textSize="11sp"
+                android:paddingBottom="12dp"/>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:paddingBottom="6dp">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_github_connect"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:layout_marginEnd="8dp"
+                    android:text="ربط الحساب" android:textAllCaps="false"
+                    style="@style/VCGButton"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_github_disconnect"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="فصل الحساب" android:textAllCaps="false"
+                    style="@style/VCGButtonOutlined"/>
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_github_repos"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="📂  عرض مستودعاتي" android:textAllCaps="false"
+                style="@style/VCGButtonSubtle"/>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="?attr/colorBorder" android:layout_marginVertical="18dp"/>
+
+            <!-- ═══ أيقونة التطبيق ═══ -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="أيقونة التطبيق" android:textColor="?attr/colorGold"
+                android:textSize="13sp" android:textStyle="bold"
+                android:paddingBottom="10dp"/>
+            <RadioGroup android:id="@+id/radio_app_icon"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:paddingBottom="6dp">
+                <RadioButton android:id="@+id/icon_olive"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="أخضر"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="11.5sp"
+                    android:buttonTint="?attr/colorAccentPrimary"/>
+                <RadioButton android:id="@+id/icon_black"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="أسود"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="11.5sp"
+                    android:buttonTint="?attr/colorAccentPrimary"/>
+                <RadioButton android:id="@+id/icon_blue"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="أزرق"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="11.5sp"
+                    android:buttonTint="?attr/colorAccentPrimary"/>
+                <RadioButton android:id="@+id/icon_white"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="أبيض"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="11.5sp"
+                    android:buttonTint="?attr/colorAccentPrimary"/>
+            </RadioGroup>
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="قد يحتاج النظام لحظات لتحديث الأيقونة على الشاشة الرئيسية"
+                android:textColor="?attr/colorTextMuted" android:textSize="11sp"
+                android:paddingBottom="14dp"/>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="?attr/colorBorder" android:layout_marginVertical="18dp"/>
+
+            <!-- ═══ اللغة ═══ -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="لغة واجهة التطبيق" android:textColor="?attr/colorGold"
+                android:textSize="13sp" android:textStyle="bold"
+                android:paddingBottom="10dp"/>
+            <RadioGroup android:id="@+id/radio_app_language"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:paddingBottom="14dp">
+                <RadioButton android:id="@+id/lang_ar"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="العربية"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="13sp"
+                    android:buttonTint="?attr/colorAccentPrimary"/>
+                <RadioButton android:id="@+id/lang_en"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="English"
+                    android:textColor="?attr/colorTextPrimary" android:textSize="13sp"
+                    android:buttonTint="?attr/colorAccentPrimary"/>
+            </RadioGroup>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="?attr/colorBorder" android:layout_marginVertical="18dp"/>
+
+            <!-- ═══ اقتراحاتك وآراؤك ═══ -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="اقتراحاتك وآراؤك" android:textColor="?attr/colorGold"
+                android:textSize="13sp" android:textStyle="bold"
+                android:paddingBottom="10dp"/>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="16dp"
+                android:background="@drawable/bg_card_surface"
+                android:layout_marginBottom="20dp">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="رأيك يساعدنا على تطوير المحرر. اقترح ميزة جديدة، أو أخبرنا عن مشكلة واجهتك."
+                    android:textColor="?attr/colorTextMuted" android:textSize="12sp"
+                    android:paddingBottom="12dp"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_send_suggestion"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="✉️  أرسل اقتراحاً للمطوّر"
+                    android:textAllCaps="false"
+                    style="@style/VCGButtonOutlined"/>
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="?attr/colorBorder" android:layout_marginVertical="18dp"/>
+
+            <!-- ═══ البيانات ═══ -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="البيانات" android:textColor="?attr/colorGold"
+                android:textSize="13sp" android:textStyle="bold"
+                android:paddingBottom="10dp"/>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_export_backup"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="⬇  تصدير نسخة احتياطية كاملة" android:textAllCaps="false"
+                style="@style/VCGButtonSubtle"
+                android:layout_marginBottom="20dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_reset_settings"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="↺  استعادة الإعدادات الافتراضية"
+                android:textAllCaps="false"
+                style="@style/VCGButtonOutlined"
+                android:layout_marginBottom="20dp"/>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
