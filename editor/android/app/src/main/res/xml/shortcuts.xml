@@ -2,6 +2,12 @@
 <shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- ① مشروع جديد -->
+    <!--
+        سلسلة Intents: العنصر الأول يجب أن يكون نشاط Launcher (MAIN/LAUNCHER)
+        لإنشاء Task جديد بشكل صحيح، والعنصر الثاني هو الهدف الفعلي.
+        مطلوب من نظام Android للـ Static Shortcuts، وإلا يفشل الانتقال
+        بصمت على Android 10 فما فوق.
+    -->
     <shortcut
         android:shortcutId="new_project"
         android:enabled="true"
@@ -9,6 +15,10 @@
         android:shortcutShortLabel="@string/shortcut_new_project_short"
         android:shortcutLongLabel="@string/shortcut_new_project_long"
         android:shortcutDisabledMessage="@string/shortcut_disabled">
+        <intent
+            android:action="android.intent.action.MAIN"
+            android:targetPackage="com.syrianvcg.editor"
+            android:targetClass="com.syrianvcg.editor.LauncherOlive"/>
         <intent
             android:action="com.syrianvcg.editor.ACTION_NEW_PROJECT"
             android:targetPackage="com.syrianvcg.editor"
@@ -24,6 +34,10 @@
         android:shortcutLongLabel="@string/shortcut_last_project_long"
         android:shortcutDisabledMessage="@string/shortcut_disabled">
         <intent
+            android:action="android.intent.action.MAIN"
+            android:targetPackage="com.syrianvcg.editor"
+            android:targetClass="com.syrianvcg.editor.LauncherOlive"/>
+        <intent
             android:action="com.syrianvcg.editor.ACTION_LAST_PROJECT"
             android:targetPackage="com.syrianvcg.editor"
             android:targetClass="com.syrianvcg.editor.ProjectsActivity"/>
@@ -38,6 +52,10 @@
         android:shortcutLongLabel="@string/shortcut_terminal_long"
         android:shortcutDisabledMessage="@string/shortcut_disabled">
         <intent
+            android:action="android.intent.action.MAIN"
+            android:targetPackage="com.syrianvcg.editor"
+            android:targetClass="com.syrianvcg.editor.LauncherOlive"/>
+        <intent
             android:action="com.syrianvcg.editor.ACTION_TERMINAL"
             android:targetPackage="com.syrianvcg.editor"
             android:targetClass="com.syrianvcg.editor.TerminalActivity"/>
@@ -51,6 +69,10 @@
         android:shortcutShortLabel="@string/shortcut_settings_short"
         android:shortcutLongLabel="@string/shortcut_settings_long"
         android:shortcutDisabledMessage="@string/shortcut_disabled">
+        <intent
+            android:action="android.intent.action.MAIN"
+            android:targetPackage="com.syrianvcg.editor"
+            android:targetClass="com.syrianvcg.editor.LauncherOlive"/>
         <intent
             android:action="com.syrianvcg.editor.ACTION_SETTINGS"
             android:targetPackage="com.syrianvcg.editor"
