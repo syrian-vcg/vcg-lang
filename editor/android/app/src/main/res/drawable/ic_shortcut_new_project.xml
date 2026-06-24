@@ -1,9 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="24dp" android:height="24dp"
-    android:viewportWidth="24" android:viewportHeight="24">
-    <path android:fillColor="#FF2E9E44"
-        android:pathData="M5,0 H19 Q24,0 24,5 V19 Q24,24 19,24 H5 Q0,24 0,19 V5 Q0,0 5,0 Z"/>
-    <path android:fillColor="#FFFFFFFF"
-        android:pathData="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+
+    <!-- ظل خارجي ناعم -->
+    <path
+        android:pathData="M54,104 C28,104 7,83 7,57 C7,31 28,10 54,10 C80,10 101,31 101,57 C101,83 80,104 54,104 Z"
+        android:fillAlpha="0.25">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="radial"
+                android:centerX="54" android:centerY="70"
+                android:gradientRadius="50">
+                <item android:offset="0" android:color="#CC000000"/>
+                <item android:offset="1" android:color="#00000000"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- خلفية مستديرة بتدرج أخضر VCG -->
+    <path
+        android:pathData="M18,8 H90 Q100,8 100,18 V90 Q100,100 90,100 H18 Q8,100 8,90 V18 Q8,8 18,8 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear"
+                android:startX="8" android:startY="8"
+                android:endX="100" android:endY="100">
+                <item android:offset="0" android:color="#FF3DBE6A"/>
+                <item android:offset="0.5" android:color="#FF1F9E48"/>
+                <item android:offset="1" android:color="#FF0D6B2F"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- طبقة لمعان علوية -->
+    <path
+        android:pathData="M18,8 H90 Q100,8 100,18 V52 H8 V18 Q8,8 18,8 Z"
+        android:fillAlpha="0.18">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear"
+                android:startX="54" android:startY="8"
+                android:endX="54" android:endY="52">
+                <item android:offset="0" android:color="#FFFFFFFF"/>
+                <item android:offset="1" android:color="#00FFFFFF"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- دائرة خلفية للأيقونة -->
+    <path
+        android:pathData="M54,54 m-26,0 a26,26 0 1,0 52,0 a26,26 0 1,0 -52,0"
+        android:fillAlpha="0.2"
+        android:fillColor="#FFFFFFFF"/>
+
+    <!-- أيقونة + (مشروع جديد) بظل -->
+    <path
+        android:pathData="M60,46 H57 V43 Q57,41 54,41 Q51,41 51,43 V46 H48 Q46,46 46,49 Q46,52 48,52 H51 V55 Q51,57 54,57 Q57,57 57,55 V52 H60 Q62,52 62,49 Q62,46 60,46 Z"
+        android:fillColor="#33000000"/>
+
+    <!-- أيقونة + (مشروع جديد) -->
+    <path
+        android:pathData="M59,45 H56 V42 Q56,40 54,40 Q52,40 52,42 V45 H49 Q47,45 47,48 Q47,51 49,51 H52 V54 Q52,56 54,56 Q56,56 56,54 V51 H59 Q61,51 61,48 Q61,45 59,45 Z"
+        android:fillColor="#FFFFFFFF"/>
+
+    <!-- نقطة صغيرة زخرفية أسفل اليمين -->
+    <path
+        android:pathData="M82,80 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0"
+        android:fillAlpha="0.35"
+        android:fillColor="#FFFFFFFF"/>
+
+    <!-- نقطة صغيرة زخرفية أسفل اليسار -->
+    <path
+        android:pathData="M26,80 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0"
+        android:fillAlpha="0.2"
+        android:fillColor="#FFFFFFFF"/>
+
+    <!-- شريط أخضر فاتح أسفل -->
+    <path
+        android:pathData="M18,100 H90 Q100,100 100,90 V86 Q54,96 8,86 V90 Q8,100 18,100 Z"
+        android:fillAlpha="0.15"
+        android:fillColor="#FFFFFFFF"/>
+
 </vector>
