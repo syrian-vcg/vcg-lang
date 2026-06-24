@@ -6,7 +6,7 @@ import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
 import android.widget.RemoteViews;
-
+import androidx.core.content.ContextCompat;
 import java.util.List;
 
 /**
@@ -48,7 +48,7 @@ public class EditorWidgetProvider extends AppWidgetProvider {
             views.setTextViewText(R.id.widget_project_label, context.getString(R.string.widget_no_projects));
             views.setTextViewText(R.id.widget_project_name, context.getString(R.string.shortcut_new_project_short));
             views.setInt(R.id.widget_project_dot, "setColorFilter",
-                context.getResources().getColor(R.color.text_muted));
+                ContextCompat.getColor(context, R.color.text_muted));
         } else {
             VcgProject last = projects.get(0);
             views.setTextViewText(R.id.widget_project_label, context.getString(R.string.widget_last_project));
@@ -57,7 +57,7 @@ public class EditorWidgetProvider extends AppWidgetProvider {
             try {
                 dotColor = android.graphics.Color.parseColor(last.getColorTag());
             } catch (Exception e) {
-                dotColor = context.getResources().getColor(R.color.accent_green);
+                dotColor = ContextCompat.getColor(context, R.color.accent_green);
             }
             views.setInt(R.id.widget_project_dot, "setColorFilter", dotColor);
         }
