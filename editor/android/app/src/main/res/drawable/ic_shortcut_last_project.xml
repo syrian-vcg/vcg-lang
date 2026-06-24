@@ -1,9 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="24dp" android:height="24dp"
-    android:viewportWidth="24" android:viewportHeight="24">
-    <path android:fillColor="#FF1F7A3D"
-        android:pathData="M5,0 H19 Q24,0 24,5 V19 Q24,24 19,24 H5 Q0,24 0,19 V5 Q0,0 5,0 Z"/>
-    <path android:fillColor="#FFFFFFFF"
-        android:pathData="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M10,17L8,15L9.41,13.58L10,14.17L14.59,9.58L16,11L10,17Z"/>
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+
+    <!-- ظل خارجي -->
+    <path
+        android:pathData="M54,104 C28,104 7,83 7,57 C7,31 28,10 54,10 C80,10 101,31 101,57 C101,83 80,104 54,104 Z"
+        android:fillAlpha="0.25">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="radial"
+                android:centerX="54" android:centerY="70"
+                android:gradientRadius="50">
+                <item android:offset="0" android:color="#CC000000"/>
+                <item android:offset="1" android:color="#00000000"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- خلفية مستديرة - أخضر داكن -->
+    <path
+        android:pathData="M18,8 H90 Q100,8 100,18 V90 Q100,100 90,100 H18 Q8,100 8,90 V18 Q8,8 18,8 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear"
+                android:startX="8" android:startY="8"
+                android:endX="100" android:endY="100">
+                <item android:offset="0" android:color="#FF2A7D45"/>
+                <item android:offset="0.5" android:color="#FF155C2E"/>
+                <item android:offset="1" android:color="#FF0A3D1B"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- طبقة لمعان علوية -->
+    <path
+        android:pathData="M18,8 H90 Q100,8 100,18 V50 H8 V18 Q8,8 18,8 Z"
+        android:fillAlpha="0.15">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear"
+                android:startX="54" android:startY="8"
+                android:endX="54" android:endY="50">
+                <item android:offset="0" android:color="#FFFFFFFF"/>
+                <item android:offset="1" android:color="#00FFFFFF"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- دائرة خلفية خلف الملف -->
+    <path
+        android:pathData="M54,56 m-22,0 a22,22 0 1,0 44,0 a22,22 0 1,0 -44,0"
+        android:fillAlpha="0.15"
+        android:fillColor="#FFFFFFFF"/>
+
+    <!-- ظل الملف -->
+    <path
+        android:pathData="M46,35 H61 L68,43 V72 Q68,74 66,74 H46 Q44,74 44,72 V37 Q44,35 46,35 Z"
+        android:fillAlpha="0.3"
+        android:fillColor="#FF000000"/>
+
+    <!-- جسم الملف الرئيسي -->
+    <path
+        android:pathData="M44,33 H59 L66,41 V70 Q66,72 64,72 H44 Q42,72 42,70 V35 Q42,33 44,33 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear"
+                android:startX="42" android:startY="33"
+                android:endX="66" android:endY="72">
+                <item android:offset="0" android:color="#FFFFFFFF"/>
+                <item android:offset="1" android:color="#FFE8F5EE"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- مثلث زاوية الملف -->
+    <path
+        android:pathData="M59,33 L66,41 H61 Q59,41 59,39 Z"
+        android:fillColor="#FFADD8B8"/>
+
+    <!-- سطر نص ١ -->
+    <path
+        android:pathData="M47,47 H61 Q62,47 62,48.5 Q62,50 61,50 H47 Q46,50 46,48.5 Q46,47 47,47 Z"
+        android:fillColor="#FF1F9E48"/>
+
+    <!-- سطر نص ٢ -->
+    <path
+        android:pathData="M47,53 H59 Q60,53 60,54.5 Q60,56 59,56 H47 Q46,56 46,54.5 Q46,53 47,53 Z"
+        android:fillColor="#FF1F9E48"
+        android:fillAlpha="0.7"/>
+
+    <!-- سطر نص ٣ -->
+    <path
+        android:pathData="M47,59 H56 Q57,59 57,60.5 Q57,62 56,62 H47 Q46,62 46,60.5 Q46,59 47,59 Z"
+        android:fillColor="#FF1F9E48"
+        android:fillAlpha="0.45"/>
+
+    <!-- علامة صح خضراء -->
+    <path
+        android:pathData="M69,62 m-10,0 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0"
+        android:fillColor="#FF2ECC71"/>
+    <path
+        android:pathData="M64,62 L68,66 L75,58"
+        android:strokeWidth="2.2"
+        android:strokeColor="#FFFFFFFF"
+        android:fillColor="#00000000"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"/>
+
+    <!-- شريط سفلي -->
+    <path
+        android:pathData="M18,100 H90 Q100,100 100,90 V86 Q54,97 8,86 V90 Q8,100 18,100 Z"
+        android:fillAlpha="0.12"
+        android:fillColor="#FFFFFFFF"/>
+
 </vector>
