@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Small monogram glyph used as the VCG-file badge inside file/folder list rows.
+     Single fillColor so it can be recolored at runtime via app:tint. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+
+    <!-- V -->
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M3,5 L6,5 L8.2,13.2 L10.4,5 L13.2,5 L9.6,18 L6.8,18 Z"/>
+
+    <!-- C -->
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M19.8,8.4
+            Q17.6,6.4 15.4,8.4
+            Q13.6,10.2 13.6,11.5
+            Q13.6,12.8 15.4,14.6
+            Q17.6,16.6 19.8,14.6
+            L21.2,16
+            Q18,19 14.2,16
+            Q11.6,13.6 11.6,11.5
+            Q11.6,9.4 14.2,7
+            Q18,4 21.2,7 Z"/>
+</vector>
