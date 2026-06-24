@@ -1,0 +1,29 @@
+# مجال: التوثيق التفاعلي ودلائل الاستخدام
+# يوضح: html blocks منسّقة, l (قوائم), test (اختبارات موثّقة كأمثلة)
+
+h(1, "📖 دليل استخدام API الدفع")
+
+html "<p>هذا الدليل يشرح كيفية استخدام دالة <code>charge()</code> داخل تطبيقك.</p>"
+
+h(2, "الاستخدام الأساسي")
+html "<pre style='background:#11201299;padding:.6rem;border-radius:8px'>charge(amount, currency)</pre>"
+
+l("amount: رقم — المبلغ المطلوب", "currency: نص — رمز العملة مثل SYP أو USD")
+
+func charge(amount, currency) {
+    if amount <= 0 { throw "المبلغ يجب أن يكون أكبر من صفر" }
+    return amount + " " + currency + " تم الدفع بنجاح"
+}
+
+h(2, "🧪 أمثلة موثّقة (تعمل كاختبارات فعلية)")
+test "دفع مبلغ صحيح" {
+    assert(charge(100, "SYP") == "100 SYP تم الدفع بنجاح")
+}
+test "رفض مبلغ سالب" {
+    try {
+        charge(-5, "USD")
+        assert(false, "كان يجب رفض القيمة السالبة")
+    } catch e {
+        show("تم رفض المبلغ كما هو متوقع:", e)
+    }
+}
