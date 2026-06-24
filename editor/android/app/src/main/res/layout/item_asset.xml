@@ -21,14 +21,14 @@
                 android:layout_gravity="center"
                 android:src="@android:drawable/ic_media_play"
                 android:visibility="gone"
-                android:tint="?attr/colorAccentSecondary"/>
+                app:tint="?attr/colorAccentSecondary"/>
             <ImageButton android:id="@+id/btn_delete_asset"
                 android:layout_width="32dp" android:layout_height="32dp"
                 android:layout_gravity="top|end"
                 android:layout_margin="2dp"
                 android:src="@android:drawable/ic_menu_delete"
                 android:background="@drawable/bg_chip"
-                android:tint="?attr/colorTextMuted"
+                app:tint="?attr/colorTextMuted"
                 android:contentDescription="Delete"/>
         </FrameLayout>
 
