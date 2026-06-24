@@ -1,32 +1,23 @@
-# VCG Compiler binary
-vcgc
-vcgc_dbg
-*.o
-*.a
-
-# Build outputs
-output/*.html
-
-# Android build
-editor/android/.gradle/
-editor/android/app/build/
-editor/android/build/
-*.apk
-*.aab
+# ════════════════════════════════════════════════════════════════
+# أسرار ومفاتيح — لا تُرفع على GitHub أبداً
+# ════════════════════════════════════════════════════════════════
+local.properties
 *.keystore
+*.jks
+key.properties
+google-services.json
 
-# OS files
+# Android / Gradle build output
+android/.gradle/
+android/build/
+android/app/build/
+android/.idea/
+android/*.iml
+android/captures/
+android/.cxx/
+android/local.properties
+
+# OS / Editor junk
 .DS_Store
 Thumbs.db
 *.swp
-*~
-
-# IDE
-.idea/
-*.iml
-.vscode/
-*.class
-
-# Python
-__pycache__/
-*.pyc
