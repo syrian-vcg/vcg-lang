@@ -31,4 +31,5 @@
     <string name="widget_description">تطبيق مصغّر يعرض آخر مشروع ويتيح فتح مشروع جديد أو الـ Terminal بضغطة واحدة</string>
     <string name="widget_last_project">آخر مشروع</string>
     <string name="widget_no_projects">لا توجد مشاريع بعد</string>
+    <string name="widget_tagline">محرر أكواد VCG</string>
 </resources>
