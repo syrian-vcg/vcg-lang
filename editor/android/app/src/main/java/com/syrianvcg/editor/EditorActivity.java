@@ -149,7 +149,7 @@ public class EditorActivity extends AppCompatActivity {
         previewSkeleton  = findViewById(R.id.preview_skeleton);
         previewContainer = findViewById(R.id.preview_container);
         editorContainer  = findViewById(R.id.editor_code_container);
-        previewSkeleton.setDark(VcgThemeHelper.isDark(settings.getAppTheme()));
+        previewSkeleton.setDark(VcgThemeHelper.isDark(VcgThemeHelper.resolve(settings.getAppTheme(), this)));
 
         applySettingsToEditor();
         setupPreviewWebView();
@@ -211,7 +211,7 @@ public class EditorActivity extends AppCompatActivity {
     }
 
     private void applySettingsToEditor() {
-        codeEditor.applyTheme(VcgThemeHelper.isDark(settings.getAppTheme()));
+        codeEditor.applyTheme(VcgThemeHelper.isDark(VcgThemeHelper.resolve(settings.getAppTheme(), this)));
 
         int fontSize = settings.getFontSize();
         codeEditor.setTextSize(fontSize);
