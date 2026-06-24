@@ -69,10 +69,25 @@
                 style="@style/Widget.MaterialComponents.Button"/>
         </LinearLayout>
 
+        <!-- Breadcrumb: المسار الحالي -->
+        <TextView
+            android:id="@+id/breadcrumb_path"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:paddingHorizontal="14dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="4dp"
+            android:text="/ المشروع"
+            android:textColor="?attr/colorAccentSecondary"
+            android:textSize="11.5sp"
+            android:fontFamily="monospace"
+            android:ellipsize="start"
+            android:maxLines="1"
+            android:scrollHorizontally="true"/>
+
         <!-- Divider -->
         <View
             android:layout_width="match_parent" android:layout_height="1dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="4dp"
             android:background="?attr/colorBorder"/>
 
         <!-- Empty state -->
@@ -81,7 +96,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:visibility="gone"
-            android:text="لا يوجد ملفات\nاضغط + لإنشاء ملف جديد"
+            android:text="لا يوجد ملفات أو مجلدات\nاضغط + لإنشاء ملف أو مجلد"
             android:textColor="?attr/colorTextMuted"
             android:textSize="15sp"
             android:lineSpacingMultiplier="1.6"
@@ -101,7 +116,7 @@
         android:layout_width="wrap_content" android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="20dp"
-        android:contentDescription="New File"
+        android:contentDescription="New"
         android:src="@android:drawable/ic_input_add"
         app:backgroundTint="?attr/colorAccentPrimary"
         app:tint="?attr/colorTextPrimary"
