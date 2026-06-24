@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Standard folder glyph for folder list rows. Single fillColor so it
+     can be recolored at runtime via app:tint. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M4,5
+            L9.2,5
+            L11.2,7.5
+            L20,7.5
+            Q21,7.5 21,8.5
+            L21,17.5
+            Q21,18.5 20,18.5
+            L4,18.5
+            Q3,18.5 3,17.5
+            L3,6
+            Q3,5 4,5 Z"/>
+</vector>
