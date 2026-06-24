@@ -1,0 +1,35 @@
+# مجال: أتمتة ومعالجة البيانات — تنظيف وتحليل سريع
+# يوضح: map/filter/reduce, try/catch, assert, guard
+
+let sales = [120, -5, 340, 0, 980, 45, -12, 610]
+
+h(1, "📊 معالجة بيانات المبيعات")
+
+# تنظيف: استبعاد القيم غير المنطقية
+let clean = filter(sales, func(x) { return x > 0 })
+show("قبل التنظيف:", sales)
+show("بعد التنظيف:", clean)
+
+# تحويل: تطبيق ضريبة 5%
+let with_tax = map(clean, func(x) { return x * 1.05 })
+show("بعد الضريبة:", with_tax)
+
+# تجميع: الإجمالي والمتوسط
+let total = reduce(with_tax, func(acc, x) { return acc + x }, 0)
+let avg = total / with_tax.length
+show("الإجمالي:", total, "| المتوسط:", avg)
+
+# تحقق آمن من جودة البيانات قبل الاعتماد عليها
+func validate(list) {
+    guard list.length > 0 else {
+        throw "لا توجد بيانات صالحة للمعالجة"
+    }
+    return true
+}
+
+try {
+    assert(validate(clean), "فشل التحقق من البيانات")
+    show("✅ البيانات جاهزة للتقرير النهائي")
+} catch err {
+    show("⚠ خطأ في الأتمتة:", err)
+}
