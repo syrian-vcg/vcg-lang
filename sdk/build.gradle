@@ -1,0 +1,65 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group   = 'com.syrianvcg'
+version = '2.0.1'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+    withSourcesJar()
+    withJavadocJar()
+}
+
+repositories {
+    mavenCentral()
+}
+
+// لا توجد تبعيات خارجية (zero dependencies) — كما هو موضّح في README
+dependencies {}
+
+jar {
+    manifest {
+        attributes(
+            'Implementation-Title':   'VCG SDK',
+            'Implementation-Version': project.version
+        )
+    }
+}
+
+publishing {
+    publications {
+        gpr(MavenPublication) {
+            from components.java
+            groupId    = 'com.syrianvcg'
+            artifactId = 'vcg-sdk'
+            version    = project.version
+
+            pom {
+                name = 'VCG Language SDK'
+                description = 'Syrian VCG Language SDK — compiler, interpreter, highlighter'
+                url = 'https://github.com/syrian-vcg/vcg-lang'
+                licenses {
+                    license {
+                        name = 'MIT'
+                        url  = 'https://github.com/syrian-vcg/vcg-lang/blob/main/LICENSE'
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = 'GitHubPackages'
+            // اسم المستودع كما يظهر في عنوان الـ repo: syrian-vcg/vcg-lang
+            url = uri('https://maven.pkg.github.com/syrian-vcg/vcg-lang')
+            credentials {
+                username = System.getenv('GITHUB_ACTOR')
+                password = System.getenv('GITHUB_TOKEN')
+            }
+        }
+    }
+}
