@@ -47,10 +47,19 @@ public class EditorWidgetProvider extends AppWidgetProvider {
         if (projects.isEmpty()) {
             views.setTextViewText(R.id.widget_project_label, context.getString(R.string.widget_no_projects));
             views.setTextViewText(R.id.widget_project_name, context.getString(R.string.shortcut_new_project_short));
+            views.setInt(R.id.widget_project_dot, "setColorFilter",
+                context.getResources().getColor(R.color.text_muted));
         } else {
             VcgProject last = projects.get(0);
             views.setTextViewText(R.id.widget_project_label, context.getString(R.string.widget_last_project));
             views.setTextViewText(R.id.widget_project_name, last.getName());
+            int dotColor;
+            try {
+                dotColor = android.graphics.Color.parseColor(last.getColorTag());
+            } catch (Exception e) {
+                dotColor = context.getResources().getColor(R.color.accent_green);
+            }
+            views.setInt(R.id.widget_project_dot, "setColorFilter", dotColor);
         }
 
         // ── فتح آخر مشروع (أو شاشة المشاريع إن لم يوجد) عند الضغط على البطاقة ──
@@ -80,13 +89,22 @@ public class EditorWidgetProvider extends AppWidgetProvider {
             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         views.setOnClickPendingIntent(R.id.widget_btn_terminal, terminalPI);
 
-        // ── فتح التطبيق عند الضغط على الشعار/العنوان ───────────
+        // ── الإعدادات ───────────────────────────────────────────
+        Intent settings = new Intent(context, SettingsActivity.class);
+        settings.setAction("com.syrianvcg.editor.ACTION_SETTINGS");
+        settings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent settingsPI = PendingIntent.getActivity(
+            context, widgetId + 4000, settings,
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        views.setOnClickPendingIntent(R.id.widget_btn_settings, settingsPI);
+
+        // ── فتح التطبيق عند الضغط على شريط العنوان (الشعار/الاسم) ──
         Intent openApp = new Intent(context, SplashActivity.class);
         openApp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent openAppPI = PendingIntent.getActivity(
             context, widgetId + 3000, openApp,
             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        views.setOnClickPendingIntent(R.id.widget_app_name, openAppPI);
+        views.setOnClickPendingIntent(R.id.widget_header, openAppPI);
 
         appWidgetManager.updateAppWidget(widgetId, views);
     }
