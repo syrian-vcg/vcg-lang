@@ -70,29 +70,54 @@ public class EditorActivity extends AppCompatActivity {
         }
     };
 
-    // Quick-insert keys for mobile
+    // Quick-insert keys for mobile.
+    // الترتيب: الأكثر استخداماً أولاً لتقليل التمرير.
+    // المفاتيح ذات الأزواج ("()", "[]", "\"\"", "{}") تُعالَج في insertAtCursor
+    // لتضع المؤشر داخل الزوج تلقائياً.
     private static final String[] QUICK_KEYS = {
-        "show(", "let ", "const ", "func ", "return",
-        "if ", "else", "while ", "for ", "in ", "repeat ",
+        // ── تعليق ──────────────────────────────────────────────────────────
+        "# ", "// ",
+        // ── متغيرات ودوال ─────────────────────────────────────────────────
+        "let ", "const ", "func ", "return ",
+        // ── تحكم ──────────────────────────────────────────────────────────
+        "if ", "else ", "else if ", "while ", "for ", "in ", "repeat ",
         "break", "continue",
-        "class ", "extends ", "new ", "self.", "super",
-        "module ", "export ", "from ", "import ", "as ",
-        "async func ", "await ", "defer ",
-        "type ", "enum ", "union ",
-        "try", "catch ", "throw ", "safe", "guard ", "assert(",
-        "match ", "when ",
-        "$set(", "$get(", "watch(",
-        "c ", "send(", "recv(",
-        "map(", "filter(", "reduce(", "find(",
-        "test ", "assert_eq(", "assert_true(",
-        "h(", "l(", "btn(", "url(", "key(", "img(", "video(",
+        // ── أزواج الأقواس (المؤشر يدخل بالداخل تلقائياً) ─────────────────
+        "()", "[]", "\"\"", "``", "{}",
+        // ── عمليات شائعة ──────────────────────────────────────────────────
+        "->", "|>", ":", "=", "+=", "-=", "!=", "==", "<=", ">=",
+        // ── واجهة المستخدم ─────────────────────────────────────────────────
+        "show(", "h(", "l(", "btn(", "url(", "key(", "img(", "video(",
         "youtube(", "facebook(", "instagram(", "xsocial(",
+        // ── كلاسات وأنواع ──────────────────────────────────────────────────
+        "class ", "extends ", "new ", "self.", "super",
+        "type ", "enum ", "union ",
+        // ── وحدات ─────────────────────────────────────────────────────────
+        "module ", "export ", "from ", "import ", "as ",
+        // ── غير متزامن ────────────────────────────────────────────────────
+        "async func ", "await ", "defer ",
+        // ── معالجة الأخطاء ────────────────────────────────────────────────
+        "try", "catch ", "throw ", "safe", "guard ", "assert(",
+        // ── مطابقة الأنماط ────────────────────────────────────────────────
+        "match ", "when ",
+        // ── تفاعلي ────────────────────────────────────────────────────────
+        "$set(", "$get(", "watch(",
+        // ── تواصل ─────────────────────────────────────────────────────────
+        "c ", "send(", "recv(",
+        // ── مصفوفات وعمليات عليا ──────────────────────────────────────────
+        "map(", "filter(", "reduce(", "find(",
         "sum(", "avg(", "unique(", "merge(", "has(",
+        "flat(", "chunk(", "zip(", "first(", "last(",
+        // ── رياضيات ────────────────────────────────────────────────────────
         "gcd(", "lcm(", "fib(", "factorial(", "is_prime(",
-        "uuid()", "hash(", "copy(", "type_of(",
+        // ── مساعدات ───────────────────────────────────────────────────────
+        "uuid()", "hash(", "copy(", "type_of(", "sleep(",
+        // ── اختبار ────────────────────────────────────────────────────────
+        "test ", "assert_eq(", "assert_true(", "assert_false(",
+        // ── وصف ───────────────────────────────────────────────────────────
         "public ", "w ", "x ",
+        // ── قيم ثابتة ─────────────────────────────────────────────────────
         "true", "false", "nil", "and", "or", "not",
-        "{", "}", "(", ")", "[", "]", "\"\"", "->", "|>"
     };
 
     @Override
@@ -337,17 +362,74 @@ public class EditorActivity extends AppCompatActivity {
         int end   = Math.max(codeEditor.getSelectionEnd(), 0);
         if (start > end) { int tmp = start; start = end; end = tmp; }
 
-        String insert = text;
-        if (text.equals("\"\"")) {
-            codeEditor.getEditableText().replace(start, end, "\"\"");
-            codeEditor.setSelection(start + 1);
-            return;
-        }
-        if (text.equals("{")) {
-            insert = "{\n    \n}";
+        // ── أزواج الأقواس: أدرج الزوج وضع المؤشر بالداخل ─────────────────
+        // تُعالَج الأزواج بشكل موحّد: نُدرج النص كاملاً ثم نُعيد ضبط المؤشر
+        // ليقع بعد حرف الفتح مباشرةً حتى يكتب المستخدم داخل الزوج فوراً.
+        switch (text) {
+            case "\"\"": {
+                // إذا كان هناك نص محدد، احتوِه بين علامتَي التنصيص
+                if (start != end) {
+                    codeEditor.getEditableText().insert(end, "\"");
+                    codeEditor.getEditableText().insert(start, "\"");
+                    codeEditor.setSelection(end + 2);
+                } else {
+                    codeEditor.getEditableText().replace(start, end, "\"\"");
+                    codeEditor.setSelection(start + 1);
+                }
+                return;
+            }
+            case "``": {
+                if (start != end) {
+                    codeEditor.getEditableText().insert(end, "`");
+                    codeEditor.getEditableText().insert(start, "`");
+                    codeEditor.setSelection(end + 2);
+                } else {
+                    codeEditor.getEditableText().replace(start, end, "``");
+                    codeEditor.setSelection(start + 1);
+                }
+                return;
+            }
+            case "()": {
+                if (start != end) {
+                    codeEditor.getEditableText().insert(end, ")");
+                    codeEditor.getEditableText().insert(start, "(");
+                    codeEditor.setSelection(end + 2);
+                } else {
+                    codeEditor.getEditableText().replace(start, end, "()");
+                    codeEditor.setSelection(start + 1);
+                }
+                return;
+            }
+            case "[]": {
+                if (start != end) {
+                    codeEditor.getEditableText().insert(end, "]");
+                    codeEditor.getEditableText().insert(start, "[");
+                    codeEditor.setSelection(end + 2);
+                } else {
+                    codeEditor.getEditableText().replace(start, end, "[]");
+                    codeEditor.setSelection(start + 1);
+                }
+                return;
+            }
+            case "{}": {
+                // أدرج {} على سطر واحد للاستخدامات الخفيفة
+                if (start != end) {
+                    codeEditor.getEditableText().insert(end, "}");
+                    codeEditor.getEditableText().insert(start, "{");
+                    codeEditor.setSelection(end + 2);
+                } else {
+                    // كتلة متعددة الأسطر مع المؤشر في المنتصف
+                    String block = "{\n    \n}";
+                    codeEditor.getEditableText().replace(start, end, block);
+                    // ضع المؤشر داخل الكتلة (بعد "{\n    ")
+                    codeEditor.setSelection(start + 6);
+                }
+                return;
+            }
         }
 
-        codeEditor.getEditableText().replace(start, end, insert);
+        // ── نص عادي: أدرجه مباشرةً ─────────────────────────────────────
+        codeEditor.getEditableText().replace(start, end, text);
     }
 
     private void runCode() {
