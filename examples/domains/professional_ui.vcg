@@ -1,0 +1,64 @@
+# واجهة احترافية — لوحة تحكم (Dashboard UI)
+# يوضح: html (بطاقات/تخطيط مخصص), h, l, btn, url, img, key
+# جاهز للتشغيل مباشرة في محرر VCG
+
+html "<style>
+.vcg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.8rem;margin:.6rem 0}
+.vcg-card{background:linear-gradient(160deg,rgba(77,201,90,.10),rgba(77,201,90,.02));border:1px solid rgba(77,201,90,.35);border-radius:14px;padding:1rem 1.1rem}
+.vcg-card .num{font-size:1.6rem;font-weight:900;color:#4dc95a}
+.vcg-card .lbl{font-size:.78rem;color:#9bb39b;margin-top:.2rem}
+.vcg-badge{display:inline-block;background:rgba(77,201,90,.15);color:#4dc95a;border:1px solid rgba(77,201,90,.4);border-radius:20px;padding:.2rem .8rem;font-size:.75rem;font-weight:700}
+.vcg-section{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:1.1rem;margin:.9rem 0}
+.vcg-row{display:flex;justify-content:space-between;align-items:center;padding:.55rem 0;border-bottom:1px dashed rgba(255,255,255,.08)}
+.vcg-row:last-child{border-bottom:none}
+.vcg-avatar{width:34px;height:34px;border-radius:50%;background:#4dc95a;color:#06140a;display:inline-flex;align-items:center;justify-content:center;font-weight:900;margin-left:.6rem}
+</style>"
+
+# ── رأس الصفحة ─────────────────────────────
+html "<div class='vcg-section' style='display:flex;justify-content:space-between;align-items:center'>
+  <div><span class='vcg-badge'>● نشط الآن</span></div>
+  <div style='text-align:right'><b style='font-size:1.1rem'>لوحة المبيعات</b><div style='color:#9bb39b;font-size:.78rem'>تحديث مباشر</div></div>
+</div>"
+
+# ── بطاقات إحصائية ─────────────────────────
+let stats = [
+    { "label": "الطلبات اليوم", "value": 128 },
+    { "label": "الإيراد", "value": "4,920$" },
+    { "label": "عملاء جدد", "value": 37 },
+    { "label": "نسبة الرضا", "value": "96%" }
+]
+
+html "<div class='vcg-grid'>"
+for s in stats {
+    html "<div class='vcg-card'><div class='num'>" + s.value + "</div><div class='lbl'>" + s.label + "</div></div>"
+}
+html "</div>"
+
+# ── قسم: أحدث الطلبات ──────────────────────
+h(2, "🧾 أحدث الطلبات")
+let orders = [
+    { "name": "سارة أحمد", "amount": "85$", "status": "مكتمل" },
+    { "name": "خالد ملحم", "amount": "210$", "status": "قيد التنفيذ" },
+    { "name": "نور حداد", "amount": "45$", "status": "مكتمل" }
+]
+
+html "<div class='vcg-section'>"
+for o in orders {
+    html "<div class='vcg-row'>"
+        + "<span><span class='vcg-avatar'>🧑</span>" + o.name + "</span>"
+        + "<span>" + o.amount + "</span>"
+        + "<span class='vcg-badge'>" + o.status + "</span>"
+    + "</div>"
+}
+html "</div>"
+
+# ── إجراءات سريعة ──────────────────────────
+h(2, "⚡ إجراءات سريعة")
+btn("➕ طلب جديد", "alert('فتح نموذج الطلب')")
+btn("📤 تصدير تقرير", "alert('تصدير PDF')")
+url("https://example.com/dashboard", "🔍 عرض التقرير الكامل")
+
+html "<p style='color:#9bb39b;font-size:.75rem;margin-top:1rem'>اختصار سريع: " + "</p>"
+key("Ctrl")
+key("K")
+html "<span style='color:#9bb39b;font-size:.78rem'>&nbsp;للبحث السريع</span>"
