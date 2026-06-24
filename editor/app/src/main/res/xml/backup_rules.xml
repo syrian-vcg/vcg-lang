@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    قواعد النسخ الاحتياطي (Android 11 وأقل — fullBackupContent).
+    القيم الصالحة لـ domain: root, file, database, sharedpref, external
+    ملاحظة: "cache" ليست domain صالحة هنا — نستخدم "file" مع مسار cache/
+-->
+<full-backup-content>
+    <exclude domain="file" path="../cache"/>
+    <exclude domain="external" path="."/>
+</full-backup-content>
