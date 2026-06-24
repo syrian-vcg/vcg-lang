@@ -22,6 +22,7 @@ import android.widget.PopupWindow;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.button.MaterialButton;
@@ -46,6 +47,28 @@ public class EditorActivity extends AppCompatActivity {
     private View editorContainer;
     private Handler debounceHandler = new Handler(Looper.getMainLooper());
     private Runnable debouncedPreview;
+
+    // ⚠️ Android 14 (targetSdk 34): الاعتماد على Activity.onBackPressed()
+    // أصبح قديماً (deprecated) ولا يتيح المشاركة في حركة "زر الرجوع التنبّؤي"
+    // (Predictive Back) التي تتوقعها أنظمة Android 13/14 الحديثة. الأسلوب
+    // الموصى به هو تسجيل OnBackPressedCallback عبر getOnBackPressedDispatcher()،
+    // وقد فُعِّل ذلك في المانفست (enableOnBackInvokedCallback="true").
+    private final OnBackPressedCallback backPressedCallback = new OnBackPressedCallback(true) {
+        @Override
+        public void handleOnBackPressed() {
+            if (modified) {
+                new AlertDialog.Builder(EditorActivity.this, R.style.VCGDialog)
+                    .setTitle("حفظ التغييرات؟")
+                    .setMessage("هل تريد حفظ " + filename + " قبل الخروج؟")
+                    .setPositiveButton("حفظ", (d, w) -> { saveFile(); finish(); })
+                    .setNegativeButton("تجاهل", (d, w) -> finish())
+                    .setNeutralButton("إلغاء", null)
+                    .show();
+            } else {
+                finish();
+            }
+        }
+    };
 
     // Quick-insert keys for mobile
     private static final String[] QUICK_KEYS = {
@@ -83,6 +106,7 @@ public class EditorActivity extends AppCompatActivity {
         projectName = getIntent().getStringExtra("projectName");
         storage     = new VcgStorage(this);
         settings    = new VcgSettings(this);
+        getOnBackPressedDispatcher().addCallback(this, backPressedCallback);
 
         setSupportActionBar(findViewById(R.id.editor_toolbar));
         if (getSupportActionBar() != null) {
@@ -359,7 +383,7 @@ public class EditorActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
-            onBackPressed();
+            getOnBackPressedDispatcher().onBackPressed();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -404,7 +428,7 @@ public class EditorActivity extends AppCompatActivity {
         });
         content.findViewById(R.id.popup_item_close).setOnClickListener(v -> {
             popup.dismiss();
-            onBackPressed();
+            getOnBackPressedDispatcher().onBackPressed();
         });
 
         popup.showAsDropDown(anchor, -anchor.getWidth() * 4, 6, Gravity.END);
@@ -415,20 +439,5 @@ public class EditorActivity extends AppCompatActivity {
         super.onResume();
         applySettingsToEditor();
         if (previewVisible) schedulePreviewUpdate();
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (modified) {
-            new AlertDialog.Builder(this, R.style.VCGDialog)
-                .setTitle("حفظ التغييرات؟")
-                .setMessage("هل تريد حفظ " + filename + " قبل الخروج؟")
-                .setPositiveButton("حفظ", (d, w) -> { saveFile(); finish(); })
-                .setNegativeButton("تجاهل", (d, w) -> finish())
-                .setNeutralButton("إلغاء", null)
-                .show();
-        } else {
-            super.onBackPressed();
-        }
     }
 }
