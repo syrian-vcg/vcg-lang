@@ -26,4 +26,9 @@
     <string name="shortcut_settings_short">الإعدادات</string>
     <string name="shortcut_settings_long">إعدادات المحرر</string>
     <string name="shortcut_disabled">هذا الاختصار غير متاح حالياً</string>
+
+    <!-- Home screen widget -->
+    <string name="widget_description">تطبيق مصغّر يعرض آخر مشروع ويتيح فتح مشروع جديد أو الـ Terminal بضغطة واحدة</string>
+    <string name="widget_last_project">آخر مشروع</string>
+    <string name="widget_no_projects">لا توجد مشاريع بعد</string>
 </resources>
