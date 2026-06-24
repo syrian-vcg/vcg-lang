@@ -69,30 +69,49 @@
                 android:textSize="14sp" android:paddingBottom="6dp"/>
             <RadioGroup android:id="@+id/radio_app_theme"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="horizontal" android:paddingBottom="8dp">
-                <RadioButton android:id="@+id/app_theme_white"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:text="أبيض"
-                    android:textColor="?attr/colorTextPrimary" android:textSize="11.5sp"
-                    android:buttonTint="?attr/colorAccentPrimary"/>
-                <RadioButton android:id="@+id/app_theme_dark"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:text="داكن"
-                    android:textColor="?attr/colorTextPrimary" android:textSize="11.5sp"
-                    android:buttonTint="?attr/colorAccentPrimary"/>
-                <RadioButton android:id="@+id/app_theme_black"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:text="أسود"
-                    android:textColor="?attr/colorTextPrimary" android:textSize="11.5sp"
-                    android:buttonTint="?attr/colorAccentPrimary"/>
-                <RadioButton android:id="@+id/app_theme_blue"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:text="أزرق"
-                    android:textColor="?attr/colorTextPrimary" android:textSize="11.5sp"
-                    android:buttonTint="?attr/colorAccentPrimary"/>
+                android:orientation="vertical" android:paddingBottom="8dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:paddingBottom="4dp">
+
+                    <RadioButton android:id="@+id/app_theme_system"
+                        android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1.3" android:text="🌓 حسب الجهاز"
+                        android:textColor="?attr/colorTextPrimary" android:textSize="11.5sp"
+                        android:buttonTint="?attr/colorAccentPrimary"/>
+                    <RadioButton android:id="@+id/app_theme_white"
+                        android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:text="أبيض"
+                        android:textColor="?attr/colorTextPrimary" android:textSize="11.5sp"
+                        android:buttonTint="?attr/colorAccentPrimary"/>
+                    <RadioButton android:id="@+id/app_theme_dark"
+                        android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:text="داكن"
+                        android:textColor="?attr/colorTextPrimary" android:textSize="11.5sp"
+                        android:buttonTint="?attr/colorAccentPrimary"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <RadioButton android:id="@+id/app_theme_black"
+                        android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1.3" android:text="أسود"
+                        android:textColor="?attr/colorTextPrimary" android:textSize="11.5sp"
+                        android:buttonTint="?attr/colorAccentPrimary"/>
+                    <RadioButton android:id="@+id/app_theme_blue"
+                        android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:text="أزرق"
+                        android:textColor="?attr/colorTextPrimary" android:textSize="11.5sp"
+                        android:buttonTint="?attr/colorAccentPrimary"/>
+                    <View android:layout_width="0dp" android:layout_height="1dp"
+                        android:layout_weight="1"/>
+                </LinearLayout>
             </RadioGroup>
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:text="سمة شاشات التطبيق نفسه (مختلفة عن ثيم نتيجة المعاينة أدناه)"
+                android:text="\u200F«حسب الجهاز» يتبع وضع النظام تلقائياً: أبيض في الوضع الفاتح وداكن في الوضع الليلي."
                 android:textColor="?attr/colorTextMuted" android:textSize="11sp"
                 android:paddingBottom="14dp"/>
 
