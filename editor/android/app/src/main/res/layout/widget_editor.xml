@@ -62,8 +62,13 @@
             android:src="@drawable/ic_shortcut_settings"/>
     </LinearLayout>
 
-    <!-- ── thin divider ── -->
-    <View
+    <!-- ── thin divider ──
+         ⚠️ Android 14: عنصر <View> العادي غير مدعوم داخل RemoteViews
+         (نظام تطبيقات الودجت يقبل فقط FrameLayout/LinearLayout/RelativeLayout/
+         GridLayout + عناصر widgets محددة). كان هذا يسبّب فشل تنفيخ التخطيط
+         بالكامل عند المُشغّل، فلا يظهر الودجت إطلاقاً. FrameLayout بديل آمن
+         ومدعوم يعطي نفس النتيجة البصرية (خط رفيع بلون الخلفية). -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@color/border_color"/>
@@ -119,7 +124,7 @@
     </LinearLayout>
 
     <!-- ── thin divider ── -->
-    <View
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@color/border_color"/>
