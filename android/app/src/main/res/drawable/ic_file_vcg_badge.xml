@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Compact "VCG" monogram mark used as the file-type badge inside item_file/item_folder.
+     Transparent background so it sits on top of bg_file_icon (gradient chip).
+     Single fillColor so it can be tinted via android:tint per theme if ever needed. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="128" android:viewportHeight="128">
+
+    <!-- Accent star, top-right -->
+    <path android:fillColor="#FFFFFF" android:fillAlpha="0.92"
+        android:pathData="M98,6 L101.6,16.8 L113,16.8 L104.7,23.4 L108.3,34.2 L98,27.6 L87.7,34.2 L91.3,23.4 L83,16.8 L94.4,16.8 Z"/>
+
+    <!-- V -->
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M14,44 L26,44 L40,86 L54,44 L66,44 L46,104 L34,104 Z"/>
+
+    <!-- C -->
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M104,60 Q92,46 76,60 Q64,71 64,76 Q64,81 76,92 Q92,106 104,92 L111,99
+                           Q92,118 68,99 Q54,86 54,76 Q54,66 68,53 Q92,34 111,53 Z"/>
+</vector>
