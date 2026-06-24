@@ -201,7 +201,8 @@ public class VcgInterpreter {
             " 'map','filter','reduce','find',\n" +
             " 'doc','test','expect','mock',\n" +
             " 'with','case','pipeline','watch',\n" +
-            " 'data_vcg','to_set','make_zip','make_pdf'];\n" +
+            " 'data_vcg','to_set','make_zip','make_pdf',\n" +
+            " 'pattern','render','tone'];\n" +
 
             "function tokenize(src){\n" +
             "  var toks=[],i=0,ln=1;\n" +
@@ -351,6 +352,8 @@ public class VcgInterpreter {
             "  e.assert_false=function(v){if(v)throw new Error('assert_false failed');return true;};\n" +
             "  e.uuid=function(){return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){var r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16);});};\n" +
             "  e.hash=function(s){var h=5381;s=String(s);for(var i=0;i<s.length;i++)h=((h<<5)+h)+s.charCodeAt(i)|0;return Math.abs(h);};\n" +
+            "  e.tone=function(hex,pct){return _bpShade(hex,pct===undefined?0:pct);};\n" +
+            "  e.mix_color=function(h1,h2,t){return _bpMix(h1,h2,t===undefined?0.5:t);};\n" +
             "  e.sleep=function(ms){return new Promise(function(r){setTimeout(r,ms||0);});};\n" +
             "  e.type_of=function(x){return e.typeof(x);};\n" +
             "  e.file_read=function(){return '';};\n" +
@@ -602,6 +605,50 @@ public class VcgInterpreter {
             "  return null;\n" +
             "};\n" +
 
+            "/* ── Balanced Pattern — لغة الأنماط الخاصة بـ VCG ── */\n" +
+            "function _bpHexToRgb(h){h=String(h).replace('#','');if(h.length===3)h=h.split('').map(function(c){return c+c;}).join('');\n" +
+            "  var n=parseInt(h,16);return [(n>>16)&255,(n>>8)&255,n&255];}\n" +
+            "function _bpRgbToHex(r,g,b){return '#'+[r,g,b].map(function(v){v=Math.max(0,Math.min(255,Math.round(v)));return v.toString(16).padStart(2,'0');}).join('');}\n" +
+            "function _bpMix(h1,h2,t){var a=_bpHexToRgb(h1),b=_bpHexToRgb(h2);\n" +
+            "  return _bpRgbToHex(a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t);}\n" +
+            "function _bpShade(hex,pct){var t=pct/100;return t>=0?_bpMix(hex,'#ffffff',t):_bpMix(hex,'#000000',-t);}\n" +
+            "VCG.prototype._buildBalancedPattern=function(name,tokens){\n" +
+            "  var unit=Number(tokens.unit)||8;\n" +
+            "  var radius=tokens.radius!==undefined?Number(tokens.radius):Math.round(unit*1.75);\n" +
+            "  var primary=tokens.primary||'#4dc95a';\n" +
+            "  var surface=tokens.surface||'#0f1a10';\n" +
+            "  var ink=tokens.ink||'#eaf5ea';\n" +
+            "  var muted=tokens.muted||'#7c9c7c';\n" +
+            "  var danger=tokens.danger||'#e25b4f';\n" +
+            "  var ratios=[0.5,1,2,3,5];\n" +
+            "  var sizes=ratios.map(function(r){return Math.round(unit*r);});\n" +
+            "  var slug='bp-'+String(name).toLowerCase().replace(/[^a-z0-9\\u0600-\\u06FF]+/g,'-').replace(/(^-|-$)/g,'')||'bp-pattern';\n" +
+            "  var surfaceAlt=_bpMix(surface,primary,0.08);\n" +
+            "  var border=_bpMix(surface,primary,0.28);\n" +
+            "  var primaryHover=_bpShade(primary,-12);\n" +
+            "  var primarySoft=_bpMix(primary,surface,0.82);\n" +
+            "  var css=\n" +
+            "    '.'+slug+'{'+\n" +
+            "      '--bp-unit:'+unit+'px;--bp-radius:'+radius+'px;'+\n" +
+            "      '--bp-xs:'+sizes[0]+'px;--bp-sm:'+sizes[1]+'px;--bp-md:'+sizes[2]+'px;--bp-lg:'+sizes[3]+'px;--bp-xl:'+sizes[4]+'px;'+\n" +
+            "      '--bp-primary:'+primary+';--bp-primary-hover:'+primaryHover+';--bp-primary-soft:'+primarySoft+';'+\n" +
+            "      '--bp-surface:'+surface+';--bp-surface-alt:'+surfaceAlt+';--bp-border:'+border+';'+\n" +
+            "      '--bp-ink:'+ink+';--bp-muted:'+muted+';--bp-danger:'+danger+';'+\n" +
+            "      'color:var(--bp-ink)}'+\n" +
+            "    '.'+slug+' .bp-card{background:var(--bp-surface-alt);border:1px solid var(--bp-border);border-radius:var(--bp-radius);padding:var(--bp-md)}'+\n" +
+            "    '.'+slug+' .bp-btn{background:var(--bp-primary);color:#fff;border:none;border-radius:calc(var(--bp-radius)*0.6);padding:var(--bp-sm) var(--bp-md);font-weight:700;cursor:pointer;transition:background .15s}'+\n" +
+            "    '.'+slug+' .bp-btn:hover{background:var(--bp-primary-hover)}'+\n" +
+            "    '.'+slug+' .bp-btn.bp-ghost{background:transparent;border:1px solid var(--bp-border);color:var(--bp-ink)}'+\n" +
+            "    '.'+slug+' .bp-badge{display:inline-block;background:var(--bp-primary-soft);color:var(--bp-primary);border:1px solid var(--bp-border);border-radius:999px;padding:calc(var(--bp-xs)/2) var(--bp-sm);font-size:.75rem;font-weight:700}'+\n" +
+            "    '.'+slug+' .bp-row{display:flex;justify-content:space-between;align-items:center;gap:var(--bp-sm);padding:var(--bp-sm) 0;border-bottom:1px dashed var(--bp-border)}'+\n" +
+            "    '.'+slug+' .bp-row:last-child{border-bottom:none}'+\n" +
+            "    '.'+slug+' .bp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--bp-md)}'+\n" +
+            "    '.'+slug+' .bp-title{color:var(--bp-ink);font-weight:900;margin:0 0 var(--bp-xs) 0}'+\n" +
+            "    '.'+slug+' .bp-muted{color:var(--bp-muted);font-size:.8rem}'+\n" +
+            "    '.'+slug+' .bp-section{background:var(--bp-surface);border:1px solid var(--bp-border);border-radius:var(--bp-radius);padding:var(--bp-md);margin:var(--bp-sm) 0}';\n" +
+            "  return {css:css,slug:slug};\n" +
+            "};\n" +
+
             "VCG.prototype.parseStmt=function(e){\n" +
             "  var t=this.cur(),self=this;\n" +
             "  var UI=['youtube','facebook','instagram','xsocial','url','btn','key','video','img','h','l'];\n" +
@@ -647,6 +694,23 @@ public class VcgInterpreter {
             "    var me=this._scope(e);this.eat('{');\n" +
             "    while(this.cur().v!=='}'&&this.cur().t!=='EOF'){this.parseStmt(me);}\n" +
             "    this.eat('}');this._def(e,nm,me);return;}\n" +
+            "  if(t.v==='pattern'){this.eat();var pname=this.eat().v;\n" +
+            "    var label=pname;if(this.cur().t==='STR'){label=this.eat().v;}\n" +
+            "    var tokens={};this.eat('{');\n" +
+            "    while(this.cur().v!=='}'&&this.cur().t!=='EOF'){\n" +
+            "      var pk=this.eat().v;this.eat(':');tokens[pk]=this.parseExpr(e);this.eatIf(',');}\n" +
+            "    this.eat('}');\n" +
+            "    self._patterns=self._patterns||{};\n" +
+            "    self._patterns[label]=self._buildBalancedPattern(label,tokens);\n" +
+            "    self._patternSlugs=self._patternSlugs||{};self._patternSlugs[pname]=label;\n" +
+            "    this._def(e,pname,label);return;}\n" +
+            "  if(t.v==='render'){this.eat();var rnm=this.eat().v;\n" +
+            "    var rlabel=this._tryGet(e,rnm);if(typeof rlabel!=='string')rlabel=rnm;\n" +
+            "    var pat=(self._patterns&&self._patterns[rlabel])?self._patterns[rlabel]:null;\n" +
+            "    if(pat){self.out.push({t:'html',v:'<style data-balanced-pattern=\"'+rlabel+'\">'+pat.css+'</style>'});\n" +
+            "      if(this.cur().v==='{'){var de=this._scope(e);this._def(de,'slug',pat.slug);this.parseBlock(de);}\n" +
+            "    } else if(this.cur().v==='{'){this._skipBlock();}\n" +
+            "    return;}\n" +
             "  if(t.v==='func'){this.eat();var nm=this.eat().v;this.eat('(');\n" +
             "    var params=[];while(this.cur().v!==')'&&this.cur().t!=='EOF'){params.push(this.eat().v);this.eatIf(',');}this.eat(')');\n" +
             "    var bp=this.pos;this._skipBlock();var be=this.pos;var cl=e;\n" +
