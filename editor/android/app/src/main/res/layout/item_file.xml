@@ -18,19 +18,20 @@
         android:paddingHorizontal="14dp"
         android:paddingVertical="13dp">
 
-        <!-- File icon badge: VCG monogram on a green gradient chip -->
+        <!-- أيقونة: ملف أو مجلد (emoji يُعيَّن من الكود) -->
         <FrameLayout
             android:layout_width="46dp" android:layout_height="46dp"
             android:background="@drawable/bg_file_icon">
-            <ImageView
-                android:layout_width="23dp" android:layout_height="23dp"
+            <TextView
+                android:id="@+id/file_icon_text"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_file_vcg_badge"
-                app:tint="?attr/colorAccentSecondary"
-                android:contentDescription="VCG"/>
+                android:text="📄"
+                android:textSize="22sp"
+                android:contentDescription="أيقونة"/>
         </FrameLayout>
 
-        <!-- File info -->
+        <!-- معلومات العنصر -->
         <LinearLayout
             android:layout_width="0dp" android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -53,7 +54,6 @@
                 android:paddingTop="3dp"
                 android:alpha="0.85"/>
 
-            <!-- Meta row: small live-dot + timestamp pill -->
             <LinearLayout
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -75,7 +75,7 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- More (rename / move / delete) -->
+        <!-- زر الخيارات -->
         <ImageButton android:id="@+id/btn_delete"
             android:layout_width="36dp" android:layout_height="36dp"
             android:layout_marginStart="4dp"
@@ -83,7 +83,7 @@
             android:src="@drawable/ic_toolbar_more"
             android:background="@drawable/bg_topbar_circle_btn"
             app:tint="?attr/colorTextMuted"
-            android:contentDescription="خيارات الملف"/>
+            android:contentDescription="خيارات"/>
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>
