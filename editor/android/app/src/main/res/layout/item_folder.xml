@@ -84,7 +84,7 @@
             android:padding="7dp"
             android:src="@drawable/ic_toolbar_more"
             android:background="@drawable/bg_topbar_circle_btn"
-            android:tint="?attr/colorTextMuted"
+            app:tint="?attr/colorTextMuted"
             android:contentDescription="خيارات المجلد"/>
     </LinearLayout>
 
