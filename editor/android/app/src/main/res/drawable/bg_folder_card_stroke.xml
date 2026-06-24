@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Same as bg_file_card_stroke but with a faint gold tint, so folders
+     read as a distinct "category" from files at a glance even before
+     you notice the icon color. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="?attr/colorSurface"/>
+    <corners android:radius="16dp"/>
+    <stroke android:width="1dp" android:color="?attr/colorGold"/>
+</shape>
