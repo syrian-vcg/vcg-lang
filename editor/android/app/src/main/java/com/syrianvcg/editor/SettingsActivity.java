@@ -116,11 +116,11 @@ public class SettingsActivity extends AppCompatActivity {
         fontGroup.setOnCheckedChangeListener((group, checkedId) ->
             settings.setFontFamily(checkedId == sansId ? "sans-serif" : checkedId == serifId ? "serif" : "monospace"));
 
-        // App UI theme selector (Black / Dark / White / Blue)
+        // App UI theme selector (System / White / Dark / Black / Blue)
         RadioGroup appThemeGroup = findViewById(R.id.radio_app_theme);
-        int[] appThemeIds = {R.id.app_theme_white, R.id.app_theme_dark, R.id.app_theme_black, R.id.app_theme_blue};
-        // إعادة ترتيب لتطابق ترتيب الأزرار في الواجهة (أبيض، داكن، أسود، أزرق)
-        String[] appThemeOrder = {VcgThemeHelper.THEME_WHITE, VcgThemeHelper.THEME_DARK, VcgThemeHelper.THEME_BLACK, VcgThemeHelper.THEME_BLUE};
+        int[] appThemeIds = {R.id.app_theme_system, R.id.app_theme_white, R.id.app_theme_dark, R.id.app_theme_black, R.id.app_theme_blue};
+        // إعادة ترتيب لتطابق ترتيب الأزرار في الواجهة (نظام، أبيض، داكن، أسود، أزرق)
+        String[] appThemeOrder = {VcgThemeHelper.THEME_SYSTEM, VcgThemeHelper.THEME_WHITE, VcgThemeHelper.THEME_DARK, VcgThemeHelper.THEME_BLACK, VcgThemeHelper.THEME_BLUE};
         String curAppTheme = settings.getAppTheme();
         for (int i = 0; i < appThemeOrder.length; i++) {
             if (appThemeOrder[i].equals(curAppTheme)) appThemeGroup.check(appThemeIds[i]);
