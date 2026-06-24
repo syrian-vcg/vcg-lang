@@ -88,3 +88,27 @@ help:
 	@echo "    ./vcgc --ast file.vcg        → dump AST"
 	@echo "    ./vcgc --version             → show version"
 	@echo ""
+
+# ── Build VCG SDK JAR ────────────────────────────────────────────
+SDK_VERSION = 2.0.1
+SDK_SRC     = sdk/src/main/java
+SDK_BIN     = sdk/build/classes
+SDK_JAR     = sdk/build/vcg-sdk-$(SDK_VERSION).jar
+
+sdk-build:
+	@echo "Building VCG SDK v$(SDK_VERSION)..."
+	@mkdir -p $(SDK_BIN)
+	@java com.sun.tools.javac.Main -source 11 -target 11 \
+	    -d $(SDK_BIN) \
+	    $$(find $(SDK_SRC) -name "*.java")
+	@cd $(SDK_BIN) && \
+	    cp -r ../../src/main/resources/META-INF . && \
+	    zip -qr ../vcg-sdk-$(SDK_VERSION).jar .
+	@echo "✓ SDK JAR: $(SDK_JAR)"
+	@cp $(SDK_JAR) editor/android/app/libs/
+
+sdk-clean:
+	@rm -rf sdk/build
+	@echo "✓ SDK build cleaned"
+
+.PHONY: sdk-build sdk-clean
