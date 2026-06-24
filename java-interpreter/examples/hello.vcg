@@ -1,0 +1,18 @@
+# ============================================
+# VCG — Hello World (Java Native Edition)
+# ============================================
+
+show("مرحباً بكم في لغة VCG — مفسَّرة بلغة Java حصراً!")
+show("Syrian VCG — Native Java Interpreter")
+show("---")
+
+print(hi)     # يعمل بدون علامات تنصيص لأن "hi" متغيّر جاهز مسبقاً = "hi"
+print("hi")   # وهنا كنص حرفي مباشر
+
+let name = "VCG"
+let year = 2026
+show("اللغة:", name, "| السنة:", year)
+
+show("2 + 3   =", 2 + 3)
+show("10 * 5  =", 10 * 5)
+show("2 ** 8  =", 2 ** 8)
