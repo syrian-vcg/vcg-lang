@@ -1,0 +1,31 @@
+# مجال: التعليم التفاعلي — دروس وتمارين برمجية
+# يوضح: show, func, repeat/for/while, h, l, match
+
+h(1, "📚 درس: الأعداد الأولية")
+
+func is_prime(n) {
+    if n < 2 { return false }
+    let i = 2
+    while i * i <= n {
+        if n % i == 0 { return false }
+        i = i + 1
+    }
+    return true
+}
+
+html "<p>الأعداد الأولية من 2 إلى 30:</p>"
+let primes = []
+for n in range(2, 31) {
+    if is_prime(n) { primes = primes + [n] }
+}
+show(primes)
+
+h(2, "🧮 اختبر نفسك")
+let answer = 7 * 8
+match answer {
+    when 56 -> show("✅ صحيح! 7×8 = 56")
+    when 0 -> show("جرّب مرة أخرى")
+}
+
+h(2, "📋 خلاصة الدرس")
+l("تعريف العدد الأولي", "حلقة while للتحقق من القسمة", "استخدام for...in مع range")
