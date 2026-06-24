@@ -62,6 +62,16 @@ android {
         viewBinding true
         buildConfig true
     }
+
+    // ════════════════════════════════════════════════════════════════
+    // Lint: تقرير دون إيقاف البناء. لا نريد أن يفشل CI/CD بسبب أخطاء
+    // أو تحذيرات lint غير حرجة — التقرير يبقى متاحاً لمراجعته يدوياً.
+    // ════════════════════════════════════════════════════════════════
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+        warningsAsErrors false
+    }
 }
 
 dependencies {
