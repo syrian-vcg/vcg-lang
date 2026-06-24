@@ -1,0 +1,40 @@
+# Balanced Pattern — عرض توضيحي
+# يوضح: pattern { ... }, render { slug }, tone(), mix_color()
+
+pattern Balanced "ocean" {
+    unit: 8
+    radius: 14
+    primary: "#2f6fed"
+    surface: "#0d1320"
+    ink: "#eaf2ff"
+    muted: "#7f93b3"
+    danger: "#e25b4f"
+}
+
+h(1, "🌊 نمط Ocean المتوازن")
+
+render Balanced {
+    html "<div class='" + slug + "'>"
+        + "<div class='bp-section'>"
+            + "<div class='bp-title'>لوحة المشروع</div>"
+            + "<div class='bp-muted'>كل العناصر هنا متوازنة حول لون واحد فقط</div>"
+        + "</div>"
+        + "<div class='bp-grid'>"
+            + "<div class='bp-card'><div class='bp-title'>42</div><div class='bp-muted'>مهام مكتملة</div></div>"
+            + "<div class='bp-card'><div class='bp-title'>7</div><div class='bp-muted'>قيد التنفيذ</div></div>"
+            + "<div class='bp-card'><div class='bp-title'>3</div><div class='bp-muted'>متأخرة</div></div>"
+        + "</div>"
+        + "<div class='bp-section'>"
+            + "<div class='bp-row'><span>تصميم الواجهة</span><span class='bp-badge'>مكتمل</span></div>"
+            + "<div class='bp-row'><span>ربط قاعدة البيانات</span><span class='bp-badge'>قيد التنفيذ</span></div>"
+            + "<button class='bp-btn'>إجراء أساسي</button>"
+            + "<button class='bp-btn bp-ghost'>إجراء ثانوي</button>"
+        + "</div>"
+    + "</div>"
+}
+
+h(2, "🎨 درجات مُستمدة من لون واحد")
+show("اللون الأساسي:", "#2f6fed")
+show("درجة أغمق 20%:", tone("#2f6fed", -20))
+show("درجة أفتح 30%:", tone("#2f6fed", 30))
+show("مزج 50% مع الأبيض:", mix_color("#2f6fed", "#ffffff", 0.5))
