@@ -206,7 +206,8 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textColor">?attr/colorTextPrimary</item>
         <item name="android:textSize">13.5sp</item>
-        <item name="android:paddingVertical">7dp</item>
+        <item name="android:paddingTop">7dp</item>
+        <item name="android:paddingBottom">7dp</item>
         <item name="android:lineSpacingMultiplier">1.2</item>
     </style>
 
@@ -221,7 +222,8 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:orientation">horizontal</item>
-        <item name="android:paddingVertical">10dp</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingBottom">10dp</item>
     </style>
 
     <style name="AboutStepNumber">
