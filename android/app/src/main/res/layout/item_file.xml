@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:layout_marginHorizontal="6dp"
+    android:layout_marginVertical="4dp"
+    app:cardBackgroundColor="?attr/colorSurface"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="?attr/selectableItemBackground"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="12dp">
+
+        <!-- File icon badge: VCG monogram on a green gradient chip -->
+        <FrameLayout
+            android:layout_width="44dp" android:layout_height="44dp"
+            android:background="@drawable/bg_file_icon">
+            <ImageView
+                android:layout_width="24dp" android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_file_vcg_badge"
+                app:tint="?attr/colorAccentSecondary"
+                android:contentDescription="VCG"/>
+        </FrameLayout>
+
+        <!-- File info -->
+        <LinearLayout
+            android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingStart="12dp">
+
+            <TextView android:id="@+id/file_name"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="?attr/colorTextPrimary"
+                android:textSize="14.5sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace"/>
+
+            <TextView android:id="@+id/file_preview"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="?attr/colorTextMuted"
+                android:textSize="12sp"
+                android:maxLines="1" android:ellipsize="end"
+                android:paddingTop="2dp"/>
+
+            <TextView android:id="@+id/file_meta"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="?attr/colorAccentSecondary"
+                android:textSize="10.5sp"
+                android:fontFamily="monospace"
+                android:paddingTop="4dp"/>
+        </LinearLayout>
+
+        <!-- More (rename / move / delete) -->
+        <ImageButton android:id="@+id/btn_delete"
+            android:layout_width="38dp" android:layout_height="38dp"
+            android:src="@android:drawable/ic_menu_delete"
+            android:background="@drawable/bg_topbar_circle_btn"
+            android:tint="?attr/colorTextMuted"
+            android:contentDescription="Delete"/>
+    </LinearLayout>
+
+    <!-- Left accent stripe -->
+    <View
+        android:layout_width="3dp" android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="?attr/colorAccentSecondary"/>
+
+</androidx.cardview.widget.CardView>
