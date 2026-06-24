@@ -38,3 +38,16 @@ every keyword and built-in described below. Best place to start.
 | `ui_media.vcg` | UI/media output: `h`, `l`, `url`, `btn`, `key`, `img`, `youtube`, social embeds |
 | `fibonacci.vcg`, `sorting.vcg`, `calculator.vcg` | Classic algorithm demos |
 | `v2_concepts.vcg` | Misc v2.0 language feature tour |
+
+## domains/ — real-world use-case templates
+See [`docs/USE_CASES.md`](../docs/USE_CASES.md) for the full breakdown of VCG's
+five main use domains. Each file below is a ready-to-run starting point:
+
+| File | Domain |
+|---|---|
+| `education.vcg` | Interactive teaching/learning content |
+| `business_app.vcg` | Small-business apps (inventory, POS) with `data_vcg` + APK export |
+| `social_landing.vcg` | Link-in-bio / social landing pages |
+| `automation_data.vcg` | Data cleaning, transforms, and validated reports |
+| `interactive_docs.vcg` | Living documentation with `test` blocks as runnable examples |
+| `balanced_pattern_demo.vcg` | The **Balanced Pattern** styling DSL — see [`docs/BALANCED_PATTERN.md`](../docs/BALANCED_PATTERN.md) |
