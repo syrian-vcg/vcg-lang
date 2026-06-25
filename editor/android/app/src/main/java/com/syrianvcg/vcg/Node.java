@@ -273,13 +273,6 @@ public abstract class Node {
         public ChannelDecl(String name) { this.name = name; }
     }
 
-    /** call() { body } — استدعاء دالة يُتبَع بكتلة، يُستخدَم في BalancedPattern */
-    public static final class CallWithBlock extends Stmt {
-        public final Call call;
-        public final Block body;
-        public CallWithBlock(Call call, Block body) { this.call = call; this.body = body; }
-    }
-
     public static final class PatternDecl extends Stmt {
         public final String typeName; // e.g. Balanced
         public final String patternName;
