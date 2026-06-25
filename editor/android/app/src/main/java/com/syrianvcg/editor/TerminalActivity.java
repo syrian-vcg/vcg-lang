@@ -99,7 +99,7 @@ public class TerminalActivity extends AppCompatActivity {
         input.setText("");
 
         // Run via headless mini-eval using the same interpreter runtime, capturing show() output as plain text.
-        String result = VcgHeadlessRunner.run(code, projectId);
+        String result = VcgRealRunner.run(code, projectId);
         for (String line : result.split("\n")) {
             if (line.startsWith("ERR:")) {
                 appendLine(line.substring(4), "#F87171");
@@ -154,7 +154,7 @@ public class TerminalActivity extends AppCompatActivity {
 
     private void clearLog() {
         buffer = new StringBuilder();
-        VcgHeadlessRunner.resetSession(projectId);
+        VcgRealRunner.resetSession(projectId);
         printWelcome();
         persistLog();
     }
