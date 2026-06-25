@@ -417,13 +417,6 @@ public final class Parser {
             Node.Expr value = parseExpr();
             return new Node.Assign(expr, op, value);
         }
-        // صيغة  call() { body }  — تُستخدَم في Balanced Pattern: page/section/card/row/grid/col
-        // يُترجَم إلى: استدعاء الدالة ← تنفيذ body ← استدعاء end() تلقائياً
-        skipNewlines();
-        if (expr instanceof Node.Call && check(TokenType.LBRACE)) {
-            Node.Block body = parseBlock();
-            return new Node.CallWithBlock((Node.Call) expr, body);
-        }
         return new Node.ExprStmt(expr);
     }
 
