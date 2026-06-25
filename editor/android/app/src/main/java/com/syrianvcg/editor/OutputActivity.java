@@ -143,12 +143,95 @@ public class OutputActivity extends AppCompatActivity {
     }
 
     private void runCode() {
-        String html = VcgInterpreter.buildHtml(code, filename,
-            assetsJson == null || assetsJson.isEmpty() ? "{}" : assetsJson, theme);
+        // ─────────────────────────────────────────────────────────────────────
+        // نستخدم المفسِّر الحقيقي المكتوب بـ Java (VcgRealRunner) بدلاً من
+        // توليد HTML/JavaScript عبر VcgInterpreter القديم. النتيجة هي نص خام
+        // يُعرض داخل WebView بصفحة HTML بسيطة منسّقة (دون أي جلسة JS).
+        // ─────────────────────────────────────────────────────────────────────
+        long t0 = System.currentTimeMillis();
 
-        // انظر التعليق المماثل في EditorActivity.updatePreview(): loadDataWithBaseURL
-        // مع UTF-8 صريح أكثر استقراراً من base64 بلا padding لمحتوى عربي/يونيكود.
+        // نصفّر الجلسة أولاً لضمان بيئة نظيفة عند كل تشغيل ملف كامل
+        VcgRealRunner.resetSession("output_" + projectId);
+        String rawOutput = VcgRealRunner.run(code, "output_" + projectId);
+
+        long elapsed = System.currentTimeMillis() - t0;
+
+        boolean hasError = rawOutput.startsWith("خطأ") || rawOutput.startsWith("ERR:");
+        int lineCount = rawOutput.split("\n").length;
+
+        String html = buildOutputHtml(rawOutput, filename, elapsed, hasError, theme);
         webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null);
+
+        if (hasError) {
+            logToTerminal(false, rawOutput.split("\n")[0]);
+        } else {
+            logToTerminal(true, String.valueOf(lineCount));
+        }
+    }
+
+    /**
+     * يبني صفحة HTML خفيفة لعرض مخرجات المفسِّر Java النصية بشكل منسَّق.
+     */
+    private static String buildOutputHtml(String output, String title, long elapsedMs,
+                                          boolean hasError, String theme) {
+        String bg, panel, border, accent, text, muted;
+        switch (theme == null ? "olive" : theme) {
+            case "midnight":
+                bg="#0a0e1a"; panel="#10162a"; border="#1c2542";
+                accent="#5b8cff"; text="#e6ecff"; muted="#5a6a8a"; break;
+            case "amoled":
+                bg="#000000"; panel="#0a0a0a"; border="#1a1a1a";
+                accent="#4dc95a"; text="#f0f0f0"; muted="#555555"; break;
+            case "sand":
+                bg="#1c1812"; panel="#26211a"; border="#3a3226";
+                accent="#e0a84d"; text="#f2e8d8"; muted="#7a6f5a"; break;
+            case "white":
+                bg="#ffffff"; panel="#f7f9f6"; border="#e2e6e1";
+                accent="#1f7a3d"; text="#1b221c"; muted="#6b7568"; break;
+            default: // olive
+                bg="#060c0e"; panel="#0f1e10"; border="#1a3a1a";
+                accent="#4dc95a"; text="#e8f5e0"; muted="#4a6a4a"; break;
+        }
+
+        String statusColor = hasError ? "#e25b4f" : accent;
+        String statusLabel = hasError ? "✗ فشل التنفيذ" : "● تم التشغيل بنجاح";
+
+        StringBuilder lines = new StringBuilder();
+        for (String line : output.split("\n")) {
+            if (line.isEmpty()) continue;
+            String escaped = line
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;");
+            String lineColor = (line.startsWith("خطأ") || line.startsWith("ERR:"))
+                ? "#e25b4f" : text;
+            lines.append("<span style=\"color:").append(lineColor)
+                 .append(";display:block;padding:2px 4px\">")
+                 .append(escaped).append("</span>\n");
+        }
+
+        return "<!DOCTYPE html>\n<html lang='ar' dir='rtl'>\n<head>\n"
+            + "<meta charset='UTF-8'>\n"
+            + "<meta name='viewport' content='width=device-width,initial-scale=1'>\n"
+            + "<title>" + title + "</title>\n"
+            + "<style>\n"
+            + "body{background:" + bg + ";color:" + text + ";font-family:monospace;"
+            +      "margin:0;padding:0.8rem;font-size:0.85rem;line-height:1.8}\n"
+            + ".header{display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;"
+            +         "background:" + panel + ";border:1px solid " + border + ";"
+            +         "border-radius:10px;padding:0.5rem 0.7rem;margin-bottom:0.7rem;"
+            +         "font-size:0.8rem}\n"
+            + ".status{font-weight:700;color:" + statusColor + "}\n"
+            + ".meta{color:" + muted + ";font-size:0.75rem;margin-right:auto}\n"
+            + ".output{background:" + panel + ";border:1px solid " + border + ";"
+            +          "border-radius:8px;padding:0.6rem 0.8rem}\n"
+            + "</style>\n</head>\n<body>\n"
+            + "<div class='header'>"
+            + "<span class='status'>" + statusLabel + "</span>"
+            + "<span class='meta'>" + elapsedMs + "ms &nbsp;•&nbsp; " + title + "</span>"
+            + "</div>\n"
+            + "<div class='output'>" + lines + "</div>\n"
+            + "</body>\n</html>";
     }
 
     @Override
