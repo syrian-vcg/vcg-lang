@@ -107,7 +107,6 @@ public final class Interpreter {
         }
         if (stmt instanceof Node.StructDecl s) { execStructDecl(s, env); return; }
         if (stmt instanceof Node.ChannelDecl s) { env.define(s.name, new VcgChannel()); return; }
-        if (stmt instanceof Node.CallWithBlock s) { execCallWithBlock(s, env); return; }
         if (stmt instanceof Node.PatternDecl s) { BalancedPattern.declare(this, s, env); return; }
         if (stmt instanceof Node.RenderStmt s) { BalancedPattern.render(this, s, env); return; }
 
@@ -116,21 +115,6 @@ public final class Interpreter {
 
     public void execBlockStmts(List<Node.Stmt> stmts, Environment env) {
         for (Node.Stmt s : stmts) exec(s, env);
-    }
-
-    /** call() { body } — يستدعي الدالة ثم يُشغِّل body ثم يستدعي end() إن وُجدت */
-    private void execCallWithBlock(Node.CallWithBlock s, Environment env) {
-        // 1) استدعِ الدالة (تفتح div أو مكوِّن)
-        eval(s.call, env);
-        // 2) شغِّل الجسم في نفس البيئة
-        execBlockStmts(s.body.stmts, env);
-        // 3) إذا كانت دالة end() معرَّفة في البيئة، استدعِها لإغلاق div
-        try {
-            Object endFn = env.get("end");
-            if (endFn instanceof VcgCallable fn) fn.call(this, java.util.List.of());
-        } catch (Environment.VcgRuntimeError ignored) {
-            // end() غير موجودة في هذه البيئة — لا بأس
-        }
     }
 
     private void execBlock(Node.Block block, Environment env) {
