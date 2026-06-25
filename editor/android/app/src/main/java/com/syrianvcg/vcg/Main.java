@@ -1,7 +1,10 @@
 package com.syrianvcg.vcg;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -50,7 +53,14 @@ public final class Main {
     private static void runFile(String path, String htmlOut) {
         String source;
         try {
-            source = Files.readString(Path.of(path));
+            StringBuilder sb = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line).append("\n");
+                }
+            }
+            source = sb.toString();
         } catch (IOException e) {
             System.err.println("لا يمكن قراءة الملف / Cannot read file: " + path);
             return;
@@ -76,7 +86,9 @@ public final class Main {
         if (htmlOut != null) {
             String html = HtmlReport.render(sink, path);
             try {
-                Files.writeString(Path.of(htmlOut), html);
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(htmlOut))) {
+                    writer.write(html);
+                }
                 System.out.println("تم إنشاء التقرير / Report written to: " + htmlOut);
             } catch (IOException e) {
                 System.err.println("فشل الكتابة / Failed writing html: " + e.getMessage());
